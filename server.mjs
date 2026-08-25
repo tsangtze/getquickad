@@ -1,6 +1,8 @@
 import express from "express";
 import multer from "multer";
 import path from "node:path";
+import fs from "node:fs";
+import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
 import {
   cleanFailedUpload,
@@ -13,6 +15,11 @@ const port = Number(process.env.PORT) || 4100;
 const currentFile = fileURLToPath(import.meta.url);
 const projectRoot = path.dirname(currentFile);
 const frontendPath = path.join(projectRoot, "Frontend");
+const environmentPath = path.join(projectRoot, ".env");
+
+if (fs.existsSync(environmentPath)) {
+  loadEnvFile(environmentPath);
+}
 
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
@@ -23,7 +30,7 @@ app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
     product: "QuickAd AI",
-    version: "0.2.0"
+    version: "0.4.0"
   });
 });
 
