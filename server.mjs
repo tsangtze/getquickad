@@ -30,7 +30,7 @@ app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
     product: "QuickAd AI",
-    version: "0.4.0"
+    version: "0.5.0"
   });
 });
 
