@@ -189,7 +189,7 @@ form.addEventListener("submit", async (event) => {
 
   setUploadError();
   descriptionError.textContent = "";
-  formMessage.classList.remove("visible");
+  formMessage.classList.remove("visible", "error");
   formMessage.textContent = "";
 
   let firstInvalidElement = null;
@@ -215,36 +215,74 @@ form.addEventListener("submit", async (event) => {
     });
 
     if (typeof firstInvalidElement.focus === "function") {
-      firstInvalidElement.focus({ preventScroll: true });
+      firstInvalidElement.focus({
+        preventScroll: true
+      });
     }
 
     return;
   }
 
-  const originalButtonContent = createButton.innerHTML;
+  const originalButtonContent =
+    createButton.innerHTML;
 
   createButton.disabled = true;
   createButton.innerHTML =
-    "<span>Preparing your project...</span><span>•••</span>";
+    "<span>Uploading your project...</span><span>•••</span>";
 
-  await new Promise((resolve) => setTimeout(resolve, 700));
+  try {
+    syncImageInput();
 
-  const selectedStyle = form.querySelector(
-    'input[name="style"]:checked'
-  ).value;
+    const projectData = new FormData(form);
 
-  formMessage.textContent =
-    `Your ${selectedStyle.toLowerCase()} video project is ready. ` +
-    "The actual AI video engine will be connected in the next development stage.";
+    const response = await fetch(
+      "/api/projects",
+      {
+        method: "POST",
+        body: projectData
+      }
+    );
 
-  formMessage.classList.add("visible");
+    const result = await response.json();
+
+    if (!response.ok || !result.ok) {
+      throw new Error(
+        result.error ||
+        "QuickAd AI could not create the project."
+      );
+    }
+
+    const shortProjectId =
+      result.project.id.slice(0, 8);
+
+    formMessage.textContent =
+      `Project ${shortProjectId} was created successfully. ` +
+      `${result.project.assets.productImages.length} product image` +
+      `${result.project.assets.productImages.length === 1 ? "" : "s"} ` +
+      `and the ${result.project.style.toLowerCase()} style ` +
+      "were saved securely for video generation.";
+
+    formMessage.classList.remove("error");
+    formMessage.classList.add("visible");
+  } catch (error) {
+    formMessage.textContent =
+      error.message ||
+      "QuickAd AI could not create the project.";
+
+    formMessage.classList.add(
+      "visible",
+      "error"
+    );
+  } finally {
+    createButton.disabled = false;
+    createButton.innerHTML =
+      originalButtonContent;
+  }
+
   formMessage.scrollIntoView({
     behavior: "smooth",
     block: "nearest"
   });
-
-  createButton.disabled = false;
-  createButton.innerHTML = originalButtonContent;
 });
 
 renderImagePreviews();
