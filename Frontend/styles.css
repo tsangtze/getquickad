@@ -796,3 +796,135 @@ input::placeholder {
   color: #9f2937;
   background: #fff1f3;
 }
+.form-message.success-card {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 17px;
+  margin-top: 18px;
+  padding: 21px 23px;
+  border: 2px solid #52c795;
+  border-radius: 17px;
+  color: #123f31;
+  background:
+    linear-gradient(
+      135deg,
+      #e9fff5 0%,
+      #f8fffc 100%
+    );
+  box-shadow:
+    0 14px 34px rgba(30, 139, 99, 0.17);
+}
+
+.success-mark {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background:
+    linear-gradient(
+      135deg,
+      #209f69,
+      #48d194
+    );
+  box-shadow:
+    0 8px 20px rgba(34, 166, 111, 0.3);
+  font-size: 29px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.success-content {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.success-title {
+  color: #12392d;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.success-details {
+  color: #21634d;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.success-next {
+  color: #527066;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.form-message.success-popover {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1000;
+  width: min(620px, calc(100vw - 36px));
+  margin: 0;
+  transform: translate(-50%, -50%);
+  border-width: 3px;
+  box-shadow:
+    0 0 0 100vmax rgba(20, 27, 48, 0.32),
+    0 28px 70px rgba(20, 66, 50, 0.32);
+  animation:
+    success-pop-in 420ms ease-out,
+    success-gentle-pulse 900ms ease-in-out 500ms;
+}
+
+@keyframes success-pop-in {
+  from {
+    opacity: 0;
+    transform:
+      translate(-50%, -44%)
+      scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+}
+
+@keyframes success-gentle-pulse {
+  0%,
+  100% {
+    border-color: #52c795;
+  }
+
+  50% {
+    border-color: #27a873;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-message.success-card {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 12px;
+    padding: 17px;
+  }
+
+  .success-mark {
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+  }
+
+  .success-title {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-message.success-popover {
+    animation: none;
+  }
+}

@@ -189,7 +189,12 @@ form.addEventListener("submit", async (event) => {
 
   setUploadError();
   descriptionError.textContent = "";
-  formMessage.classList.remove("visible", "error");
+  formMessage.classList.remove(
+    "visible",
+    "error",
+    "success-card",
+    "success-popover"
+  );
   formMessage.textContent = "";
 
   let firstInvalidElement = null;
@@ -228,7 +233,7 @@ form.addEventListener("submit", async (event) => {
 
   createButton.disabled = true;
   createButton.innerHTML =
-    "<span>Creating your storyboard...</span><span>•••</span>";
+    "<span>Creating your storyboard and narration...</span><span>•••</span>";
 
   try {
     syncImageInput();
@@ -258,13 +263,83 @@ form.addEventListener("submit", async (event) => {
     const sceneCount =
       result.storyboard.scenes.length;
 
-    formMessage.textContent =
-      `Project ${shortProjectId} is ready. ` +
-      `Storyboard "${result.storyboard.title}" was created with ` +
-      `${sceneCount} scenes for a ` +
-      `${result.storyboard.totalDurationSeconds}-second video.`;
+    const successMark =
+      document.createElement("span");
+
+    successMark.className =
+      "success-mark";
+
+    successMark.textContent =
+      "✓";
+
+    successMark.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    const successContent =
+      document.createElement("span");
+
+    successContent.className =
+      "success-content";
+
+    const successTitle =
+      document.createElement("strong");
+
+    successTitle.className =
+      "success-title";
+
+    successTitle.textContent =
+      "Your AI video plan is ready";
+
+    const successDetails =
+      document.createElement("span");
+
+    successDetails.className =
+      "success-details";
+
+    successDetails.textContent =
+      `Project ${shortProjectId} • ` +
+      `"${result.storyboard.title}" • ` +
+      `${sceneCount} scenes • ` +
+      `${result.narration.voice} AI narration • ` +
+      `${result.storyboard.totalDurationSeconds} seconds`;
+
+    const successNext =
+      document.createElement("span");
+
+    successNext.className =
+      "success-next";
+
+    successNext.textContent =
+      "Your images, storyboard, and narration were created successfully.";
+
+    successContent.append(
+      successTitle,
+      successDetails,
+      successNext
+    );
+
+    formMessage.replaceChildren(
+      successMark,
+      successContent
+    );
     formMessage.classList.remove("error");
-    formMessage.classList.add("visible");
+    formMessage.classList.add(
+      "visible",
+      "success-card",
+      "success-popover"
+    );
+    window.setTimeout(() => {
+      formMessage.classList.remove(
+        "success-popover"
+      );
+
+      formMessage.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+      });
+    }, 3000);
   } catch (error) {
     formMessage.textContent =
       error.message ||
@@ -280,10 +355,16 @@ form.addEventListener("submit", async (event) => {
       originalButtonContent;
   }
 
-  formMessage.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest"
-  });
+  if (
+    !formMessage.classList.contains(
+      "success-popover"
+    )
+  ) {
+    formMessage.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+  }
 });
 
 renderImagePreviews();

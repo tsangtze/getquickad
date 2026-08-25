@@ -6,6 +6,9 @@ import multer from "multer";
 import {
   generateStoryboard
 } from "./storyboardGenerator.mjs";
+import {
+  generateNarration
+} from "./narrationGenerator.mjs";
 
 const MAX_IMAGE_COUNT = 10;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -366,6 +369,9 @@ export async function createProjectRouter({
           "utf8"
         );
 
+        let generationStage =
+          "storyboard";
+
         try {
           const result =
             await generateStoryboard({
@@ -408,6 +414,65 @@ export async function createProjectRouter({
             generatedAt:
               result.generation.generatedAt
           };
+          generationStage =
+            "narration";
+
+          project.status =
+            "generating_narration";
+
+          await fs.writeFile(
+            projectPath,
+            JSON.stringify(project, null, 2),
+            "utf8"
+          );
+
+          const narration =
+            await generateNarration({
+              storyboard:
+                result.storyboard,
+              projectDirectory
+            });
+
+          const narrationRecord = {
+            projectId:
+              project.id,
+            narration
+          };
+
+          await fs.writeFile(
+            path.join(
+              projectDirectory,
+              "narration.json"
+            ),
+            JSON.stringify(
+              narrationRecord,
+              null,
+              2
+            ),
+            "utf8"
+          );
+
+          project.status =
+            "narration_ready";
+
+          project.narration = {
+            storedName:
+              narration.storedName,
+            model:
+              narration.model,
+            voice:
+              narration.voice,
+            format:
+              narration.format,
+            byteLength:
+              narration.byteLength,
+            narrationWordCount:
+              narration.narrationWordCount,
+            generatedAt:
+              narration.generatedAt,
+            disclosure:
+              narration.disclosure
+          };
 
           await fs.writeFile(
             projectPath,
@@ -419,7 +484,9 @@ export async function createProjectRouter({
             ok: true,
             project,
             storyboard:
-              result.storyboard
+              result.storyboard,
+            narration:
+              project.narration
           });
         } catch (generationError) {
           console.error(
@@ -428,9 +495,13 @@ export async function createProjectRouter({
           );
 
           project.status =
-            "storyboard_failed";
+            generationStage === "narration"
+              ? "narration_failed"
+              : "storyboard_failed";
 
-          project.storyboardError = {
+          project.generationError = {
+            stage:
+              generationStage,
             code:
               generationError.code ||
               "STORYBOARD_GENERATION_FAILED",
@@ -459,7 +530,9 @@ export async function createProjectRouter({
               error:
                 missingConfiguration
                   ? "AI storyboard generation is not configured."
-                  : "The project was uploaded, but its storyboard could not be generated. Please try again.",
+                  : generationStage === "narration"
+                    ? "The storyboard was created, but its narration could not be generated. Please try again."
+                    : "The project was uploaded, but its storyboard could not be generated. Please try again.",
               project: {
                 id: project.id,
                 status: project.status
