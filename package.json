@@ -1,0 +1,20 @@
+{
+  "name": "quickad-ai",
+  "version": "0.1.0",
+  "description": "Turn product photos into ready-to-post promotional videos",
+  "main": "server.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {}
+}

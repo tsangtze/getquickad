@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="Turn product photos into ready-to-post promotional videos."
+  >
+  <title>Create a Product Video | QuickAd AI</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="QuickAd AI home">
+      <span class="brand-mark">Q</span>
+      <span>QuickAd <strong>AI</strong></span>
+    </a>
+
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="active" href="/">Create Video</a>
+      <a href="#" aria-disabled="true">My Videos</a>
+      <a href="#" aria-disabled="true">Pricing</a>
+      <button class="account-button" type="button">Account</button>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">Photos in. Ad out.</p>
+        <h1>Turn product photos into a social video</h1>
+        <p class="intro-copy">
+          Upload your photos, describe what you are promoting, and receive
+          a ready-to-post vertical video.
+        </p>
+      </div>
+
+      <div class="video-summary" aria-label="Video output">
+        <span>9:16</span>
+        <span>20–30 seconds</span>
+        <span>MP4</span>
+      </div>
+    </section>
+
+    <form id="video-form" class="creation-form" novalidate>
+      <section class="form-card" aria-labelledby="upload-heading">
+        <div class="step-number">1</div>
+
+        <div class="step-content">
+          <div class="step-heading">
+            <div>
+              <h2 id="upload-heading">Upload your images</h2>
+              <p>Add 1–10 clear product photos. You can also add your logo.</p>
+            </div>
+
+            <span id="image-count" class="step-status">0 of 10</span>
+          </div>
+
+          <input
+            id="product-images"
+            name="productImages"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            hidden
+          >
+
+          <label id="upload-zone" class="upload-zone" for="product-images">
+            <span class="upload-icon" aria-hidden="true">+</span>
+            <strong>Choose product photos</strong>
+            <span>or drag and drop them here</span>
+            <small>JPG, PNG or WebP · Maximum 10 images</small>
+          </label>
+
+          <div
+            id="image-preview-list"
+            class="image-preview-list"
+            aria-live="polite"
+          ></div>
+
+          <div class="logo-row">
+            <div>
+              <strong>Product logo</strong>
+              <span>Optional</span>
+            </div>
+
+            <input
+              id="product-logo"
+              name="productLogo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+            >
+
+            <label class="secondary-button" for="product-logo">
+              Add logo
+            </label>
+
+            <span id="logo-name" class="file-name"></span>
+          </div>
+
+          <p id="upload-error" class="field-error" role="alert"></p>
+        </div>
+      </section>
+
+      <section class="form-card" aria-labelledby="description-heading">
+        <div class="step-number">2</div>
+
+        <div class="step-content">
+          <div class="step-heading">
+            <div>
+              <h2 id="description-heading">Tell us what you’re promoting</h2>
+              <p>A few useful details are enough. QuickAd AI writes the script.</p>
+            </div>
+          </div>
+
+          <label class="field-label" for="description">
+            Product or business description
+          </label>
+
+          <textarea
+            id="description"
+            name="description"
+            rows="5"
+            maxlength="500"
+            placeholder="Example: Portable coffee maker, $79, rechargeable, compact, and ideal for travel."
+            required
+          ></textarea>
+
+          <div class="text-meta">
+            <span>Include the price and strongest benefits when relevant.</span>
+            <span id="character-count">0 / 500</span>
+          </div>
+
+          <div class="field-grid">
+            <div>
+              <label class="field-label" for="website">
+                Website <span>Optional</span>
+              </label>
+              <input
+                id="website"
+                name="website"
+                type="text"
+                placeholder="mycoffee.com"
+              >
+            </div>
+
+            <div>
+              <label class="field-label" for="call-to-action">
+                Call to action
+              </label>
+              <select id="call-to-action" name="callToAction">
+                <option value="Shop Now">Shop Now</option>
+                <option value="Learn More">Learn More</option>
+                <option value="Order Today">Order Today</option>
+                <option value="Visit Our Website">Visit Our Website</option>
+                <option value="Book Now">Book Now</option>
+              </select>
+            </div>
+          </div>
+
+          <p id="description-error" class="field-error" role="alert"></p>
+        </div>
+      </section>
+
+      <section class="form-card" aria-labelledby="style-heading">
+        <div class="step-number">3</div>
+
+        <div class="step-content">
+          <div class="step-heading">
+            <div>
+              <h2 id="style-heading">Choose a style</h2>
+              <p>One choice controls the pacing, text, transitions, and music.</p>
+            </div>
+          </div>
+
+          <fieldset class="style-options">
+            <legend class="visually-hidden">Video style</legend>
+
+            <label class="style-option selected">
+              <input
+                type="radio"
+                name="style"
+                value="Professional"
+                checked
+              >
+              <span class="style-swatch professional"></span>
+              <strong>Professional</strong>
+              <small>Clean, confident, and polished</small>
+            </label>
+
+            <label class="style-option">
+              <input type="radio" name="style" value="Energetic">
+              <span class="style-swatch energetic"></span>
+              <strong>Energetic</strong>
+              <small>Fast, bold, and attention-grabbing</small>
+            </label>
+
+            <label class="style-option">
+              <input type="radio" name="style" value="Elegant">
+              <span class="style-swatch elegant"></span>
+              <strong>Elegant</strong>
+              <small>Refined, calm, and premium</small>
+            </label>
+
+            <label class="style-option">
+              <input type="radio" name="style" value="Simple">
+              <span class="style-swatch simple"></span>
+              <strong>Simple</strong>
+              <small>Minimal, clear, and direct</small>
+            </label>
+          </fieldset>
+        </div>
+      </section>
+
+      <section class="create-card" aria-labelledby="create-heading">
+        <div>
+          <span class="final-step">4</span>
+          <div>
+            <h2 id="create-heading">Ready to create your video?</h2>
+            <p>QuickAd AI will prepare one complete vertical promotional video.</p>
+          </div>
+        </div>
+
+        <button id="create-button" class="create-button" type="submit">
+          <span>Create My Video</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </section>
+
+      <div id="form-message" class="form-message" role="status"></div>
+    </form>
+
+    <section class="promise-bar" aria-label="QuickAd AI benefits">
+      <span>No timeline editor</span>
+      <span>No complicated prompts</span>
+      <span>Ready-to-post MP4</span>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>QuickAd AI</span>
+    <span>Give us your photos. We give you the finished ad.</span>
+  </footer>
+</body>
+</html>
