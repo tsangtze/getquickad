@@ -1,6 +1,6 @@
 {
   "name": "quickad-ai",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn product photos into ready-to-post promotional videos",
   "main": "server.mjs",
   "scripts": {
@@ -15,6 +15,5 @@
   "dependencies": {
     "express": "^5.2.1",
     "multer": "^2.2.0"
-  },
-  "devDependencies": {}
+  }
 }

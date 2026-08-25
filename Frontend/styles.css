@@ -790,3 +790,9 @@ input::placeholder {
     padding-left: 6px;
   }
 }
+
+.form-message.error {
+  border-color: #efbdc3;
+  color: #9f2937;
+  background: #fff1f3;
+}
