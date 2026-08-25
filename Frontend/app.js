@@ -228,7 +228,7 @@ form.addEventListener("submit", async (event) => {
 
   createButton.disabled = true;
   createButton.innerHTML =
-    "<span>Uploading your project...</span><span>•••</span>";
+    "<span>Creating your storyboard...</span><span>•••</span>";
 
   try {
     syncImageInput();
@@ -255,13 +255,14 @@ form.addEventListener("submit", async (event) => {
     const shortProjectId =
       result.project.id.slice(0, 8);
 
-    formMessage.textContent =
-      `Project ${shortProjectId} was created successfully. ` +
-      `${result.project.assets.productImages.length} product image` +
-      `${result.project.assets.productImages.length === 1 ? "" : "s"} ` +
-      `and the ${result.project.style.toLowerCase()} style ` +
-      "were saved securely for video generation.";
+    const sceneCount =
+      result.storyboard.scenes.length;
 
+    formMessage.textContent =
+      `Project ${shortProjectId} is ready. ` +
+      `Storyboard "${result.storyboard.title}" was created with ` +
+      `${sceneCount} scenes for a ` +
+      `${result.storyboard.totalDurationSeconds}-second video.`;
     formMessage.classList.remove("error");
     formMessage.classList.add("visible");
   } catch (error) {

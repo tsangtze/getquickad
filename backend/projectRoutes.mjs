@@ -3,6 +3,9 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import express from "express";
 import multer from "multer";
+import {
+  generateStoryboard
+} from "./storyboardGenerator.mjs";
 
 const MAX_IMAGE_COUNT = 10;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -24,6 +27,58 @@ function cleanText(value, maximumLength) {
   return String(value ?? "")
     .trim()
     .slice(0, maximumLength);
+}
+
+function normalizeWebsite(value) {
+  const suppliedWebsite =
+    cleanText(value, 250);
+
+  if (!suppliedWebsite) {
+    return {
+      website: ""
+    };
+  }
+
+  if (/\s/.test(suppliedWebsite)) {
+    return {
+      error:
+        "Enter only the website address, without additional words."
+    };
+  }
+
+  const websiteWithProtocol =
+    /^[a-z][a-z0-9+.-]*:\/\//i.test(
+      suppliedWebsite
+    )
+      ? suppliedWebsite
+      : `https://${suppliedWebsite}`;
+
+  try {
+    const parsedWebsite =
+      new URL(websiteWithProtocol);
+
+    if (
+      !["http:", "https:"].includes(
+        parsedWebsite.protocol
+      ) ||
+      !parsedWebsite.hostname
+    ) {
+      return {
+        error:
+          "Enter a valid website address."
+      };
+    }
+
+    return {
+      website:
+        parsedWebsite.toString()
+    };
+  } catch {
+    return {
+      error:
+        "Enter a valid website address."
+    };
+  }
 }
 
 function createUploadMiddleware(tempDirectory) {
@@ -99,10 +154,10 @@ function validateProject(request) {
     500
   );
 
-  const website = cleanText(
-    request.body.website,
-    250
-  );
+  const websiteResult =
+    normalizeWebsite(
+      request.body.website
+    );
 
   const callToAction = cleanText(
     request.body.callToAction,
@@ -132,6 +187,13 @@ function validateProject(request) {
     };
   }
 
+  if (websiteResult.error) {
+    return {
+      error:
+        websiteResult.error
+    };
+  }
+
   if (!ALLOWED_STYLES.has(style)) {
     return {
       error: "Please choose a valid video style."
@@ -143,7 +205,8 @@ function validateProject(request) {
     productLogo:
       request.files?.productLogo?.[0] ?? null,
     description,
-    website,
+    website:
+      websiteResult.website,
     callToAction,
     style
   };
@@ -289,19 +352,120 @@ export async function createProjectRouter({
           assets
         };
 
+        const projectPath = path.join(
+          projectDirectory,
+          "project.json"
+        );
+
+        project.status =
+          "generating_storyboard";
+
         await fs.writeFile(
-          path.join(
-            projectDirectory,
-            "project.json"
-          ),
+          projectPath,
           JSON.stringify(project, null, 2),
           "utf8"
         );
 
-        response.status(201).json({
-          ok: true,
-          project
-        });
+        try {
+          const result =
+            await generateStoryboard({
+              project,
+              projectDirectory
+            });
+
+          const storyboardRecord = {
+            projectId: project.id,
+            ...result
+          };
+
+          await fs.writeFile(
+            path.join(
+              projectDirectory,
+              "storyboard.json"
+            ),
+            JSON.stringify(
+              storyboardRecord,
+              null,
+              2
+            ),
+            "utf8"
+          );
+
+          project.status =
+            "storyboard_ready";
+
+          project.storyboard = {
+            title:
+              result.storyboard.title,
+            sceneCount:
+              result.storyboard.scenes.length,
+            durationSeconds:
+              result.storyboard.totalDurationSeconds,
+            narrationWordCount:
+              result.storyboard.narrationWordCount,
+            model:
+              result.generation.model,
+            generatedAt:
+              result.generation.generatedAt
+          };
+
+          await fs.writeFile(
+            projectPath,
+            JSON.stringify(project, null, 2),
+            "utf8"
+          );
+
+          response.status(201).json({
+            ok: true,
+            project,
+            storyboard:
+              result.storyboard
+          });
+        } catch (generationError) {
+          console.error(
+            "Storyboard generation failed:",
+            generationError
+          );
+
+          project.status =
+            "storyboard_failed";
+
+          project.storyboardError = {
+            code:
+              generationError.code ||
+              "STORYBOARD_GENERATION_FAILED",
+            failedAt:
+              new Date().toISOString()
+          };
+
+          await fs.writeFile(
+            projectPath,
+            JSON.stringify(project, null, 2),
+            "utf8"
+          );
+
+          const missingConfiguration =
+            generationError.code ===
+            "OPENAI_API_KEY_MISSING";
+
+          response
+            .status(
+              missingConfiguration
+                ? 503
+                : 502
+            )
+            .json({
+              ok: false,
+              error:
+                missingConfiguration
+                  ? "AI storyboard generation is not configured."
+                  : "The project was uploaded, but its storyboard could not be generated. Please try again.",
+              project: {
+                id: project.id,
+                status: project.status
+              }
+            });
+        }
       } catch (error) {
         await removeFiles(uploadedFiles);
 
