@@ -1,4 +1,9 @@
 const MAX_IMAGES = 10;
+const PROJECT_HISTORY_KEY =
+  "quickadAIRecentProjectsV1";
+const MAX_RECENT_PROJECTS = 10;
+const PROJECT_ID_PATTERN =
+  /^[0-9a-f-]{36}$/i;
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -18,6 +23,23 @@ const uploadError = document.querySelector("#upload-error");
 const descriptionError = document.querySelector("#description-error");
 const formMessage = document.querySelector("#form-message");
 const createButton = document.querySelector("#create-button");
+const recentProjects =
+  document.querySelector(
+    "#recent-projects"
+  );
+const recentProjectList =
+  document.querySelector(
+    "#recent-project-list"
+  );
+const recentProjectStatus =
+  document.querySelector(
+    "#recent-project-status"
+  );
+const clearProjectHistoryButton =
+  document.querySelector(
+    "#clear-project-history"
+  );
+
 const styleOptions = [...document.querySelectorAll(".style-option")];
 const planReview = document.querySelector("#plan-review");
 const planScenes = document.querySelector("#plan-scenes");
@@ -60,6 +82,7 @@ let selectedImages = [];
 let currentProjectId = "";
 let currentStoryboard = null;
 let reviewImageUrls = [];
+let currentReviewImageCount = 0;
 
 function fileKey(file) {
   return `${file.name}-${file.size}-${file.lastModified}`;
@@ -109,7 +132,8 @@ function renderImagePreviews() {
     removeButton.addEventListener("click", () => {
       selectedImages.splice(index, 1);
       syncImageInput();
-      renderImagePreviews();
+      renderRecentProjects();
+renderImagePreviews();
       setUploadError();
     });
 
@@ -156,7 +180,8 @@ function addImages(files) {
 
   selectedImages.push(...uniqueFiles);
   syncImageInput();
-  renderImagePreviews();
+  renderRecentProjects();
+renderImagePreviews();
 }
 
 imageInput.addEventListener("change", () => {
@@ -225,10 +250,17 @@ styleOptions.forEach((option) => {
 
 function clearReviewImageUrls() {
   reviewImageUrls.forEach((imageUrl) => {
-    URL.revokeObjectURL(imageUrl);
+    if (
+      String(imageUrl).startsWith(
+        "blob:"
+      )
+    ) {
+      URL.revokeObjectURL(imageUrl);
+    }
   });
 
   reviewImageUrls = [];
+  currentReviewImageCount = 0;
 }
 
 function selectedNarratorVoice() {
@@ -450,7 +482,7 @@ function validateVideoPlan() {
           caption.length > 60 ||
           !Number.isInteger(scene.imageIndex) ||
           scene.imageIndex < 1 ||
-          scene.imageIndex > selectedImages.length
+          scene.imageIndex > currentReviewImageCount
         );
       }
     );
@@ -602,16 +634,23 @@ function createSceneReviewCard(scene) {
     `Picture for scene ${scene.sceneNumber}`
   );
 
-  selectedImages.forEach(
-    (file, imageIndex) => {
+  reviewImageUrls.forEach(
+    (_imageUrl, imageIndex) => {
       const option =
         document.createElement("option");
 
       option.value =
         String(imageIndex + 1);
 
+      const uploadedFileName =
+        selectedImages[
+          imageIndex
+        ]?.name;
+
       option.textContent =
-        `Picture ${imageIndex + 1}: ${file.name}`;
+        uploadedFileName
+          ? `Picture ${imageIndex + 1}: ${uploadedFileName}`
+          : `Picture ${imageIndex + 1}`;
 
       option.selected =
         imageIndex + 1 ===
@@ -814,7 +853,7 @@ function createSceneReviewCard(scene) {
         caption.length <= 60 &&
         Number.isInteger(scene.imageIndex) &&
         scene.imageIndex >= 1 &&
-        scene.imageIndex <= selectedImages.length;
+        scene.imageIndex <= currentReviewImageCount;
 
       if (!validScene) {
         scene.approved = false;
@@ -863,15 +902,21 @@ function createSceneReviewCard(scene) {
 
 function renderVideoPlanReview(
   project,
-  storyboard
+  storyboard,
+  savedImageUrls = null
 ) {
   clearReviewImageUrls();
 
   reviewImageUrls =
-    selectedImages.map(
-      (file) =>
-        URL.createObjectURL(file)
-    );
+    Array.isArray(savedImageUrls)
+      ? [...savedImageUrls]
+      : selectedImages.map(
+          (file) =>
+            URL.createObjectURL(file)
+        );
+
+  currentReviewImageCount =
+    reviewImageUrls.length;
 
   currentProjectId =
     project.id;
@@ -1007,6 +1052,17 @@ finalVideoButton.addEventListener(
 
       finalVideoButton.textContent =
         "Video Ready ✓";
+
+      rememberProject(
+        {
+          id:
+            currentProjectId,
+          status:
+            "video_ready"
+        },
+        currentStoryboard,
+        "video_ready"
+      );
 
       planStatus.classList.add(
         "approved",
@@ -1197,6 +1253,502 @@ customCtaInput.addEventListener(
 
 updateCustomCtaField();
 
+function readProjectHistory() {
+  try {
+    const storedHistory =
+      JSON.parse(
+        localStorage.getItem(
+          PROJECT_HISTORY_KEY
+        ) || "[]"
+      );
+
+    if (!Array.isArray(storedHistory)) {
+      return [];
+    }
+
+    return storedHistory
+      .filter(
+        (entry) =>
+          entry &&
+          PROJECT_ID_PATTERN.test(
+            String(entry.id ?? "")
+          )
+      )
+      .slice(0, MAX_RECENT_PROJECTS);
+  } catch {
+    return [];
+  }
+}
+
+function writeProjectHistory(history) {
+  localStorage.setItem(
+    PROJECT_HISTORY_KEY,
+    JSON.stringify(
+      history.slice(
+        0,
+        MAX_RECENT_PROJECTS
+      )
+    )
+  );
+}
+
+function removeProjectFromHistory(projectId) {
+  const remainingHistory =
+    readProjectHistory().filter(
+      (entry) =>
+        entry.id !== projectId
+    );
+
+  writeProjectHistory(
+    remainingHistory
+  );
+
+  renderRecentProjects();
+}
+
+function rememberProject(
+  project,
+  storyboard = null,
+  status = ""
+) {
+  const projectId =
+    String(project?.id ?? "");
+
+  if (
+    !PROJECT_ID_PATTERN.test(projectId)
+  ) {
+    return;
+  }
+
+  const existingHistory =
+    readProjectHistory();
+
+  const existingEntry =
+    existingHistory.find(
+      (entry) =>
+        entry.id === projectId
+    );
+
+  const title =
+    String(
+      storyboard?.title ??
+      project?.storyboard?.title ??
+      existingEntry?.title ??
+      "Untitled video"
+    ).trim() ||
+    "Untitled video";
+
+  const resolvedStatus =
+    String(
+      status ||
+      project?.status ||
+      existingEntry?.status ||
+      "storyboard_ready"
+    );
+
+  const historyEntry = {
+    id:
+      projectId,
+    title,
+    style:
+      String(
+        project?.style ??
+        existingEntry?.style ??
+        ""
+      ),
+    status:
+      resolvedStatus,
+    createdAt:
+      project?.createdAt ??
+      existingEntry?.createdAt ??
+      new Date().toISOString(),
+    updatedAt:
+      new Date().toISOString()
+  };
+
+  const nextHistory = [
+    historyEntry,
+    ...existingHistory.filter(
+      (entry) =>
+        entry.id !== projectId
+    )
+  ].slice(0, MAX_RECENT_PROJECTS);
+
+  writeProjectHistory(nextHistory);
+  renderRecentProjects();
+}
+
+function projectStatusLabel(status) {
+  switch (status) {
+    case "video_ready":
+      return "Video ready";
+
+    case "storyboard_ready":
+      return "Plan ready";
+
+    case "narration_failed":
+    case "video_failed":
+    case "storyboard_failed":
+      return "Needs attention";
+
+    default:
+      return "Saved project";
+  }
+}
+
+function formatProjectDate(value) {
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(date.getTime())
+  ) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    }
+  ).format(date);
+}
+
+function renderRecentProjects() {
+  const history =
+    readProjectHistory();
+
+  recentProjectList.replaceChildren();
+  recentProjectStatus.textContent = "";
+  recentProjectStatus.classList.remove(
+    "error"
+  );
+
+  recentProjects.hidden =
+    history.length === 0;
+
+  if (history.length === 0) {
+    return;
+  }
+
+  history.forEach((entry) => {
+    const card =
+      document.createElement("article");
+
+    card.className =
+      "recent-project-card";
+
+    const information =
+      document.createElement("div");
+
+    information.className =
+      "recent-project-info";
+
+    const title =
+      document.createElement("strong");
+
+    title.textContent =
+      entry.title;
+
+    const details =
+      document.createElement("span");
+
+    const detailParts = [
+      projectStatusLabel(
+        entry.status
+      ),
+      entry.style,
+      formatProjectDate(
+        entry.updatedAt ||
+        entry.createdAt
+      ),
+      `Project ${entry.id.slice(0, 8)}`
+    ].filter(Boolean);
+
+    details.textContent =
+      detailParts.join(" · ");
+
+    information.append(
+      title,
+      details
+    );
+
+    const openButton =
+      document.createElement("button");
+
+    openButton.type = "button";
+    openButton.className =
+      "open-recent-project";
+
+    openButton.textContent =
+      entry.status === "video_ready"
+        ? "Open Video"
+        : "Continue";
+
+    openButton.addEventListener(
+      "click",
+      () => {
+        openSavedProject(
+          entry.id,
+          openButton
+        );
+      }
+    );
+
+    card.append(
+      information,
+      openButton
+    );
+
+    recentProjectList.append(card);
+  });
+}
+
+function renderRecoveredVideoResult(
+  recovery
+) {
+  currentStoryboard.scenes.forEach(
+    (scene) => {
+      scene.approved = true;
+    }
+  );
+
+  renderCurrentScenePlan();
+
+  finalVideoButton.disabled = true;
+  finalVideoButton.textContent =
+    "Video Ready ✓";
+
+  planStatus.classList.add(
+    "approved",
+    "video-result-card"
+  );
+
+  const resultHeading =
+    document.createElement("strong");
+
+  resultHeading.className =
+    "video-result-heading";
+
+  resultHeading.textContent =
+    "Your saved video is ready";
+
+  const resultSummary =
+    document.createElement("span");
+
+  resultSummary.className =
+    "video-result-summary";
+
+  resultSummary.textContent =
+    `${currentStoryboard.scenes.length} scenes · ` +
+    `${currentStoryboard.totalDurationSeconds || 25}-second MP4 · ` +
+    "AI narration complete";
+
+  const resultActions =
+    document.createElement("span");
+
+  resultActions.className =
+    "video-result-actions";
+
+  const watchLink =
+    document.createElement("a");
+
+  watchLink.href =
+    recovery.videoUrl;
+
+  watchLink.target = "_blank";
+  watchLink.rel = "noopener";
+  watchLink.className =
+    "video-result-link primary";
+
+  watchLink.textContent =
+    "▶ Watch Video";
+
+  const downloadLink =
+    document.createElement("a");
+
+  downloadLink.href =
+    recovery.videoUrl;
+
+  downloadLink.download =
+    "quickad-video.mp4";
+
+  downloadLink.className =
+    "video-result-link";
+
+  downloadLink.textContent =
+    "↓ Download MP4";
+
+  resultActions.append(
+    watchLink,
+    downloadLink
+  );
+
+  planStatus.replaceChildren(
+    resultHeading,
+    resultSummary,
+    resultActions
+  );
+}
+
+async function openSavedProject(
+  projectId,
+  openButton
+) {
+  const originalButtonText =
+    openButton.textContent;
+
+  openButton.disabled = true;
+  openButton.textContent =
+    "Opening...";
+
+  recentProjectStatus.textContent =
+    "Opening your saved project...";
+
+  recentProjectStatus.classList.remove(
+    "error"
+  );
+
+  try {
+    const response =
+      await fetch(
+        `/api/projects/${projectId}`
+      );
+
+    const recovery =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !recovery.ok
+    ) {
+      if (response.status === 404) {
+        removeProjectFromHistory(
+          projectId
+        );
+      }
+
+      throw new Error(
+        recovery.error ||
+        "The saved project could not be opened."
+      );
+    }
+
+    if (
+      !recovery.storyboard ||
+      !Array.isArray(
+        recovery.storyboard.scenes
+      )
+    ) {
+      throw new Error(
+        "This saved project does not have a recoverable video plan."
+      );
+    }
+
+    const savedImageUrls =
+      Array.isArray(
+        recovery.project?.assets
+          ?.productImages
+      )
+        ? recovery.project.assets
+            .productImages
+            .map(
+              (asset) =>
+                asset.url
+            )
+            .filter(Boolean)
+        : [];
+
+    if (savedImageUrls.length === 0) {
+      throw new Error(
+        "This saved project does not have recoverable product images."
+      );
+    }
+
+    finalVideoButton.textContent =
+      "Create Final Video →";
+
+    renderVideoPlanReview(
+      recovery.project,
+      recovery.storyboard,
+      savedImageUrls
+    );
+
+    rememberProject(
+      recovery.project,
+      recovery.storyboard,
+      recovery.project.status
+    );
+
+    if (
+      recovery.stage ===
+      "video_ready"
+    ) {
+      if (!recovery.videoUrl) {
+        throw new Error(
+          "The saved video file is unavailable."
+        );
+      }
+
+      renderRecoveredVideoResult(
+        recovery
+      );
+
+      recentProjectStatus.textContent =
+        "Saved video opened successfully.";
+    } else {
+      planStatus.textContent =
+        `Saved plan opened. Review and confirm all ${currentStoryboard.scenes.length} scenes.`;
+
+      recentProjectStatus.textContent =
+        "Saved video plan opened successfully.";
+    }
+
+    planReview.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  } catch (error) {
+    recentProjectStatus.textContent =
+      error.message ||
+      "The saved project could not be opened.";
+
+    recentProjectStatus.classList.add(
+      "error"
+    );
+  } finally {
+    if (openButton.isConnected) {
+      openButton.disabled = false;
+      openButton.textContent =
+        originalButtonText;
+    }
+  }
+}
+
+clearProjectHistoryButton.addEventListener(
+  "click",
+  () => {
+    const confirmed =
+      window.confirm(
+        "Remove the Recent Projects list from this browser? Your saved project files will not be deleted."
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    localStorage.removeItem(
+      PROJECT_HISTORY_KEY
+    );
+
+    renderRecentProjects();
+  }
+);
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -1295,6 +1847,12 @@ form.addEventListener("submit", async (event) => {
     renderVideoPlanReview(
       result.project,
       result.storyboard
+    );
+
+    rememberProject(
+      result.project,
+      result.storyboard,
+      result.project.status
     );
 
     const successMark =
@@ -1399,4 +1957,5 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
+renderRecentProjects();
 renderImagePreviews();

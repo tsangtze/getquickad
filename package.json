@@ -1,6 +1,6 @@
 {
   "name": "quickad-ai",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Turn product photos into ready-to-post promotional videos",
   "main": "server.mjs",
   "scripts": {

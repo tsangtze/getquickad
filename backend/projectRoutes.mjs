@@ -503,6 +503,283 @@ export async function createProjectRouter({
   );
 
   router.get(
+    "/:projectId",
+    async (request, response) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      if (
+        !/^[0-9a-f-]{36}$/i.test(projectId)
+      ) {
+        response.status(400).json({
+          ok: false,
+          error: "Invalid project ID."
+        });
+        return;
+      }
+
+      const projectDirectory = path.join(
+        projectsDirectory,
+        projectId
+      );
+
+      const projectPath = path.join(
+        projectDirectory,
+        "project.json"
+      );
+
+      const storyboardPath = path.join(
+        projectDirectory,
+        "storyboard.json"
+      );
+
+      try {
+        const project =
+          JSON.parse(
+            await fs.readFile(
+              projectPath,
+              "utf8"
+            )
+          );
+
+        let storyboard = null;
+
+        try {
+          const storyboardRecord =
+            JSON.parse(
+              await fs.readFile(
+                storyboardPath,
+                "utf8"
+              )
+            );
+
+          storyboard =
+            storyboardRecord.storyboard ??
+            null;
+        } catch (storyboardError) {
+          if (
+            storyboardError?.code !==
+            "ENOENT"
+          ) {
+            throw storyboardError;
+          }
+        }
+
+        const productImages =
+          Array.isArray(
+            project.assets?.productImages
+          )
+            ? project.assets.productImages
+            : [];
+
+        const publicProject = {
+          id:
+            project.id,
+          status:
+            project.status,
+          createdAt:
+            project.createdAt,
+          description:
+            project.description,
+          website:
+            project.website,
+          callToAction:
+            project.callToAction,
+          style:
+            project.style,
+          output:
+            project.output,
+          storyboard:
+            project.storyboard,
+          assets: {
+            productImages:
+              productImages.map(
+                (asset) => ({
+                  originalName:
+                    asset.originalName,
+                  mimeType:
+                    asset.mimeType,
+                  size:
+                    asset.size,
+                  storedName:
+                    asset.storedName,
+                  url:
+                    `/api/projects/${projectId}/assets/${encodeURIComponent(
+                      asset.storedName
+                    )}`
+                })
+              ),
+            productLogo:
+              project.assets?.productLogo
+                ? {
+                    originalName:
+                      project.assets.productLogo.originalName,
+                    mimeType:
+                      project.assets.productLogo.mimeType,
+                    size:
+                      project.assets.productLogo.size,
+                    storedName:
+                      project.assets.productLogo.storedName,
+                    url:
+                      `/api/projects/${projectId}/assets/${encodeURIComponent(
+                        project.assets.productLogo.storedName
+                      )}`
+                  }
+                : null
+          }
+        };
+
+        const videoReady =
+          project.status ===
+          "video_ready";
+
+        response.json({
+          ok: true,
+          stage:
+            videoReady
+              ? "video_ready"
+              : storyboard
+                ? "plan_review"
+                : project.status,
+          project:
+            publicProject,
+          storyboard,
+          videoUrl:
+            videoReady
+              ? `/api/projects/${projectId}/video`
+              : null
+        });
+      } catch (error) {
+        if (error?.code === "ENOENT") {
+          response.status(404).json({
+            ok: false,
+            error: "The saved project was not found."
+          });
+          return;
+        }
+
+        console.error(
+          "Saved project recovery failed:",
+          error
+        );
+
+        response.status(500).json({
+          ok: false,
+          error: "The saved project could not be opened."
+        });
+      }
+    }
+  );
+
+  router.get(
+    "/:projectId/assets/:storedName",
+    async (request, response) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      const storedName =
+        String(request.params.storedName ?? "");
+
+      if (
+        !/^[0-9a-f-]{36}$/i.test(projectId)
+      ) {
+        response.status(400).json({
+          ok: false,
+          error: "Invalid project ID."
+        });
+        return;
+      }
+
+      if (
+        !/^[a-z0-9][a-z0-9._-]{0,100}$/i.test(
+          storedName
+        )
+      ) {
+        response.status(400).json({
+          ok: false,
+          error: "Invalid asset name."
+        });
+        return;
+      }
+
+      const projectDirectory = path.join(
+        projectsDirectory,
+        projectId
+      );
+
+      try {
+        const project =
+          JSON.parse(
+            await fs.readFile(
+              path.join(
+                projectDirectory,
+                "project.json"
+              ),
+              "utf8"
+            )
+          );
+
+        const allowedAssetNames =
+          new Set(
+            [
+              ...(
+                Array.isArray(
+                  project.assets?.productImages
+                )
+                  ? project.assets.productImages
+                  : []
+              ),
+              project.assets?.productLogo
+            ]
+              .filter(Boolean)
+              .map(
+                (asset) =>
+                  asset.storedName
+              )
+              .filter(Boolean)
+          );
+
+        if (
+          !allowedAssetNames.has(storedName)
+        ) {
+          response.status(404).json({
+            ok: false,
+            error: "The project asset was not found."
+          });
+          return;
+        }
+
+        const assetPath = path.join(
+          projectDirectory,
+          storedName
+        );
+
+        await fs.access(assetPath);
+
+        response.sendFile(assetPath);
+      } catch (error) {
+        if (error?.code === "ENOENT") {
+          response.status(404).json({
+            ok: false,
+            error: "The project asset was not found."
+          });
+          return;
+        }
+
+        console.error(
+          "Saved project asset recovery failed:",
+          error
+        );
+
+        response.status(500).json({
+          ok: false,
+          error: "The project asset could not be opened."
+        });
+      }
+    }
+  );
+
+  router.get(
     "/:projectId/video",
     async (request, response) => {
       const projectId =
