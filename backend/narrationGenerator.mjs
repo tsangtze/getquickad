@@ -1,6 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
+import {
+  runFfmpeg
+} from "./mediaTools.mjs";
 
 const STYLE_VOICES = {
   Professional: {
@@ -59,16 +62,55 @@ function buildNarrationText(storyboard) {
   return narrationText;
 }
 
-function selectVoice(style) {
-  return (
-    STYLE_VOICES[style] ||
-    STYLE_VOICES.Professional
-  );
-}
+const NARRATOR_CHOICES = {
+  "woman-warm": {
+    voice: "marin",
+    instructions:
+      "Speak with a warm, smooth, welcoming feminine presentation. Maintain a natural, confident pace."
+  },
+  "woman-energetic": {
+    voice: "coral",
+    instructions:
+      "Speak with an upbeat, engaging feminine presentation. Sound promotional and positive without rushing."
+  },
+  "man-confident": {
+    voice: "cedar",
+    instructions:
+      "Speak with a clear, confident masculine presentation. Sound polished, professional, and trustworthy."
+  },
+  "man-calm": {
+    voice: "cedar",
+    instructions:
+      "Speak with a calm, reassuring masculine presentation. Use relaxed pacing and natural expression."
+  }
+};
 
+function selectVoice(
+  style,
+  narratorChoice = "automatic"
+) {
+  if (
+    narratorChoice !== "automatic" &&
+    NARRATOR_CHOICES[narratorChoice]
+  ) {
+    return {
+      ...NARRATOR_CHOICES[narratorChoice],
+      narratorChoice
+    };
+  }
+
+  return {
+    ...(
+      STYLE_VOICES[style] ||
+      STYLE_VOICES.Professional
+    ),
+    narratorChoice: "automatic"
+  };
+}
 export async function generateNarration({
   storyboard,
   projectDirectory,
+  narratorChoice = "automatic",
   apiKey = process.env.OPENAI_API_KEY,
   model =
     process.env.OPENAI_TTS_MODEL ||
@@ -95,41 +137,14 @@ export async function generateNarration({
     buildNarrationText(storyboard);
 
   const voiceSelection =
-    selectVoice(storyboard.style);
+    selectVoice(
+      storyboard.style,
+      narratorChoice
+    );
 
   const client = new OpenAI({
     apiKey
   });
-
-  const audioResponse =
-    await client.audio.speech.create({
-      model,
-      voice:
-        voiceSelection.voice,
-      input:
-        narrationText,
-      instructions:
-        voiceSelection.instructions +
-        " Read only the supplied narration. " +
-        "Do not add, remove, or rewrite words.",
-      response_format:
-        "mp3"
-    });
-
-  const audioBuffer = Buffer.from(
-    await audioResponse.arrayBuffer()
-  );
-
-  if (audioBuffer.length === 0) {
-    const error = new Error(
-      "OpenAI returned an empty narration file."
-    );
-
-    error.code =
-      "NARRATION_AUDIO_EMPTY";
-
-    throw error;
-  }
 
   const temporaryName =
     "narration.tmp.mp3";
@@ -147,37 +162,227 @@ export async function generateNarration({
     storedName
   );
 
-  await fs.writeFile(
-    temporaryPath,
-    audioBuffer
-  );
+  const sceneAudioPaths = [];
 
-  await fs.rm(
-    narrationPath,
-    {
-      force: true
+  try {
+    for (
+      let sceneIndex = 0;
+      sceneIndex < storyboard.scenes.length;
+      sceneIndex += 1
+    ) {
+      const scene =
+        storyboard.scenes[sceneIndex];
+
+      const sceneText =
+        String(
+          scene.caption ??
+          scene.narration ??
+          ""
+        ).trim();
+
+      if (!sceneText) {
+        throw new Error(
+          `Scene ${sceneIndex + 1} contains no narration text.`
+        );
+      }
+
+      const sceneDuration =
+        Number(scene.endSeconds) -
+        Number(scene.startSeconds);
+
+      if (
+        !Number.isFinite(sceneDuration) ||
+        sceneDuration <= 0
+      ) {
+        throw new Error(
+          `Scene ${sceneIndex + 1} has an invalid duration.`
+        );
+      }
+
+      const audioResponse =
+        await client.audio.speech.create({
+          model,
+          voice:
+            voiceSelection.voice,
+          input:
+            sceneText,
+          instructions:
+            voiceSelection.instructions +
+            " Read only the supplied caption. " +
+            "Do not add, remove, or rewrite words. " +
+            "Finish naturally without introducing the next scene.",
+          response_format:
+            "mp3"
+        });
+
+      const sceneAudioBuffer =
+        Buffer.from(
+          await audioResponse.arrayBuffer()
+        );
+
+      if (sceneAudioBuffer.length === 0) {
+        const error = new Error(
+          `OpenAI returned empty audio for scene ${sceneIndex + 1}.`
+        );
+
+        error.code =
+          "NARRATION_AUDIO_EMPTY";
+
+        throw error;
+      }
+
+      const sceneAudioPath =
+        path.join(
+          projectDirectory,
+          `narration-scene-${String(
+            sceneIndex + 1
+          ).padStart(2, "0")}.tmp.mp3`
+        );
+
+      await fs.writeFile(
+        sceneAudioPath,
+        sceneAudioBuffer
+      );
+
+      sceneAudioPaths.push({
+        path:
+          sceneAudioPath,
+        duration:
+          sceneDuration
+      });
     }
-  );
 
-  await fs.rename(
-    temporaryPath,
-    narrationPath
-  );
+    await fs.rm(
+      temporaryPath,
+      {
+        force: true
+      }
+    );
 
+    const ffmpegArguments = [
+      "-y"
+    ];
+
+    for (const sceneAudio of sceneAudioPaths) {
+      ffmpegArguments.push(
+        "-i",
+        sceneAudio.path
+      );
+    }
+
+    const audioFilters =
+      sceneAudioPaths.map(
+        (sceneAudio, sceneIndex) =>
+          `[${sceneIndex}:a]` +
+          `apad=pad_dur=${sceneAudio.duration},` +
+          `atrim=duration=${sceneAudio.duration},` +
+          "asetpts=PTS-STARTPTS" +
+          `[sceneAudio${sceneIndex}]`
+      );
+
+    const sceneAudioLabels =
+      sceneAudioPaths
+        .map(
+          (_sceneAudio, sceneIndex) =>
+            `[sceneAudio${sceneIndex}]`
+        )
+        .join("");
+
+    audioFilters.push(
+      `${sceneAudioLabels}` +
+      `concat=n=${sceneAudioPaths.length}:v=0:a=1[audio]`
+    );
+
+    ffmpegArguments.push(
+      "-filter_complex",
+      audioFilters.join(";"),
+      "-map",
+      "[audio]",
+      "-c:a",
+      "libmp3lame",
+      "-b:a",
+      "192k",
+      temporaryPath
+    );
+
+    await runFfmpeg(
+      ffmpegArguments,
+      {
+        timeoutMilliseconds:
+          120000
+      }
+    );
+
+    const temporaryStats =
+      await fs.stat(temporaryPath);
+
+    if (temporaryStats.size === 0) {
+      const error = new Error(
+        "The aligned narration file is empty."
+      );
+
+      error.code =
+        "NARRATION_AUDIO_EMPTY";
+
+      throw error;
+    }
+
+    await fs.rm(
+      narrationPath,
+      {
+        force: true
+      }
+    );
+
+    await fs.rename(
+      temporaryPath,
+      narrationPath
+    );
+  } finally {
+    await Promise.all(
+      sceneAudioPaths.map(
+        (sceneAudio) =>
+          fs.rm(
+            sceneAudio.path,
+            {
+              force: true
+            }
+          )
+      )
+    );
+
+    await fs.rm(
+      temporaryPath,
+      {
+        force: true
+      }
+    );
+  }
+
+  const narrationStats =
+    await fs.stat(narrationPath);
   return {
     storedName,
     model,
     voice:
       voiceSelection.voice,
+    narratorChoice:
+      voiceSelection.narratorChoice,
     format:
       "mp3",
     byteLength:
-      audioBuffer.length,
+      narrationStats.size,
     narrationText,
     narrationWordCount:
       countWords(narrationText),
     generatedAt:
       new Date().toISOString(),
+    sceneAligned:
+      true,
+    sceneCount:
+      storyboard.scenes.length,
+    durationSeconds:
+      storyboard.totalDurationSeconds,
     disclosure:
       "This narration uses an AI-generated voice."
   };

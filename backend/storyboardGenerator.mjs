@@ -34,12 +34,19 @@ Rules:
   Scene 4: 15-20 seconds
   Scene 5: 20-25 seconds
 - Set totalDurationSeconds to 25.
-- Narration across all scenes must contain 40-75 words.
-- Captions must be concise and contain no more than 70 characters.
+- Narration across all scenes must contain 9-50 words.
+- Captions must be concise and contain no more than 60 characters.
+- For every scene, narration must exactly equal caption so the spoken and displayed words match.
 - Never invent certifications, reviews, discounts, guarantees, or product features.
 - Use only facts supplied by the customer.
 - imageIndex must reference an available uploaded image.
-- Reusing an image is allowed.
+- Follow the customer's upload order by default.
+- Scene 1 must use imageIndex 1.
+- Scene 2 must use imageIndex 2 when at least 2 images are available.
+- Continue matching scene numbers to image indexes until every uploaded image has been used or all 5 scenes are assigned.
+- Reuse images only after every available uploaded image has appeared once.
+- When images must be reused, restart from imageIndex 1 and continue in upload order.
+- Write each scene caption and narration specifically for the visible content of its assigned image.
 - Motion must remain controlled and subtle.
 - Avoid rapid or excessive zooming.
 - Use the customer's exact call to action.
@@ -56,7 +63,7 @@ function buildProjectPrompt(project) {
 Create a finished promotional-video storyboard using these customer details.
 
 Product description:
-${project.description}
+${project.description || "(none supplied — identify the product or business only from clearly visible image content)"}
 
 Website:
 ${project.website || "(none supplied)"}
@@ -76,6 +83,13 @@ Valid image indexes:
 The title should be short and customer-facing.
 The music direction should match the selected style.
 Use concrete benefit-focused language without inventing unsupported facts.
+If the customer supplied a description, treat it as authoritative.
+If no description was supplied, infer only what is clearly visible in the uploaded images.
+Do not invent a brand, price, material, feature, compatibility, certification, guarantee, or unsupported use case.
+When the image is ambiguous, use cautious generic wording that the customer can revise during plan review.
+Preserve the uploaded image order when assigning scenes.
+For example, with 3 images use image indexes 1, 2, 3, 1, 2.
+The customer can revise this order during plan review.
 `.trim();
 }
 

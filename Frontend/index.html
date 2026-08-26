@@ -119,6 +119,7 @@
 
           <label class="field-label" for="description">
             Product or business description
+            <span>Optional</span>
           </label>
 
           <textarea
@@ -126,12 +127,11 @@
             name="description"
             rows="5"
             maxlength="500"
-            placeholder="Example: Portable coffee maker, $79, rechargeable, compact, and ideal for travel."
-            required
+            placeholder="Add useful facts, or leave blank and QuickAd AI will identify what is visible."
           ></textarea>
 
           <div class="text-meta">
-            <span>Include the price and strongest benefits when relevant.</span>
+            <span>Add known facts such as price or benefits, or leave blank for image-based identification.</span>
             <span id="character-count">0 / 500</span>
           </div>
 
@@ -158,7 +158,36 @@
                 <option value="Order Today">Order Today</option>
                 <option value="Visit Our Website">Visit Our Website</option>
                 <option value="Book Now">Book Now</option>
+                <option value="custom">Write my own…</option>
               </select>
+
+              <div
+                id="custom-cta-field"
+                class="custom-cta-field"
+                hidden
+              >
+                <label class="field-label" for="custom-call-to-action">
+                  Your call to action
+                </label>
+
+                <input
+                  id="custom-call-to-action"
+                  type="text"
+                  maxlength="40"
+                  placeholder="Example: Start Your Free Trial"
+                >
+
+                <div class="text-meta">
+                  <span>Keep it short and action-oriented.</span>
+                  <span id="custom-cta-count">0 / 40 characters</span>
+                </div>
+
+                <p
+                  id="custom-cta-error"
+                  class="field-error"
+                  role="alert"
+                ></p>
+              </div>
             </div>
           </div>
 
@@ -226,13 +255,141 @@
         </div>
 
         <button id="create-button" class="create-button" type="submit">
-          <span>Create My Video</span>
+          <span>Generate Video Plan</span>
           <span aria-hidden="true">→</span>
         </button>
       </section>
 
       <div id="form-message" class="form-message" role="status"></div>
     </form>
+
+    <section
+      id="plan-review"
+      class="plan-review"
+      aria-labelledby="plan-review-heading"
+      hidden
+    >
+      <div class="plan-review-heading">
+        <div>
+          <span class="review-step">5</span>
+          <div>
+            <p class="review-eyebrow">Review before spending more credits</p>
+            <h2 id="plan-review-heading">Review your video plan</h2>
+            <p>
+              Check every picture and caption. Editing and changing pictures use no API credits.
+            </p>
+          </div>
+        </div>
+
+        <span class="plan-badge">AI plan ready</span>
+      </div>
+
+      <div class="scene-plan-tools">
+        <span id="scene-count-message">
+          Five scenes in this plan
+        </span>
+
+        <button
+          id="undo-scene-button"
+          class="undo-scene-button"
+          type="button"
+          hidden
+        >
+          ↶ Undo deleted scene
+        </button>
+      </div>
+
+      <div id="plan-scenes" class="plan-scenes"></div>
+
+      <fieldset class="narrator-section">
+        <legend>Choose a narrator</legend>
+        <p>
+          Select a voice now. Full narration is generated only after final approval.
+        </p>
+
+        <div class="narrator-options">
+          <label class="narrator-option">
+            <input
+              type="radio"
+              name="narratorVoice"
+              value="automatic"
+              checked
+            >
+            <span>
+              <strong>Automatic</strong>
+              <small>Recommended for your selected style</small>
+            </span>
+          </label>
+
+          <label class="narrator-option">
+            <input
+              type="radio"
+              name="narratorVoice"
+              value="woman-warm"
+            >
+            <span>
+              <strong>Woman — Warm</strong>
+              <small>Smooth and welcoming</small>
+            </span>
+          </label>
+
+          <label class="narrator-option">
+            <input
+              type="radio"
+              name="narratorVoice"
+              value="woman-energetic"
+            >
+            <span>
+              <strong>Woman — Energetic</strong>
+              <small>Upbeat and promotional</small>
+            </span>
+          </label>
+
+          <label class="narrator-option">
+            <input
+              type="radio"
+              name="narratorVoice"
+              value="man-confident"
+            >
+            <span>
+              <strong>Man — Confident</strong>
+              <small>Clear and professional</small>
+            </span>
+          </label>
+
+          <label class="narrator-option">
+            <input
+              type="radio"
+              name="narratorVoice"
+              value="man-calm"
+            >
+            <span>
+              <strong>Man — Calm</strong>
+              <small>Natural and reassuring</small>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="plan-approval">
+        <div>
+          <strong>Everything looks right?</strong>
+          <p id="plan-status">
+            Captions must contain 1–60 characters.
+          </p>
+        </div>
+
+        <button
+          id="final-video-button"
+          class="final-video-button"
+          type="button"
+          disabled
+        >
+          <span>Create Final Video</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
 
     <section class="promise-bar" aria-label="QuickAd AI benefits">
       <span>No timeline editor</span>

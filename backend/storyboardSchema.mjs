@@ -103,11 +103,11 @@ export function validateStoryboard(
   }
 
   if (
-    value.scenes.length < 4 ||
-    value.scenes.length > 7
+    value.scenes.length < 3 ||
+    value.scenes.length > 5
   ) {
     errors.push(
-      "Storyboard must contain between 4 and 7 scenes."
+      "Storyboard must contain between 3 and 5 scenes."
     );
   }
 
@@ -141,7 +141,7 @@ export function validateStoryboard(
       );
     }
 
-    if (scene.caption.length > 70) {
+    if (scene.caption.length > 60) {
       errors.push(
         `Scene ${scene.sceneNumber} caption is too long.`
       );
@@ -164,11 +164,11 @@ export function validateStoryboard(
     countWords(narration);
 
   if (
-    actualWordCount < 40 ||
-    actualWordCount > 75
+    actualWordCount < 9 ||
+    actualWordCount > 50
   ) {
     errors.push(
-      "Narration must contain between 40 and 75 words."
+      "Narration must contain between 9 and 50 words."
     );
   }
 

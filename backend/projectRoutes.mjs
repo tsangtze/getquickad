@@ -7,8 +7,15 @@ import {
   generateStoryboard
 } from "./storyboardGenerator.mjs";
 import {
+  validateStoryboard
+} from "./storyboardSchema.mjs";
+import {
   generateNarration
 } from "./narrationGenerator.mjs";
+import {
+  renderVideo
+} from "./videoRenderer.mjs";
+
 
 const MAX_IMAGE_COUNT = 10;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -164,7 +171,7 @@ function validateProject(request) {
 
   const callToAction = cleanText(
     request.body.callToAction,
-    80
+    40
   ) || "Shop Now";
 
   const style = cleanText(
@@ -184,11 +191,6 @@ function validateProject(request) {
     };
   }
 
-  if (!description) {
-    return {
-      error: "Please describe the product or business."
-    };
-  }
 
   if (websiteResult.error) {
     return {
@@ -369,9 +371,6 @@ export async function createProjectRouter({
           "utf8"
         );
 
-        let generationStage =
-          "storyboard";
-
         try {
           const result =
             await generateStoryboard({
@@ -380,7 +379,8 @@ export async function createProjectRouter({
             });
 
           const storyboardRecord = {
-            projectId: project.id,
+            projectId:
+              project.id,
             ...result
           };
 
@@ -412,81 +412,28 @@ export async function createProjectRouter({
             model:
               result.generation.model,
             generatedAt:
-              result.generation.generatedAt
+              result.generation.generatedAt,
+            reviewRequired:
+              true
           };
-          generationStage =
-            "narration";
-
-          project.status =
-            "generating_narration";
 
           await fs.writeFile(
             projectPath,
-            JSON.stringify(project, null, 2),
-            "utf8"
-          );
-
-          const narration =
-            await generateNarration({
-              storyboard:
-                result.storyboard,
-              projectDirectory
-            });
-
-          const narrationRecord = {
-            projectId:
-              project.id,
-            narration
-          };
-
-          await fs.writeFile(
-            path.join(
-              projectDirectory,
-              "narration.json"
-            ),
             JSON.stringify(
-              narrationRecord,
+              project,
               null,
               2
             ),
             "utf8"
           );
 
-          project.status =
-            "narration_ready";
-
-          project.narration = {
-            storedName:
-              narration.storedName,
-            model:
-              narration.model,
-            voice:
-              narration.voice,
-            format:
-              narration.format,
-            byteLength:
-              narration.byteLength,
-            narrationWordCount:
-              narration.narrationWordCount,
-            generatedAt:
-              narration.generatedAt,
-            disclosure:
-              narration.disclosure
-          };
-
-          await fs.writeFile(
-            projectPath,
-            JSON.stringify(project, null, 2),
-            "utf8"
-          );
-
           response.status(201).json({
             ok: true,
+            stage:
+              "plan_review",
             project,
             storyboard:
-              result.storyboard,
-            narration:
-              project.narration
+              result.storyboard
           });
         } catch (generationError) {
           console.error(
@@ -495,13 +442,11 @@ export async function createProjectRouter({
           );
 
           project.status =
-            generationStage === "narration"
-              ? "narration_failed"
-              : "storyboard_failed";
+            "storyboard_failed";
 
           project.generationError = {
             stage:
-              generationStage,
+              "storyboard",
             code:
               generationError.code ||
               "STORYBOARD_GENERATION_FAILED",
@@ -511,7 +456,11 @@ export async function createProjectRouter({
 
           await fs.writeFile(
             projectPath,
-            JSON.stringify(project, null, 2),
+            JSON.stringify(
+              project,
+              null,
+              2
+            ),
             "utf8"
           );
 
@@ -530,16 +479,15 @@ export async function createProjectRouter({
               error:
                 missingConfiguration
                   ? "AI storyboard generation is not configured."
-                  : generationStage === "narration"
-                    ? "The storyboard was created, but its narration could not be generated. Please try again."
-                    : "The project was uploaded, but its storyboard could not be generated. Please try again.",
+                  : "The project was uploaded, but its video plan could not be generated. Please try again.",
               project: {
-                id: project.id,
-                status: project.status
+                id:
+                  project.id,
+                status:
+                  project.status
               }
             });
-        }
-      } catch (error) {
+        }      } catch (error) {
         await removeFiles(uploadedFiles);
 
         if (projectDirectory) {
@@ -550,6 +498,402 @@ export async function createProjectRouter({
         }
 
         next(error);
+      }
+    }
+  );
+
+  router.get(
+    "/:projectId/video",
+    async (request, response) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      if (
+        !/^[0-9a-f-]{36}$/i.test(projectId)
+      ) {
+        response.status(400).json({
+          ok: false,
+          error: "Invalid project ID."
+        });
+        return;
+      }
+
+      const videoPath = path.join(
+        projectsDirectory,
+        projectId,
+        "video.mp4"
+      );
+
+      try {
+        await fs.access(videoPath);
+        response.sendFile(videoPath);
+      } catch {
+        response.status(404).json({
+          ok: false,
+          error: "The finished video was not found."
+        });
+      }
+    }
+  );
+
+  router.post(
+    "/:projectId/finalize",
+    async (request, response) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      if (
+        !/^[0-9a-f-]{36}$/i.test(projectId)
+      ) {
+        response.status(400).json({
+          ok: false,
+          error: "Invalid project ID."
+        });
+        return;
+      }
+
+      const projectDirectory = path.join(
+        projectsDirectory,
+        projectId
+      );
+
+      const projectPath = path.join(
+        projectDirectory,
+        "project.json"
+      );
+
+      const storyboardPath = path.join(
+        projectDirectory,
+        "storyboard.json"
+      );
+
+      let project;
+      let generationStage = "approval";
+
+      try {
+        project = JSON.parse(
+          await fs.readFile(
+            projectPath,
+            "utf8"
+          )
+        );
+
+        const existingStoryboardRecord =
+          JSON.parse(
+            await fs.readFile(
+              storyboardPath,
+              "utf8"
+            )
+          );
+
+        const submittedStoryboardInput =
+          request.body?.storyboard;
+
+        const synchronizedScenes =
+          Array.isArray(
+            submittedStoryboardInput?.scenes
+          )
+            ? submittedStoryboardInput.scenes.map(
+                (scene) => {
+                  const caption =
+                    String(
+                      scene.caption ?? ""
+                    ).trim();
+
+                  return {
+                    ...scene,
+                    caption,
+                    narration:
+                      caption
+                  };
+                }
+              )
+            : null;
+
+        const synchronizedNarrationText =
+          synchronizedScenes
+            ?.map((scene) =>
+              scene.narration
+            )
+            .filter(Boolean)
+            .join(" ") || "";
+
+        const synchronizedWordCount =
+          synchronizedNarrationText
+            ? synchronizedNarrationText
+                .split(/\s+/)
+                .filter(Boolean)
+                .length
+            : 0;
+
+        const submittedStoryboard =
+          synchronizedScenes
+            ? {
+                ...submittedStoryboardInput,
+                scenes:
+                  synchronizedScenes,
+                narrationWordCount:
+                  synchronizedWordCount
+              }
+            : submittedStoryboardInput;
+
+        const narratorChoice =
+          String(
+            request.body?.narratorChoice ||
+            "automatic"
+          );
+
+        const allowedNarrators = new Set([
+          "automatic",
+          "woman-warm",
+          "woman-energetic",
+          "man-confident",
+          "man-calm"
+        ]);
+
+        if (!allowedNarrators.has(narratorChoice)) {
+          response.status(400).json({
+            ok: false,
+            error: "Select a valid narrator."
+          });
+          return;
+        }
+
+        if (
+          !Array.isArray(
+            submittedStoryboard?.scenes
+          ) ||
+          submittedStoryboard.scenes.some(
+            (scene) => {
+              const caption =
+                String(
+                  scene.caption ?? ""
+                ).trim();
+
+              return (
+                caption.length === 0 ||
+                caption.length > 60
+              );
+            }
+          )
+        ) {
+          response.status(400).json({
+            ok: false,
+            error:
+              "Every scene needs a caption containing 1–60 characters."
+          });
+          return;
+        }
+
+        const validation =
+          validateStoryboard(
+            submittedStoryboard,
+            {
+              imageCount:
+                project.assets.productImages.length
+            }
+          );
+
+        if (!validation.ok) {
+          response.status(400).json({
+            ok: false,
+            error:
+              validation.errors.join(" ")
+          });
+          return;
+        }
+
+        const approvedStoryboard =
+          validation.storyboard;
+
+        const approvedAt =
+          new Date().toISOString();
+
+        const approvedStoryboardRecord = {
+          ...existingStoryboardRecord,
+          storyboard:
+            approvedStoryboard,
+          approval: {
+            approvedAt,
+            narratorChoice
+          }
+        };
+
+        await fs.writeFile(
+          storyboardPath,
+          JSON.stringify(
+            approvedStoryboardRecord,
+            null,
+            2
+          ),
+          "utf8"
+        );
+
+        project.status =
+          "generating_narration";
+
+        project.storyboard = {
+          ...project.storyboard,
+          reviewRequired: false,
+          approvedAt,
+          narratorChoice
+        };
+
+        await fs.writeFile(
+          projectPath,
+          JSON.stringify(project, null, 2),
+          "utf8"
+        );
+
+        generationStage = "narration";
+
+        const narration =
+          await generateNarration({
+            storyboard:
+              approvedStoryboard,
+            projectDirectory,
+            narratorChoice
+          });
+
+        await fs.writeFile(
+          path.join(
+            projectDirectory,
+            "narration.json"
+          ),
+          JSON.stringify(
+            {
+              projectId,
+              narration
+            },
+            null,
+            2
+          ),
+          "utf8"
+        );
+
+        project.status =
+          "rendering_video";
+
+        project.narration = {
+          storedName:
+            narration.storedName,
+          model:
+            narration.model,
+          voice:
+            narration.voice,
+          narratorChoice:
+            narration.narratorChoice,
+          format:
+            narration.format,
+          byteLength:
+            narration.byteLength,
+          narrationWordCount:
+            narration.narrationWordCount,
+          generatedAt:
+            narration.generatedAt,
+          disclosure:
+            narration.disclosure
+        };
+
+        await fs.writeFile(
+          projectPath,
+          JSON.stringify(project, null, 2),
+          "utf8"
+        );
+
+        generationStage = "video";
+
+        const video =
+          await renderVideo({
+            project,
+            storyboard:
+              approvedStoryboard,
+            projectDirectory
+          });
+
+        await fs.writeFile(
+          path.join(
+            projectDirectory,
+            "video.json"
+          ),
+          JSON.stringify(
+            {
+              projectId,
+              video
+            },
+            null,
+            2
+          ),
+          "utf8"
+        );
+
+        project.status =
+          "video_ready";
+
+        project.video = video;
+        delete project.generationError;
+
+        await fs.writeFile(
+          projectPath,
+          JSON.stringify(project, null, 2),
+          "utf8"
+        );
+
+        response.status(201).json({
+          ok: true,
+          stage: "video_ready",
+          project: {
+            id: project.id,
+            status: project.status
+          },
+          narration:
+            project.narration,
+          video,
+          videoUrl:
+            `/api/projects/${projectId}/video`
+        });
+      } catch (error) {
+        console.error(
+          "Final video generation failed:",
+          error
+        );
+
+        if (project) {
+          project.status =
+            generationStage === "narration"
+              ? "narration_failed"
+              : generationStage === "video"
+                ? "video_failed"
+                : "approval_failed";
+
+          project.generationError = {
+            stage:
+              generationStage,
+            code:
+              error.code ||
+              "FINAL_VIDEO_GENERATION_FAILED",
+            failedAt:
+              new Date().toISOString()
+          };
+
+          await fs.writeFile(
+            projectPath,
+            JSON.stringify(project, null, 2),
+            "utf8"
+          ).catch(() => {});
+        }
+
+        response.status(502).json({
+          ok: false,
+          error:
+            generationStage === "narration"
+              ? "Narration could not be generated. Please try again."
+              : generationStage === "video"
+                ? "The narration was created, but the video could not be rendered. Please try again."
+                : "The approved video plan could not be saved.",
+          stage:
+            generationStage
+        });
       }
     }
   );
