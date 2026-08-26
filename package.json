@@ -1,6 +1,6 @@
 {
   "name": "quickad-ai",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Turn product photos into ready-to-post promotional videos",
   "main": "server.mjs",
   "scripts": {
@@ -13,7 +13,9 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@ffprobe-installer/ffprobe": "^2.1.2",
     "express": "^5.2.1",
+    "ffmpeg-static": "^5.3.0",
     "multer": "^2.2.0",
     "openai": "^6.49.0",
     "zod": "^4.4.3"
