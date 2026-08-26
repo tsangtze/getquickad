@@ -134,7 +134,8 @@ function buildVideoFilter({
   titlePath,
   captionPath,
   rolePath,
-  brandPath
+  brandPath,
+  showCtaWebsite
 }) {
   const duration =
     scene.endSeconds -
@@ -247,6 +248,25 @@ function buildVideoFilter({
       "shadowcolor=black@0.70:" +
       "shadowx=2:" +
       "shadowy=2," +
+
+      (
+        scene.role === "cta" &&
+        showCtaWebsite
+          ? (
+              "drawtext=" +
+              `fontfile='${font}':` +
+              `textfile='${brand}':` +
+              "expansion=none:" +
+              "fontcolor=white@0.96:" +
+              "fontsize=28:" +
+              "x=(w-text_w)/2:" +
+              "y=1124:" +
+              "shadowcolor=black@0.75:" +
+              "shadowx=2:" +
+              "shadowy=2,"
+            )
+          : ""
+      ) +
 
       "drawtext=" +
       `fontfile='${font}':` +
@@ -381,6 +401,21 @@ export async function renderVideo({
         getBrandText(project)
       );
 
+    const logoAsset =
+      project.assets?.productLogo || null;
+
+    const logoPath =
+      logoAsset
+        ? path.join(
+            projectDirectory,
+            logoAsset.storedName
+          )
+        : null;
+
+    if (logoPath) {
+      await fs.access(logoPath);
+    }
+
     const commandArguments = [
       "-hide_banner",
       "-loglevel",
@@ -455,13 +490,36 @@ export async function renderVideo({
           titlePath,
           captionPath,
           rolePath,
-          brandPath
+          brandPath,
+          showCtaWebsite:
+            Boolean(project.website)
         })
       );
     }
 
+    const logoInputIndex =
+      logoAsset
+        ? storyboard.scenes.length
+        : null;
+
+    if (logoAsset) {
+      commandArguments.push(
+        "-loop",
+        "1",
+        "-framerate",
+        String(VIDEO_FRAME_RATE),
+        "-t",
+        formatNumber(
+          storyboard.totalDurationSeconds
+        ),
+        "-i",
+        logoPath
+      );
+    }
+
     const audioInputIndex =
-      storyboard.scenes.length;
+      storyboard.scenes.length +
+      (logoAsset ? 1 : 0);
 
     commandArguments.push(
       "-i",
@@ -476,10 +534,34 @@ export async function renderVideo({
         )
         .join("");
 
-    videoFilters.push(
-      `${sceneLabels}` +
-      `concat=n=${storyboard.scenes.length}:v=1:a=0[video]`
-    );
+    if (logoAsset) {
+      videoFilters.push(
+        `${sceneLabels}` +
+        `concat=n=${storyboard.scenes.length}:v=1:a=0[videoBase]`
+      );
+
+      videoFilters.push(
+        `[${logoInputIndex}:v]` +
+        "scale=96:96:" +
+        "force_original_aspect_ratio=decrease," +
+        "format=rgba" +
+        "[logoOverlay]"
+      );
+
+      videoFilters.push(
+        "[videoBase][logoOverlay]" +
+        "overlay=" +
+        "x=W-w-46:" +
+        "y=245:" +
+        "format=auto" +
+        "[video]"
+      );
+    } else {
+      videoFilters.push(
+        `${sceneLabels}` +
+        `concat=n=${storyboard.scenes.length}:v=1:a=0[video]`
+      );
+    }
 
     videoFilters.push(
       `[${audioInputIndex}:a]` +
