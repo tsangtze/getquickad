@@ -1651,3 +1651,26 @@ input::placeholder {
     width: 100%;
   }
 }
+
+/* Version 0.9.2: optional, locally hosted background music. */
+.music-section { margin: 20px 0; padding: 20px; border: 1px solid #d9def0; border-radius: 16px; }
+.music-section h3 { margin: 0 0 10px; }
+.music-section p { color: #52617b; line-height: 1.5; }
+#music-options { padding: 0; margin: 16px 0; border: 0; min-width: 0; }
+.music-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 10px; }
+.music-card { border: 1px solid #ccd3e8; border-radius: 10px; padding: 12px; }
+.music-card:has(input:checked) { border-color: #6551ff; background: #f0edff; }
+.music-card label { display: block; cursor: pointer; }
+.music-card input { accent-color: #6551ff; }
+.music-card small { display: block; margin-top: 8px; color: #52617b; }
+.music-card button { margin-top: 12px; padding: 7px 12px; border: 1px solid #6551ff; border-radius: 6px; background: white; color: #4331bc; cursor: pointer; }
+.music-card button:focus-visible, .music-card input:focus-visible { outline: 3px solid #6551ff; outline-offset: 3px; }
+#music-options:disabled { opacity: .65; }
+#music-preview { width: 100%; max-width: 420px; }
+.music-credits { font-size: .8rem; }
+.music-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+.music-volume-row { margin-top: 20px; display: grid; gap: 10px; }
+.music-volume-row label { display: flex; justify-content: space-between; font-weight: 600; }
+.music-volume-row input { width: 100%; accent-color: #6250ff; cursor: pointer; }
+.music-volume-row small { color: #64748b; }

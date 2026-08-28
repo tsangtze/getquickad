@@ -253,6 +253,7 @@ styleOptions.forEach((option) => {
 });
 
 function clearReviewImageUrls() {
+  window.quickAdMusic.stop();
   reviewImageUrls.forEach((imageUrl) => {
     if (
       String(imageUrl).startsWith(
@@ -470,6 +471,7 @@ function deleteScene(scene) {
 }
 
 function validateVideoPlan() {
+  if (window.quickAdMusic.locked) { finalVideoButton.disabled = true; return false; }
   if (!currentStoryboard) {
     finalVideoButton.disabled = true;
     return false;
@@ -910,6 +912,7 @@ function renderVideoPlanReview(
   savedImageUrls = null
 ) {
   clearReviewImageUrls();
+  window.quickAdMusic.restore(project.storyboard?.musicChoice ?? "none", project.status === "video_ready", project.storyboard?.musicVolume);
 
   reviewImageUrls =
     Array.isArray(savedImageUrls)
@@ -997,6 +1000,7 @@ finalVideoButton.addEventListener(
       return;
     }
 
+    window.quickAdMusic.lock("busy");
     const originalButtonText =
       finalVideoButton.textContent;
 
@@ -1038,6 +1042,8 @@ finalVideoButton.addEventListener(
           body: JSON.stringify({
             storyboard:
               finalStoryboard,
+            musicChoice: window.quickAdMusic.value,
+            musicVolume: window.quickAdMusic.volume,
             narratorChoice:
               selectedNarratorVoice()
           })
@@ -1054,6 +1060,7 @@ finalVideoButton.addEventListener(
         );
       }
 
+      window.quickAdMusic.lock("ready");
       finalVideoButton.textContent =
         "Video Ready ✓";
 
@@ -1203,6 +1210,7 @@ finalVideoButton.addEventListener(
         });
       }, 3000);
     } catch (error) {
+      window.quickAdMusic.lock("");
       finalVideoButton.disabled = false;
       finalVideoButton.textContent =
         originalButtonText;

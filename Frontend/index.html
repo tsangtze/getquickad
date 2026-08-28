@@ -9,6 +9,7 @@
   >
   <title>Create a Product Video | QuickAd AI</title>
   <link rel="stylesheet" href="/styles.css">
+  <script src="/music-picker.js" defer></script>
   <script src="/app.js" defer></script>
   <link rel="stylesheet" href="/account.css">
   <script src="/account.js" defer></script>
@@ -409,6 +410,26 @@
           </label>
         </div>
       </fieldset>
+
+      <section class="music-section" aria-labelledby="music-heading">
+        <h3 id="music-heading">Choose background music</h3>
+        <p>Optional music plays quietly beneath your narration. Previews use no API credits.</p>
+        <fieldset id="music-options"><legend class="music-sr-only">Music track</legend><div class="music-options">
+<div class="music-card"><label><input type="radio" name="musicChoice" value="none" checked> <strong>No music</strong><small>Narration only</small></label></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="upbeat" > <strong>Upbeat</strong><small>Funky rhythm</small></label><button type="button" data-music-preview="upbeat" aria-label="Preview Upbeat music">Preview</button></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="calm" > <strong>Calm</strong><small>Piano and soft pads</small></label><button type="button" data-music-preview="calm" aria-label="Preview Calm music">Preview</button></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="piano" > <strong>Elegant</strong><small>Gentle piano</small></label><button type="button" data-music-preview="piano" aria-label="Preview Elegant music">Preview</button></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="ambient" > <strong>Ambient</strong><small>Relaxing atmosphere</small></label><button type="button" data-music-preview="ambient" aria-label="Preview Ambient music">Preview</button></div>
+        </div>
+        <div class="music-volume-row">
+          <label for="music-volume">Music volume <output id="music-volume-value" for="music-volume">10%</output></label>
+          <input id="music-volume" type="range" min="0" max="100" step="1" value="10" aria-describedby="music-volume-help">
+          <small id="music-volume-help">0% mutes music · 10% recommended · Narration stays unchanged</small>
+        </div></fieldset>
+        <audio id="music-preview" controls preload="none" hidden aria-label="Music preview"></audio>
+        <p id="music-note" role="status">Choose a track before creating the final video.</p>
+        <p class="music-credits">CC0 tracks by Joth and The Cynic Project. <a href="/music/CREDITS.txt" target="_blank" rel="noopener">Music credits and licenses</a></p>
+      </section>
 
       <div class="plan-approval">
         <div>

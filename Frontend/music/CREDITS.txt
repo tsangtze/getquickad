@@ -1,0 +1,40 @@
+QuickAd AI background music credits - Version 0.9.2
+Source pages checked: 2026-08-28
+Each source page lists CC0 1.0. CC0 permits commercial use and redistribution.
+License: https://creativecommons.org/publicdomain/zero/1.0/
+Legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+Credits are retained for provenance. No endorsement is implied.
+As with any third-party asset, review licensing before public launch; CC0 does not guarantee freedom from automated platform claims.
+Bundled versions: 40 seconds, looped where needed, normalized to -20 LUFS, stereo 48 kHz MP3 at 128 kbps. Playback mix adds quieter gain and fades.
+
+Elegant: JRPG Piano
+Artist: Joth
+License: CC0-1.0
+Source: https://opengameart.org/content/jrpg-piano
+Original download: https://opengameart.org/sites/default/files/JRPG%20Piano.mp3
+Original SHA256: 87A99F62E901B8365F1B868CD53BC015D2BF9F887E4C8A89A4FAD11A36A62C16
+Bundled SHA256: 925F43703E6B9808F95605A3614EB1818E89D5C34D07D00DF2039FE619C3DAC0
+
+Calm: Vaporware
+Artist: The Cynic Project (cynicmusic)
+License: CC0-1.0
+Source: https://opengameart.org/content/calm-piano-1-vaporware
+Original download: https://opengameart.org/sites/default/files/003_Vaporware_2.mp3
+Original SHA256: 1697FA1B7ED6F3FE1ECA4DAA4F9D1A2EB3DB8FE40A0F3C283529AB47E57B5B38
+Bundled SHA256: 56FC0375EFFD80C904C5355CD123805A8A4B1768B7580845D6670B34D2F65DB8
+
+Upbeat: Funked Up
+Artist: Joth
+License: CC0-1.0
+Source: https://opengameart.org/content/funked-up
+Original download: https://opengameart.org/sites/default/files/Funked%20Up.mp3
+Original SHA256: 57CD81254A0F4E068535C5421F93B586514332AD2377F81AEA190DD91659FFF3
+Bundled SHA256: 12044554FD1969C8B9990CFCC44AB13E20815D8011694DDD6DEBF6BFB0531AE2
+
+Ambient: Lifewave2k
+Artist: The Cynic Project (cynicmusic)
+License: CC0-1.0
+Source: https://opengameart.org/content/calm-ambient-3-lifewave-2k
+Original download: https://opengameart.org/sites/default/files/006_lifeWave2k_0.mp3
+Original SHA256: F6A796483AEE743D72FD9ABD44002694246BB3A7977239ABBACE2A56A0D344CE
+Bundled SHA256: B5CE03A1FCA22751D30CFB477405081C91E7CA5296A1BE1EC4992454160A2925

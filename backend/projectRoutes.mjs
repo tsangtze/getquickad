@@ -1,3 +1,4 @@
+import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
 import cookieParser from "cookie-parser";
 import { requireUser } from "./authRoutes.mjs";
 import { authConfiguration } from "./authService.mjs";
@@ -1030,6 +1031,20 @@ export async function createProjectRouter({
             )
           );
 
+        if (project.status === "video_ready") {
+          return response.status(409).json({ok: false,
+            error: "This video is already complete. Create a new project to choose different music."});
+        }
+        let selectedMusic;
+        let musicVolume;
+        try {
+          musicVolume = validateMusicVolume(request.body?.musicVolume);
+          selectedMusic = await prepareMusic(request.body?.musicChoice ?? "none");
+        } catch (error) {
+          return response.status(error.status || 503).json({ok: false, error: error.message});
+        }
+        const musicChoice = selectedMusic.metadata.id;
+
         const submittedStoryboardInput =
           request.body?.storyboard;
 
@@ -1159,6 +1174,8 @@ export async function createProjectRouter({
             approvedStoryboard,
           approval: {
             approvedAt,
+            musicChoice,
+            musicVolume,
             narratorChoice
           }
         };
@@ -1180,6 +1197,8 @@ export async function createProjectRouter({
           ...project.storyboard,
           reviewRequired: false,
           approvedAt,
+          musicChoice,
+          musicVolume,
           narratorChoice
         };
 
@@ -1252,7 +1271,9 @@ export async function createProjectRouter({
             project,
             storyboard:
               approvedStoryboard,
-            projectDirectory
+            projectDirectory,
+            musicChoice,
+            musicVolume
           });
 
         await fs.writeFile(

@@ -321,11 +321,17 @@ function validateInputs({
   }
 }
 
+import { prepareMusic, audioMixFilters, validateMusicVolume } from "./musicCatalog.mjs";
+
 export async function renderVideo({
   project,
   storyboard,
-  projectDirectory
+  projectDirectory,
+  musicChoice = "none",
+  musicVolume = 10
 }) {
+  validateMusicVolume(musicVolume);
+  const music = await prepareMusic(musicChoice);
   validateInputs({
     project,
     storyboard,
@@ -526,6 +532,8 @@ export async function renderVideo({
       narrationPath
     );
 
+    if (music.path) commandArguments.push("-stream_loop", "-1", "-i", music.path);
+
     const sceneLabels =
       storyboard.scenes
         .map(
@@ -563,12 +571,8 @@ export async function renderVideo({
       );
     }
 
-    videoFilters.push(
-      `[${audioInputIndex}:a]` +
-      `apad=pad_dur=${storyboard.totalDurationSeconds},` +
-      `atrim=duration=${storyboard.totalDurationSeconds},` +
-      "asetpts=PTS-STARTPTS[audio]"
-    );
+    videoFilters.push(...audioMixFilters(audioInputIndex,
+      music.path ? audioInputIndex + 1 : null, storyboard.totalDurationSeconds, musicVolume));
 
     commandArguments.push(
       "-filter_complex",
@@ -657,6 +661,7 @@ export async function renderVideo({
         "h264",
       audioCodec:
         "aac",
+      music: {...music.metadata, volume: musicVolume},
       visualTemplate:
         "automatic-polished",
       generatedAt:
