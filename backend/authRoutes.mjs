@@ -1,3 +1,4 @@
+import { createPasswordHandlers } from "./passwordHandlers.mjs";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
@@ -121,6 +122,21 @@ export function createAuthRouter() {
 
     next();
   });
+
+  const passwordHandlers = createPasswordHandlers({ createAuthClient, authConfiguration });
+  const recoveryLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, limit: 5,
+    standardHeaders: "draft-8", legacyHeaders: false,
+    message: { ok: false, error: "Too many password email requests. Please wait and check your inbox before retrying." }
+  });
+  const passwordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, limit: 15,
+    standardHeaders: "draft-8", legacyHeaders: false,
+    message: { ok: false, error: "Too many password attempts. Please try again later." }
+  });
+  router.post("/recover", recoveryLimiter, passwordHandlers.recover);
+  router.post("/password-link", passwordLimiter, passwordHandlers.link);
+  router.post("/password-update", passwordLimiter, passwordHandlers.update);
 
   const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,

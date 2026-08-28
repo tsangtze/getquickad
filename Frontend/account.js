@@ -1,6 +1,13 @@
 (() => {
   "use strict";
 
+  // Route recovery/invite links before the ordinary account code clears tokens.
+  const passwordLink = new URLSearchParams(window.location.hash.slice(1));
+  if (["recovery", "invite"].includes(passwordLink.get("type"))) {
+    window.location.replace("/password.html" + window.location.hash);
+    return;
+  }
+
   // Email links confirm at Supabase; this app uses its server login cookie.
   const fragment = new URLSearchParams(window.location.hash.slice(1));
   const returnedFromEmail =
@@ -44,6 +51,7 @@
         autocomplete="current-password" maxlength="1024" required>
       <button type="submit" class="qa-account-primary">Sign in</button>
       <button type="button" class="qa-account-mode">Create an account instead</button>
+      <a href="/password.html">Forgot password or need to set one?</a>
       <p class="qa-account-note">
         Use your QuickAd AI test account.
         Self-service signup is not available yet.
