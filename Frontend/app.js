@@ -1411,6 +1411,29 @@ function formatProjectDate(value) {
   ).format(date);
 }
 
+async function deleteSavedProject(entry, button) {
+  const warning = `Permanently delete "${entry.title}"? This removes its uploaded images, narration, video and render files. Download anything you want to keep first. This cannot be undone.`;
+  if (!window.confirm(warning + (entry.id === currentProjectId ? " The current page will reload and unsaved edits will be discarded." : ""))) return;
+  button.disabled = true;
+  button.textContent = "Deleting…";
+  try {
+    const response = await quickAdProjectFetch(`/api/projects/${encodeURIComponent(entry.id)}`, {method: "DELETE"});
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Project deletion failed.");
+    if (entry.id === currentProjectId) {
+      window.location.reload();
+      return;
+    }
+    await loadAccountProjects();
+  } catch (error) {
+    recentProjectStatus.textContent = error.message || "Project deletion failed. Please refresh before retrying.";
+    recentProjectStatus.classList.add("error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Delete";
+  }
+}
+
 function renderRecentProjects() {
   const history =
     readProjectHistory();
@@ -1492,10 +1515,16 @@ function renderRecentProjects() {
       }
     );
 
-    card.append(
-      information,
-      openButton
-    );
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "delete-recent-project";
+    deleteButton.textContent = "Delete";
+    deleteButton.setAttribute("aria-label", `Delete project ${entry.title}`);
+    deleteButton.addEventListener("click", () => deleteSavedProject(entry, deleteButton));
+    const actions = document.createElement("div");
+    actions.className = "recent-project-actions";
+    actions.append(openButton, deleteButton);
+    card.append(information, actions);
 
     recentProjectList.append(card);
   });

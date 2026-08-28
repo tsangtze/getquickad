@@ -89,7 +89,7 @@ test("finalize rejects invalid music before paid work and persists valid selecti
     await fs.writeFile(projectPath,JSON.stringify(seed));
     await fs.writeFile(path.join(folder,"storyboard.json"),JSON.stringify({storyboard:{}}));
     let narrationCalls=0, renderChoice, renderVolume;
-    const routes={};const router={use(){},param(){},get(){},post(route,...handlers){routes[route]=handlers.at(-1);}};
+    const routes={};const router={use(){},param(){},get(){},delete(){},post(route,...handlers){routes[route]=handlers.at(-1);}};
     const multer=()=>({fields(){return ()=>{};}});multer.diskStorage=()=>({});
     const source=(await fs.readFile(new URL("../projectRoutes.mjs",import.meta.url),"utf8"))
       .replace(/^import[\s\S]*?;\s*\n/gm,"").replace(/export async function /g,"async function ");

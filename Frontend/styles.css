@@ -1674,3 +1674,9 @@ input::placeholder {
 .music-volume-row label { display: flex; justify-content: space-between; font-weight: 600; }
 .music-volume-row input { width: 100%; accent-color: #6250ff; cursor: pointer; }
 .music-volume-row small { color: #64748b; }
+
+.recent-project-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.delete-recent-project { padding: 0.65rem 0.9rem; border: 1px solid #b42318; border-radius: 8px; background: white; color: #b42318; cursor: pointer; }
+.delete-recent-project:hover { background: #fff1f0; }
+.delete-recent-project:disabled { opacity: 0.6; cursor: wait; }
+.delete-recent-project:focus-visible { outline: 3px solid #6554ff; outline-offset: 3px; }

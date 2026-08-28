@@ -280,6 +280,19 @@ export async function createProjectRouter({
 }) {
   const router = express.Router();
 
+  // Held until the asynchronous operation finishes, even if the client disconnects.
+  const activeProjects = new Set();
+  const withProjectLock = (handler) => async (request, response, next) => {
+    const id = request.params.projectId.toLowerCase();
+    if (activeProjects.has(id)) {
+      return response.status(409).json({ok: false, error: "This project is busy. Please wait until processing finishes."});
+    }
+    activeProjects.add(id);
+    try { return await handler(request, response, next); }
+    finally { activeProjects.delete(id); }
+  };
+
+
   // Authentication runs before any upload or project handler.
   router.use(cookieParser());
   router.use((_request, response, next) => {
@@ -377,6 +390,31 @@ export async function createProjectRouter({
   await fs.mkdir(projectsDirectory, {
     recursive: true
   });
+
+  router.delete("/:projectId", withProjectLock(async (request, response) => {
+    const id = request.params.projectId;
+    const directory = path.join(projectsDirectory, id);
+    try {
+      // Recheck ownership inside the lock; never trust a submitted owner ID.
+      const stat = await fs.lstat(directory);
+      if (!stat.isDirectory() || stat.isSymbolicLink()) {
+        return response.status(404).json({ok: false, error: "Project not found."});
+      }
+      const project = JSON.parse(await fs.readFile(path.join(directory, "project.json"), "utf8"));
+      if (project.id !== id || project.ownerId !== request.authUser.id) {
+        return response.status(404).json({ok: false, error: "Project not found."});
+      }
+      const idleStatuses = new Set(["storyboard_ready", "video_ready", "storyboard_failed", "narration_failed", "video_failed", "approval_failed"]);
+      if (!idleStatuses.has(project.status)) {
+        return response.status(409).json({ok: false, error: "This project is still processing or needs review. It cannot be deleted yet."});
+      }
+      await fs.rm(directory, {recursive: true, force: false});
+      return response.json({ok: true, deletedProjectId: id});
+    } catch (error) {
+      if (error?.code === "ENOENT") return response.status(404).json({ok: false, error: "Project not found."});
+      return response.status(503).json({ok: false, error: "Project deletion could not be completed. Refresh the project list before retrying."});
+    }
+  }));
 
   const uploadProject =
     createUploadMiddleware(tempDirectory);
@@ -983,7 +1021,7 @@ export async function createProjectRouter({
 
   router.post(
     "/:projectId/finalize",
-    async (request, response) => {
+    withProjectLock(async (request, response) => {
       const projectId =
         String(request.params.projectId ?? "");
 
@@ -1360,7 +1398,7 @@ export async function createProjectRouter({
             generationStage
         });
       }
-    }
+    })
   );
 
   return router;
