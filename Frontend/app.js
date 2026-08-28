@@ -1,6 +1,10 @@
+let accountProjectHistory = [];
+let accountHistoryRevision = 0;
+let accountListRequest = 0;
+
 const MAX_IMAGES = 10;
-const PROJECT_HISTORY_KEY =
-  "quickadAIRecentProjectsV1";
+let PROJECT_HISTORY_KEY =
+  null;
 const MAX_RECENT_PROJECTS = 10;
 const PROJECT_ID_PATTERN =
   /^[0-9a-f-]{36}$/i;
@@ -1023,7 +1027,7 @@ finalVideoButton.addEventListener(
           )
       };
 
-      const response = await fetch(
+      const response = await quickAdProjectFetch(
         `/api/projects/${currentProjectId}/finalize`,
         {
           method: "POST",
@@ -1254,42 +1258,23 @@ customCtaInput.addEventListener(
 updateCustomCtaField();
 
 function readProjectHistory() {
-  try {
-    const storedHistory =
-      JSON.parse(
-        localStorage.getItem(
-          PROJECT_HISTORY_KEY
-        ) || "[]"
-      );
-
-    if (!Array.isArray(storedHistory)) {
-      return [];
-    }
-
-    return storedHistory
-      .filter(
-        (entry) =>
-          entry &&
-          PROJECT_ID_PATTERN.test(
-            String(entry.id ?? "")
-          )
-      )
-      .slice(0, MAX_RECENT_PROJECTS);
-  } catch {
-    return [];
-  }
+  if (!PROJECT_HISTORY_KEY) return [];
+  return accountProjectHistory.slice(0, MAX_RECENT_PROJECTS);
 }
 
 function writeProjectHistory(history) {
-  localStorage.setItem(
-    PROJECT_HISTORY_KEY,
-    JSON.stringify(
-      history.slice(
-        0,
-        MAX_RECENT_PROJECTS
-      )
-    )
-  );
+  if (!PROJECT_HISTORY_KEY) return;
+  accountProjectHistory = history.slice(0, MAX_RECENT_PROJECTS);
+  accountHistoryRevision++;
+  try {
+    localStorage.setItem(
+      PROJECT_HISTORY_KEY,
+      JSON.stringify(history.slice(0, MAX_RECENT_PROJECTS))
+    );
+  } catch {
+    // Browser storage failure must not turn successful generation into failure.
+    console.warn("Project history could not be saved in this browser.");
+  }
 }
 
 function removeProjectFromHistory(projectId) {
@@ -1615,7 +1600,7 @@ async function openSavedProject(
 
   try {
     const response =
-      await fetch(
+      await quickAdProjectFetch(
         `/api/projects/${projectId}`
       );
 
@@ -1729,25 +1714,10 @@ async function openSavedProject(
   }
 }
 
-clearProjectHistoryButton.addEventListener(
-  "click",
-  () => {
-    const confirmed =
-      window.confirm(
-        "Remove the Recent Projects list from this browser? Your saved project files will not be deleted."
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    localStorage.removeItem(
-      PROJECT_HISTORY_KEY
-    );
-
-    renderRecentProjects();
-  }
-);
+clearProjectHistoryButton.textContent = "Refresh projects";
+clearProjectHistoryButton.addEventListener("click", () => {
+  loadAccountProjects();
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -1821,7 +1791,7 @@ form.addEventListener("submit", async (event) => {
       );
     }
 
-    const response = await fetch(
+    const response = await quickAdProjectFetch(
       "/api/projects",
       {
         method: "POST",
@@ -1844,15 +1814,16 @@ form.addEventListener("submit", async (event) => {
     const sceneCount =
       result.storyboard.scenes.length;
 
-    renderVideoPlanReview(
-      result.project,
-      result.storyboard
-    );
-
+    // Record the saved project before rendering its review interface.
     rememberProject(
       result.project,
       result.storyboard,
       result.project.status
+    );
+
+    renderVideoPlanReview(
+      result.project,
+      result.storyboard
     );
 
     const successMark =
@@ -1959,3 +1930,211 @@ form.addEventListener("submit", async (event) => {
 
 renderRecentProjects();
 renderImagePreviews();
+
+
+/* Account-scoped history and stale-response protection. */
+let quickAdHistoryUser = null;
+let quickAdIdentityKnown = false;
+let quickAdPageLeaving = false;
+const quickAdAuthSignalKey = "quickadAuthChangeV1";
+
+function quickAdReloadPrivatePage() {
+  if (quickAdPageLeaving) return;
+  quickAdPageLeaving = true;
+
+  // Hide immediately, before navigation finishes.
+  document.body.style.visibility = "hidden";
+  window.location.reload();
+}
+
+window.quickAdAccountChanged = (user) => {
+  const nextId = typeof user?.id === "string" ? user.id : null;
+
+  if (quickAdIdentityKnown && nextId !== quickAdHistoryUser) {
+    quickAdReloadPrivatePage();
+    return;
+  }
+
+  quickAdIdentityKnown = true;
+  quickAdHistoryUser = nextId;
+  PROJECT_HISTORY_KEY = nextId
+    ? `quickadAIRecentProjectsV2:${nextId}`
+    : null;
+
+  renderRecentProjects();
+};
+
+window.quickAdNotifyAccountChange = () => {
+  // Contains no identity, credentials, or tokens.
+  try {
+    localStorage.setItem(quickAdAuthSignalKey, crypto.randomUUID());
+  } catch {
+    // Storage may be unavailable; focus/session checks remain active.
+  }
+};
+
+window.addEventListener("storage", (event) => {
+  if (event.key === quickAdAuthSignalKey) {
+    quickAdReloadPrivatePage();
+  }
+});
+
+async function quickAdReadSession() {
+  const response = await fetch("/api/auth/session", {
+    credentials: "same-origin",
+    cache: "no-store",
+    signal: AbortSignal.timeout(30000)
+  });
+
+  if (response.status === 401) return null;
+
+  const data = await response.json();
+  if (!response.ok || !data.ok || !data.user?.id) {
+    throw new Error("Your session could not be verified. Please try again.");
+  }
+  return data.user;
+}
+
+async function quickAdCheckPageSession() {
+  try {
+    const user = await quickAdReadSession();
+    window.quickAdAccountChanged(user);
+    return user;
+  } catch (error) {
+    // Do not continue showing private content with an uncertain identity.
+    if (quickAdHistoryUser) quickAdReloadPrivatePage();
+    throw error;
+  }
+}
+
+async function quickAdProjectFetch(url, options = {}) {
+  const user = await quickAdCheckPageSession();
+
+  if (quickAdPageLeaving) {
+    throw new Error("Account changed. Reloading.");
+  }
+
+  if (!user) {
+    throw new Error("Please sign in using the Account button first.");
+  }
+
+  const requestUserId = user.id;
+  const response = await fetch(url, {
+    ...options,
+    credentials: "same-origin",
+    cache: "no-store"
+  });
+
+  // Delay delivery to existing UI code until identity is checked again.
+  const data = await response.json();
+  const currentUser = await quickAdCheckPageSession();
+
+  if (
+    quickAdPageLeaving ||
+    currentUser?.id !== requestUserId ||
+    response.status === 401
+  ) {
+    quickAdReloadPrivatePage();
+    throw new Error("Your account session changed. Reloading.");
+  }
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    async json() {
+      if (quickAdPageLeaving || quickAdHistoryUser !== requestUserId) {
+        throw new Error("Account changed. Reloading.");
+      }
+      return data;
+    }
+  };
+}
+
+quickAdCheckPageSession()
+  .then((user) => {
+    if (user && !quickAdPageLeaving) return loadAccountProjects();
+  })
+  .catch(() => {
+    recentProjects.hidden = false;
+    recentProjectStatus.textContent =
+      "Session unavailable. Open Account to try again.";
+  });
+
+window.addEventListener("focus", () => {
+  if (!quickAdPageLeaving) {
+    quickAdCheckPageSession().catch(() => {});
+  }
+});
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) quickAdReloadPrivatePage();
+});
+
+
+async function loadAccountProjects() {
+  if (quickAdPageLeaving) return;
+
+  const requestNumber = ++accountListRequest;
+  const revision = accountHistoryRevision;
+  const historyKey = PROJECT_HISTORY_KEY;
+
+  if (!historyKey) {
+    recentProjects.hidden = false;
+    recentProjectStatus.textContent = "Sign in to see your saved projects.";
+    return;
+  }
+
+  clearProjectHistoryButton.disabled = true;
+  recentProjects.hidden = false;
+  recentProjectStatus.textContent = "Loading your saved projects...";
+
+  try {
+    const response = await quickAdProjectFetch("/api/projects");
+    const data = await response.json();
+
+    if (
+      quickAdPageLeaving ||
+      requestNumber !== accountListRequest ||
+      historyKey !== PROJECT_HISTORY_KEY
+    ) return;
+
+    if (!response.ok || !data.ok || !Array.isArray(data.projects)) {
+      throw new Error("Your project list could not be loaded.");
+    }
+
+    // Do not overwrite a project added while this request was running.
+    if (revision !== accountHistoryRevision) return;
+
+    const projects = data.projects.filter(
+      entry => entry && PROJECT_ID_PATTERN.test(String(entry.id ?? ""))
+    );
+
+    writeProjectHistory(projects);
+    renderRecentProjects();
+
+    if (projects.length === 0) {
+      recentProjects.hidden = false;
+      recentProjectStatus.textContent =
+        "No saved projects in this account yet.";
+    }
+  } catch (error) {
+    if (!quickAdPageLeaving && historyKey === PROJECT_HISTORY_KEY) {
+      recentProjects.hidden = false;
+      recentProjectStatus.textContent =
+        error.message || "Project list unavailable. Click Refresh projects to retry.";
+    }
+  } finally {
+    if (!quickAdPageLeaving && requestNumber === accountListRequest) {
+      clearProjectHistoryButton.disabled = false;
+    }
+  }
+}
+
+// Update the old browser-only description without changing saved files.
+for (const paragraph of recentProjects.querySelectorAll("p")) {
+  if (paragraph.textContent.trim() ===
+      "Projects created in this browser appear here.") {
+    paragraph.textContent =
+      "Your 10 most recent saved projects in this account appear here.";
+  }
+}

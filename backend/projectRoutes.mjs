@@ -1,3 +1,6 @@
+import cookieParser from "cookie-parser";
+import { requireUser } from "./authRoutes.mjs";
+import { authConfiguration } from "./authService.mjs";
 import crypto from "node:crypto";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -276,6 +279,90 @@ export async function createProjectRouter({
 }) {
   const router = express.Router();
 
+  // Authentication runs before any upload or project handler.
+  router.use(cookieParser());
+  router.use((_request, response, next) => {
+    response.set("Cache-Control", "private, no-store");
+    response.vary("Cookie");
+    next();
+  });
+  router.use(requireUser);
+
+  // Protect cookie-authenticated writes, including multipart uploads.
+  router.use((request, response, next) => {
+    if (["GET", "HEAD", "OPTIONS"].includes(request.method)) {
+      return next();
+    }
+
+    let expectedOrigin;
+    try {
+      expectedOrigin =
+        new URL(authConfiguration().applicationOrigin).origin;
+    } catch {
+      return response.status(503).json({
+        ok: false,
+        error: "Application origin is not configured correctly."
+      });
+    }
+
+    if (request.get("origin") !== expectedOrigin) {
+      return response.status(403).json({
+        ok: false,
+        error: "This request must come from QuickAd AI."
+      });
+    }
+
+    next();
+  });
+
+  // Every existing route with :projectId passes through this check.
+  router.param("projectId", async (request, response, next, projectId) => {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        .test(projectId)
+    ) {
+      return response.status(400).json({
+        ok: false,
+        error: "Invalid project ID."
+      });
+    }
+
+    try {
+      const savedProject = JSON.parse(
+        await fs.readFile(
+          path.join(projectRoot, "projects", projectId, "project.json"),
+          "utf8"
+        )
+      );
+
+      // Missing owners are denied, not automatically assigned.
+      if (
+        !savedProject ||
+        typeof savedProject.ownerId !== "string" ||
+        savedProject.ownerId !== request.authUser.id
+      ) {
+        return response.status(404).json({
+          ok: false,
+          error: "Project not found."
+        });
+      }
+
+      next();
+    } catch (error) {
+      if (error?.code === "ENOENT") {
+        return response.status(404).json({
+          ok: false,
+          error: "Project not found."
+        });
+      }
+
+      response.status(503).json({
+        ok: false,
+        error: "Project access could not be verified. Please try again."
+      });
+    }
+  });
+
   const tempDirectory =
     path.join(projectRoot, "temp");
 
@@ -292,6 +379,85 @@ export async function createProjectRouter({
 
   const uploadProject =
     createUploadMiddleware(tempDirectory);
+
+  // Authentication middleware above applies to this list too.
+  router.get("/", async (request, response) => {
+    try {
+      const entries = await fs.readdir(projectsDirectory, {
+        withFileTypes: true
+      });
+      const projects = [];
+
+      for (const entry of entries) {
+        if (
+          !entry.isDirectory() ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+            .test(entry.name)
+        ) {
+          continue;
+        }
+
+        let project;
+        try {
+          project = JSON.parse(
+            await fs.readFile(
+              path.join(projectsDirectory, entry.name, "project.json"),
+              "utf8"
+            )
+          );
+        } catch (error) {
+          // A directory may exist briefly before its first metadata write.
+          if (error?.code === "ENOENT") continue;
+          throw error;
+        }
+
+        if (
+          !project ||
+          project.ownerId !== request.authUser.id ||
+          project.id !== entry.name
+        ) {
+          continue;
+        }
+
+        const createdAt = String(project.createdAt ?? "");
+        const updatedAt = String(
+          project.updatedAt ??
+          project.video?.generatedAt ??
+          project.storyboard?.approvedAt ??
+          project.storyboard?.generatedAt ??
+          createdAt
+        );
+
+        projects.push({
+          id: project.id,
+          title: String(
+            project.storyboard?.title || "Untitled video"
+          ).slice(0, 200),
+          style: String(project.style ?? ""),
+          status: String(project.status ?? "uploaded"),
+          createdAt,
+          updatedAt
+        });
+      }
+
+      const timestamp = (project) =>
+        Date.parse(project.updatedAt) || Date.parse(project.createdAt) || 0;
+
+      projects.sort((a, b) =>
+        timestamp(b) - timestamp(a) || a.id.localeCompare(b.id)
+      );
+
+      response.json({
+        ok: true,
+        projects: projects.slice(0, 10)
+      });
+    } catch {
+      response.status(503).json({
+        ok: false,
+        error: "Your project list could not be loaded. Please try again."
+      });
+    }
+  });
 
   router.post(
     "/",
@@ -339,6 +505,7 @@ export async function createProjectRouter({
 
         const project = {
           id: projectId,
+          ownerId: request.authUser.id,
           status: "uploaded",
           createdAt: new Date().toISOString(),
           description:

@@ -1,3 +1,4 @@
+import { createAuthRouter } from "./backend/authRoutes.mjs";
 import express from "express";
 import multer from "multer";
 import path from "node:path";
@@ -8,6 +9,9 @@ import {
   cleanFailedUpload,
   createProjectRouter
 } from "./backend/projectRoutes.mjs";
+import {
+  isAuthConfigured
+} from "./backend/authService.mjs";
 
 const app = express();
 const port = Number(process.env.PORT) || 4100;
@@ -30,9 +34,24 @@ app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
     product: "QuickAd AI",
-    version: "0.8.0"
+    version: "0.8.0",
+    authConfigured:
+      isAuthConfigured()
   });
 });
+
+app.get(
+  "/api/auth/config",
+  (_request, response) => {
+    response.json({
+      ok: true,
+      authConfigured:
+        isAuthConfigured()
+    });
+  }
+);
+
+app.use("/api/auth", createAuthRouter());
 
 const projectRouter = await createProjectRouter({
   projectRoot
