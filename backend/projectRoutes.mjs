@@ -1,4 +1,5 @@
 import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
+import { getUserUsage, incrementFinalVideo, countUserProjects, canCreateProject, canGenerateFinalVideo, LIMITS } from "./usageLimits.mjs";
 import cookieParser from "cookie-parser";
 import { requireUser } from "./authRoutes.mjs";
 import { authConfiguration } from "./authService.mjs";
@@ -416,6 +417,28 @@ export async function createProjectRouter({
     }
   }));
 
+  router.get("/usage", async (request, response) => {
+    try {
+      const [usage, projectCount] = await Promise.all([
+        getUserUsage(projectRoot, request.authUser.id),
+        countUserProjects(projectRoot, request.authUser.id)
+      ]);
+      response.json({
+        ok: true,
+        limits: LIMITS,
+        usage: {
+          finalVideoCount: usage.finalVideoCount,
+          projectCount,
+          freeVideosRemaining: Math.max(0, LIMITS.FREE_FINAL_VIDEOS - usage.finalVideoCount),
+          canCreateMoreProjects: projectCount < LIMITS.MAX_PROJECTS,
+          canGenerateMoreVideos: usage.finalVideoCount < LIMITS.FREE_FINAL_VIDEOS
+        }
+      });
+    } catch {
+      response.status(503).json({ ok: false, error: "Usage could not be loaded." });
+    }
+  });
+
   const uploadProject =
     createUploadMiddleware(tempDirectory);
 
@@ -486,9 +509,19 @@ export async function createProjectRouter({
         timestamp(b) - timestamp(a) || a.id.localeCompare(b.id)
       );
 
+      const usage = await getUserUsage(projectRoot, request.authUser.id);
+
       response.json({
         ok: true,
-        projects: projects.slice(0, 10)
+        projects: projects.slice(0, 10),
+        limits: LIMITS,
+        usage: {
+          finalVideoCount: usage.finalVideoCount,
+          projectCount: projects.length,
+          freeVideosRemaining: Math.max(0, LIMITS.FREE_FINAL_VIDEOS - usage.finalVideoCount),
+          canCreateMoreProjects: projects.length < LIMITS.MAX_PROJECTS,
+          canGenerateMoreVideos: usage.finalVideoCount < LIMITS.FREE_FINAL_VIDEOS
+        }
       });
     } catch {
       response.status(503).json({
@@ -508,6 +541,21 @@ export async function createProjectRouter({
       let projectDirectory = "";
 
       try {
+        // --- v0.9.4: Enforce max 10 projects per user ---
+        const userProjectCount = await countUserProjects(projectRoot, request.authUser.id);
+        const createCheck = canCreateProject(userProjectCount);
+        if (!createCheck.ok) {
+          await removeFiles(uploadedFiles);
+          response.status(createCheck.status).json({
+            ok: false,
+            code: createCheck.code,
+            error: createCheck.error,
+            limits: LIMITS,
+            projectCount: userProjectCount
+          });
+          return;
+        }
+
         const validated =
           validateProject(request);
 
@@ -1246,6 +1294,22 @@ export async function createProjectRouter({
           "utf8"
         );
 
+                // --- v0.9.4: Enforce 2 free final videos ---
+        const usage = await getUserUsage(projectRoot, request.authUser.id);
+        const videoCheck = canGenerateFinalVideo(usage, project);
+        if (!videoCheck.ok) {
+          response.status(videoCheck.status).json({
+            ok: false,
+            code: videoCheck.code,
+            error: videoCheck.error,
+            limits: LIMITS,
+            usage: { finalVideoCount: usage.finalVideoCount }
+          });
+          return;
+        }
+
+        const isFreeRerender = videoCheck.freeRerender;
+
         generationStage = "narration";
 
         const narration =
@@ -1341,6 +1405,16 @@ export async function createProjectRouter({
           JSON.stringify(project, null, 2),
           "utf8"
         );
+
+        // --- v0.9.4: Only spend a credit on first final video for this project ---
+        if (!isFreeRerender) {
+          try {
+            await incrementFinalVideo(projectRoot, request.authUser.id);
+          } catch (e) {
+            console.error("Failed to increment usage:", e);
+            // Don't fail the request - video is already ready
+          }
+        }
 
         response.status(201).json({
           ok: true,

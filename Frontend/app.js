@@ -1,3 +1,48 @@
+async function updateQuota(){
+  fetch("/api/projects/usage",{credentials:"include"})
+  .then(r=>r.json())
+  .then(data=>{
+    if(!data.ok) return;
+    const u=data.usage;
+    const el=document.getElementById("quotaBanner");
+    if(!el) return;
+    const videosLeft = u.freeVideosRemaining;
+    const projects = u.projectCount;
+    const maxProjects = data.limits.MAX_PROJECTS;
+    
+    el.innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;">
+        <div>
+          <span style="font-weight:700;">🎬 Free videos:</span> You have <b>${videosLeft} free ${videosLeft==1?"video":"videos"} left</b> (out of 2). 
+          <span style="color:#6b7280;">Editing and changing music is always free.</span>
+        </div>
+        <div>
+          <span style="font-weight:700;">📁 Saved projects:</span> You have <b>${projects} saved</b> (max ${maxProjects}). 
+          ${projects>=maxProjects 
+            ? `<span style="color:#b91c1c;font-weight:700;"> — Your folder is full. Please hit Delete on an old project to make space.</span>`
+            : `<span style="color:#6b7280;">Delete old ones to free space.</span>`
+          }
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:12px;">
+        <div style="flex:1;background:#f3f4f6;border-radius:6px;height:8px;overflow:hidden;"><div style="width:${(projects/maxProjects)*100}%;height:100%;background:${projects>=8?"#ef4444":"#6366f1"}"></div></div>
+        <div style="flex:1;background:#f3f4f6;border-radius:6px;height:8px;overflow:hidden;"><div style="width:${((2-videosLeft)/2)*100}%;height:100%;background:${videosLeft==0?"#ef4444":"#10b981"}"></div></div>
+      </div>
+    `;
+  })
+  .catch(()=>{});
+} async function updateQuota_old() {
+  try {
+    const res = await fetch('/api/projects/usage', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.ok) return;
+    const u = data.usage;
+    const el = document.getElementById('quotaBanner');
+    if (el) {
+      el.innerHTML = '<strong>' + u.freeVideosRemaining + ' / ' + data.limits.FREE_FINAL_VIDEOS + ' free videos left</strong> - ' + u.projectCount + ' / ' + data.limits.MAX_PROJECTS + ' projects' + (!u.canCreateMoreProjects ? ' <span style="color:#b91c1c"> — Limit reached, delete a project</span>' : '') + (!u.canGenerateMoreVideos ? ' <span style="color:#b91c1c"> — Free video limit reached</span>' : '');
+    }
+  } catch {}
+}
 let accountProjectHistory = [];
 let accountHistoryRevision = 0;
 let accountListRequest = 0;
@@ -2175,3 +2220,8 @@ for (const paragraph of recentProjects.querySelectorAll("p")) {
       "Your 10 most recent saved projects in this account appear here.";
   }
 }
+
+window.addEventListener('load', updateQuota);
+setTimeout(updateQuota, 1000);
+
+
