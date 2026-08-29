@@ -1107,7 +1107,7 @@ finalVideoButton.addEventListener(
 
       window.quickAdMusic.lock("ready");
       finalVideoButton.textContent =
-        "Video Ready ✓";
+        "Video Ready"; try{ updateQuota(); }catch(e){} try{ loadAccountProjects(); }catch(e){} // auto-refresh quota ✓";
 
       rememberProject(
         {
@@ -2224,4 +2224,21 @@ for (const paragraph of recentProjects.querySelectorAll("p")) {
 window.addEventListener('load', updateQuota);
 setTimeout(updateQuota, 1000);
 
+
+
+
+// --- AUTO-REFRESH QUOTA AFTER VIDEO READY (patched) ---
+(function(){
+  const origFetch = window.fetch;
+  window.fetch = async function(...args){
+    const res = await origFetch.apply(this, args);
+    try{
+      const url = String(args[0]||'');
+      if(url.includes('/finalize') && res.status===201){
+        setTimeout(()=>{ try{ updateQuota(); }catch(e){} try{ loadAccountProjects(); }catch(e){} }, 800);
+      }
+    }catch(e){}
+    return res;
+  };
+})();
 
