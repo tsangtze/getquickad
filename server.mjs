@@ -21,6 +21,16 @@ const projectRoot = path.dirname(currentFile);
 const frontendPath = path.join(projectRoot, "Frontend");
 const environmentPath = path.join(projectRoot, ".env");
 
+// FIX: Ensure required dirs exist (fixes prod empty video bug)
+for (const dir of ["output", "temp", "uploads", "users"]) {
+  const fullPath = path.join(projectRoot, dir);
+  if (!fs.existsSync(fullPath)) {
+    fs.mkdirSync(fullPath, {recursive:true});
+    console.log(`Created ${dir}/`);
+  }
+}
+
+
 if (fs.existsSync(environmentPath)) {
   loadEnvFile(environmentPath);
 }
