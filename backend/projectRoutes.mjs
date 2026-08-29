@@ -18,8 +18,11 @@ import {
   generateNarration
 } from "./narrationGenerator.mjs";
 import {
-  renderVideo
+  renderVideo,
+  uploadToR2
 } from "./videoRenderer.mjs";
+import { r2Client } from "./r2Client.mjs";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 
 const MAX_IMAGE_COUNT = 10;
@@ -1377,6 +1380,19 @@ export async function createProjectRouter({
             musicChoice,
             musicVolume
           });
+
+        // --- R2: upload final MP4 to Cloudflare ---
+        try {
+          const localVideoPath = path.join(projectDirectory, "video.mp4");
+          const r2Key = `videos/${request.authUser.id}/${projectId}/final-${Date.now()}.mp4`;
+          const r2Url = await uploadToR2(localVideoPath, r2Key);
+          video.r2Key = r2Key;
+          video.r2Url = r2Url;
+          video.url = r2Url; // override local url
+          console.log(`Uploaded to R2: ${r2Url}`);
+        } catch (r2Err) {
+          console.error("R2 upload failed, keeping local:", r2Err);
+        }
 
         await fs.writeFile(
           path.join(
