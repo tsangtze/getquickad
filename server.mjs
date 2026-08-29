@@ -1,4 +1,5 @@
 import { createAuthRouter } from "./backend/authRoutes.mjs";
+import path from "node:path";
 import express from "express";
 import { cleanupExpiredProjects } from "./backend/cleanup.mjs";
 import multer from "multer";
@@ -121,7 +122,9 @@ app.use(async (error, request, response, next) => {
 });
 
 // Run 7-day cleanup on startup and every 24h
-const PROJECTS_ROOT = process.env.PROJECTS_ROOT || "/opt/render/project/src/data/projects";
+import path from "node:path";
+const DATA_ROOT = process.env.DATA_ROOT || process.env.PROJECTS_ROOT || "/opt/render/project/src/data";
+const PROJECTS_ROOT = path.join(DATA_ROOT, "projects");
 cleanupExpiredProjects(PROJECTS_ROOT).catch(console.error);
 setInterval(() => cleanupExpiredProjects(PROJECTS_ROOT).catch(console.error), 24*60*60*1000);
 
