@@ -1,5 +1,6 @@
 import { createAuthRouter } from "./backend/authRoutes.mjs";
 import express from "express";
+import { cleanupExpiredProjects } from "./backend/cleanup.mjs";
 import multer from "multer";
 import path from "node:path";
 import fs from "node:fs";
@@ -118,6 +119,11 @@ app.use(async (error, request, response, next) => {
       "QuickAd AI could not create the project. Please try again."
   });
 });
+
+// Run 7-day cleanup on startup and every 24h
+const PROJECTS_ROOT = process.env.PROJECTS_ROOT || "/opt/render/project/src/data/projects";
+cleanupExpiredProjects(PROJECTS_ROOT).catch(console.error);
+setInterval(() => cleanupExpiredProjects(PROJECTS_ROOT).catch(console.error), 24*60*60*1000);
 
 app.listen(port, "0.0.0.0", () => {
   console.log(
