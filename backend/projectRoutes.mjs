@@ -1052,6 +1052,17 @@ export async function createProjectRouter({
         return;
       }
 
+      // --- R2: if project.json has r2Url, redirect to Cloudflare ---
+      try {
+        const projJsonPath = path.join(projectsDirectory, projectId, "project.json");
+        const projRaw = await fs.readFile(projJsonPath, "utf8");
+        const proj = JSON.parse(projRaw);
+        if (proj?.video?.r2Url || proj?.video?.url?.includes("r2.dev")) {
+          const r2Url = proj.video.r2Url || proj.video.url;
+          return response.redirect(302, r2Url);
+        }
+      } catch {}
+
       const videoPath = path.join(
         projectsDirectory,
         projectId,
