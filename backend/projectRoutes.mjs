@@ -1466,7 +1466,7 @@ export async function createProjectRouter({
             generationStage === "narration"
               ? "Narration could not be generated. Please try again."
               : generationStage === "video"
-                ? "Video render failed: ${error.message} | ${(error.standardError||"""").slice(0,200)} [${error.code||""""}]"
+              ? `Video render failed: ${error.message} | ${(error.standardError||"").slice(0,200)} [${error.code||""}]`
                 : "The approved video plan could not be saved.",
           stage:
             generationStage
@@ -1485,4 +1485,3 @@ export async function cleanFailedUpload(
     allUploadedFiles(request)
   );
 }
-
