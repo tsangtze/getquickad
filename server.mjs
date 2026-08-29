@@ -17,16 +17,16 @@ const app = express();
 const port = Number(process.env.PORT) || 4100;
 
 const currentFile = fileURLToPath(import.meta.url);
-const projectRoot = path.dirname(currentFile);
+const projectRoot = process.env.PROJECT_ROOT || path.dirname(currentFile);
 const frontendPath = path.join(projectRoot, "Frontend");
 const environmentPath = path.join(projectRoot, ".env");
 
 // FIX: Ensure required dirs exist (fixes prod empty video bug)
-for (const dir of ["output", "temp", "uploads", "users"]) {
+for (const dir of ["output", "temp", "uploads", "users", "projects"]) {
   const fullPath = path.join(projectRoot, dir);
   if (!fs.existsSync(fullPath)) {
     fs.mkdirSync(fullPath, {recursive:true});
-    console.log(`Created ${dir}/`);
+    console.log(`Created ${dir}/ at ${fullPath}`);
   }
 }
 
