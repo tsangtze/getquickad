@@ -1,4 +1,7 @@
 import fs from "node:fs/promises";
+import fsSync from "node:fs";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { r2Client, R2_BUCKET, R2_PUBLIC_BASE } from "./r2Client.mjs";
 import path from "node:path";
 import {
   probeDuration,
@@ -689,4 +692,11 @@ export async function renderVideo({
       )
     );
   }
+}
+
+
+export async function uploadToR2(localPath, key) {
+  const stream = fsSync.createReadStream(localPath);
+  await r2Client.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: stream, ContentType: "video/mp4" }));
+  return `${R2_PUBLIC_BASE}/${key}`;
 }
