@@ -1,7 +1,9 @@
 import {
   spawn
 } from "node:child_process";
-import ffmpegPath from "ffmpeg-static";
+import bundledFfmpegPath from "ffmpeg-static";
+
+const ffmpegPath = process.env.FFMPEG_PATH?.trim() || bundledFfmpegPath || "ffmpeg";
 import ffprobeInstaller from "@ffprobe-installer/ffprobe";
 
 const ffprobePath =
