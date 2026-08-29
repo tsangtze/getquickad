@@ -95,7 +95,9 @@ async function findVideoFont() {
     process.env.WINDIR ||
     "C:\\Windows";
 
+    const bundledFont = path.join(process.cwd(), 'backend/fonts/Inter-Bold.ttf');
   const candidates = [
+    bundledFont,
     path.join(
       windowsDirectory,
       "Fonts",
