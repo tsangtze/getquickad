@@ -17,8 +17,9 @@ const app = express();
 const port = Number(process.env.PORT) || 4100;
 
 const currentFile = fileURLToPath(import.meta.url);
-const projectRoot = process.env.PROJECT_ROOT || path.dirname(currentFile);
-const frontendPath = path.join(projectRoot, "Frontend");
+const appRoot = path.dirname(currentFile);
+const projectRoot = process.env.PROJECT_ROOT || appRoot;
+const frontendPath = path.join(appRoot, "Frontend");
 const environmentPath = path.join(projectRoot, ".env");
 
 // FIX: Ensure required dirs exist (fixes prod empty video bug)
