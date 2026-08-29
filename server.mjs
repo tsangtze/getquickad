@@ -3,7 +3,7 @@ import path from "node:path";
 import express from "express";
 import { cleanupExpiredProjects } from "./backend/cleanup.mjs";
 import multer from "multer";
-import path from "node:path";
+ 
 import fs from "node:fs";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
@@ -122,7 +122,6 @@ app.use(async (error, request, response, next) => {
 });
 
 // Run 7-day cleanup on startup and every 24h
-import path from "node:path";
 const DATA_ROOT = process.env.DATA_ROOT || process.env.PROJECTS_ROOT || "/opt/render/project/src/data";
 const PROJECTS_ROOT = path.join(DATA_ROOT, "projects");
 cleanupExpiredProjects(PROJECTS_ROOT).catch(console.error);
