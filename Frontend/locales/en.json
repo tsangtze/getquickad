@@ -181,5 +181,12 @@
   "quota.banner_html": "🎬 Free videos: <b>{remaining}</b> of {limit} left • 📁 Saved projects: <b>{projects}</b>",
   "quota.free_limit_reached": "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available.",
   "recent.delete_blocked": "This project is still processing or needs review. It cannot be deleted yet.",
-  "review.plan_ready_title": "Your AI video plan is ready"
+  "review.plan_ready_title": "Your AI video plan is ready",
+  "result.summary_saved": "{count} scenes · AI narration · 25-second MP4",
+  "review.all_approved": "All {total} scenes are approved. You can now create the final video.",
+  "result.project_prefix": "Project {id} • ",
+  "result.summary_complete": "{count} scenes · 25-second MP4 · AI narration complete",
+  "review.final_btn_creating": "Creating Final Video...",
+  "result.scenes_prefix": "{count} scenes · ",
+  "music.creating_selected": "Creating your video with the selected soundtrack…"
 }

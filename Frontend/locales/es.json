@@ -233,5 +233,12 @@
   "quota.banner_html": "🎬 Videos gratis: te quedan <b>{remaining}</b> de {limit} • 📁 Proyectos guardados: <b>{projects}</b>",
   "quota.free_limit_reached": "Ya usaste tus 2 videos gratis. Actualiza tu plan para crear más videos. Tus videos y vistas previas existentes seguirán disponibles.",
   "recent.delete_blocked": "Este proyecto aún se está procesando o necesita revisión. Todavía no se puede eliminar.",
-  "review.plan_ready_title": "Tu plan de video con IA está listo"
+  "review.plan_ready_title": "Tu plan de video con IA está listo",
+  "result.summary_saved": "{count} escenas · Narración de IA · MP4 de 25 segundos",
+  "review.all_approved": "Las {total} escenas están aprobadas. Ya puedes crear el video final.",
+  "result.project_prefix": "Proyecto {id} • ",
+  "result.summary_complete": "{count} escenas · MP4 de 25 segundos · Narración de IA completa",
+  "review.final_btn_creating": "Creando video final...",
+  "result.scenes_prefix": "{count} escenas · ",
+  "music.creating_selected": "Creando tu video con la pista seleccionada…"
 }

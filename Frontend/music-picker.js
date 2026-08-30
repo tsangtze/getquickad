@@ -34,7 +34,7 @@
     stop();
     note.textContent = next === "ready"
       ? musicText("music.locked_note", "Music selection is saved with this video. Create a new project for different music.")
-      : next === "busy" ? "Creating your video with the selected soundtrack…"
+      : next === "busy" ? musicText("music.creating_selected", "Creating your video with the selected soundtrack…")
       : musicText("music.choose_before_final", "Choose a track before creating the final video.");
   }
   field.addEventListener("change", event => { if (event.target.name === "musicChoice") stop(); });

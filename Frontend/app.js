@@ -532,7 +532,7 @@ function validateVideoPlan() {
 
   finalVideoButton.disabled = false;
   planStatus.textContent =
-    `All ${totalScenes} scenes are approved. You can now create the final video.`;
+    uiText("review.all_approved", `All ${totalScenes} scenes are approved. You can now create the final video.`, { total: totalScenes });
 
   return true;
 }
@@ -1000,7 +1000,7 @@ finalVideoButton.addEventListener(
 
     finalVideoButton.disabled = true;
     finalVideoButton.textContent =
-      "Creating Final Video...";
+      uiText("review.final_btn_creating", "Creating Final Video...");
 
     planStatus.classList.remove(
       "approved"
@@ -1090,7 +1090,7 @@ finalVideoButton.addEventListener(
         "video-result-summary";
 
       resultSummary.textContent =
-        `${currentStoryboard.scenes.length} scenes · 25-second MP4 · AI narration complete`;
+        uiText("result.summary_complete", `${currentStoryboard.scenes.length} scenes · 25-second MP4 · AI narration complete`, { count: currentStoryboard.scenes.length });
 
       const resultActions =
         document.createElement("span");
@@ -1164,7 +1164,7 @@ finalVideoButton.addEventListener(
         document.createElement("span");
 
       successDetails.textContent =
-        `${currentStoryboard.scenes.length} scenes · AI narration · 25-second MP4`;
+        uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · 25-second MP4`, { count: currentStoryboard.scenes.length });
 
       const successNext =
         document.createElement("small");
@@ -1560,7 +1560,7 @@ function renderRecoveredVideoResult(
     "video-result-summary";
 
   resultSummary.textContent =
-    `${currentStoryboard.scenes.length} scenes · ` +
+    uiText("result.scenes_prefix", `${currentStoryboard.scenes.length} scenes · `, { count: currentStoryboard.scenes.length }) +
     uiText("video.mp4_duration", `${currentStoryboard.totalDurationSeconds || 25}-second MP4 · `, { seconds: currentStoryboard.totalDurationSeconds || 25 }) +
     "AI narration complete";
 
@@ -1898,7 +1898,7 @@ form.addEventListener("submit", async (event) => {
       "success-details";
 
     successDetails.textContent =
-      `Project ${shortProjectId} • ` +
+      uiText("result.project_prefix", `Project ${shortProjectId} • `, { id: shortProjectId }) +
       `"${result.storyboard.title}" • ` +
       `${sceneCount} scenes • ` +
       uiText("video.duration_seconds", `${result.storyboard.totalDurationSeconds} seconds`, { seconds: result.storyboard.totalDurationSeconds });

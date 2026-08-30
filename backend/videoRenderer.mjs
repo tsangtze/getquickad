@@ -74,7 +74,7 @@ function getRoleLabel(role) {
   const labels = {
     hook: "DISCOVER",
     product: "THE PRODUCT",
-    benefit: "WHY IT MATTERS",
+    benefit: project.language?.toLowerCase().startsWith("es") ? "POR QUÉ IMPORTA" : "WHY IT MATTERS",
     proof: "BUILT FOR YOU",
     cta: "TAKE THE NEXT STEP"
   };
