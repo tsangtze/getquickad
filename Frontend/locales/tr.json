@@ -152,5 +152,11 @@
   "result.scenes_prefix": "{count} scenes · ",
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
-  "recent.delete_project_aria": "Delete project {title}"
+  "recent.delete_project_aria": "Delete project {title}",
+  "cta.learn": "Daha fazla bilgi al",
+  "cta.book": "Hemen rezervasyon yap",
+  "cta.visit": "Web sitemizi ziyaret et",
+  "cta.shop": "Şimdi satın al",
+  "cta.custom": "Kendi çağrımı yaz...",
+  "cta.order": "Bugün sipariş ver"
 }
