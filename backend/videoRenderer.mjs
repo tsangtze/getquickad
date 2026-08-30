@@ -93,13 +93,29 @@ function escapeFilterPath(filePath) {
     .replace(/'/g, "\\'");
 }
 
-async function findVideoFont() {
+async function findVideoFont(language = "en") {
   const windowsDirectory =
     process.env.WINDIR ||
     "C:\\Windows";
 
-    const bundledFont = path.join(process.cwd(), 'backend/fonts/Inter-Bold.ttf');
+  const normalizedLanguage = String(language || "en").toLowerCase();
+  const needsCjkFont =
+    normalizedLanguage.startsWith("zh") ||
+    normalizedLanguage.startsWith("ja") ||
+    normalizedLanguage.startsWith("ko");
+
+  const bundledFont = path.join(
+    process.cwd(),
+    "backend/fonts/Inter-Bold.ttf"
+  );
+
+  const bundledCjkFont = path.join(
+    process.cwd(),
+    "backend/fonts/NotoSansCJKsc-Bold.otf"
+  );
+
   const candidates = [
+    ...(needsCjkFont ? [bundledCjkFont] : []),
     bundledFont,
     path.join(
       windowsDirectory,
@@ -351,7 +367,7 @@ export async function renderVideo({
   await fs.access(narrationPath);
 
   const fontPath =
-    await findVideoFont();
+    await findVideoFont(project.language || project.targetLanguage || "en");
 
   const outputName =
     "video.mp4";
