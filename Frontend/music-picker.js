@@ -29,9 +29,9 @@
     field.disabled = Boolean(next);
     stop();
     note.textContent = next === "ready"
-      ? "Music selection is saved with this video. Create a new project for different music."
+      ? musicText("music.locked_note", "Music selection is saved with this video. Create a new project for different music.")
       : next === "busy" ? "Creating your video with the selected soundtrack…"
-      : "Choose a track before creating the final video.";
+      : musicText("music.choose_before_final", "Choose a track before creating the final video.");
   }
   field.addEventListener("change", event => { if (event.target.name === "musicChoice") stop(); });
   field.addEventListener("click", async event => {
@@ -44,14 +44,14 @@
     player.src = `/music/${id}.mp3`;
     player.hidden = false;
     player.volume = Number(slider.value) / 100;
-    note.textContent = "10-second preview at your selected music volume. The final video also includes narration.";
+    note.textContent = musicText("music.preview_playing", "10-second preview at your selected music volume. The final video also includes narration.");
     try { await player.play(); }
     catch {
-      if (sequence === playSequence) note.textContent = "Preview could not play. Check the music files and try again.";
+      if (sequence === playSequence) note.textContent = musicText("music.preview_failed", "Preview could not play. Check the music files and try again.");
     }
   });
   player.addEventListener("timeupdate", () => { if (player.currentTime >= 10) player.pause(); });
-  player.addEventListener("error", () => { if (player.hasAttribute("src")) note.textContent = "Music preview unavailable. Check the installation."; });
+  player.addEventListener("error", () => { if (player.hasAttribute("src")) note.textContent = musicText("music.preview_unavailable", "Music preview unavailable. Check the installation."); });
   document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
   window.addEventListener("pagehide", stop);
   window.quickAdMusic = Object.freeze({

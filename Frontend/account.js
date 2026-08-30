@@ -24,8 +24,12 @@
   }
 
   const emailLinkMessage = emailLinkFailed
-    ? "The email link could not be completed. It may have expired. Request a fresh confirmation email."
-    : "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.";
+    ? accountText("account.email_link_failed", "The email link could not be completed. It may have expired. Request a fresh confirmation email.")
+    : accountText("account.email_link_returned", "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.");
+
+  function accountText(key, fallback, params = {}) {
+    return window.QuickAdI18n?.t(key, params) || fallback;
+  }
 
   const button = document.querySelector(".account-button");
   if (!button) return;
@@ -37,21 +41,21 @@
   // Static markup only. User data is inserted with textContent.
   dialog.innerHTML = `
     <div class="qa-account-header">
-      <h2 id="qa-account-title">Your account</h2>
+      <h2 id="qa-account-title" data-i18n="account.title">Your account</h2>
       <button type="button" class="qa-account-close"
-        aria-label="Close account dialog">Close</button>
+        aria-label="Close account dialog" data-i18n-aria-label="account.close_aria" data-i18n="account.close">Close</button>
     </div>
     <p class="qa-account-status" role="status" aria-live="polite"></p>
     <form class="qa-account-form" hidden>
-      <label for="qa-account-email">Email</label>
+      <label for="qa-account-email" data-i18n="account.email">Email</label>
       <input id="qa-account-email" name="email" type="email"
         autocomplete="username" maxlength="254" required>
-      <label for="qa-account-password">Password</label>
+      <label for="qa-account-password" data-i18n="account.password">Password</label>
       <input id="qa-account-password" name="password" type="password"
         autocomplete="current-password" maxlength="1024" required>
-      <button type="submit" class="qa-account-primary">Sign in</button>
-      <button type="button" class="qa-account-mode">Create an account instead</button>
-      <a href="/password.html">Forgot password or need to set one?</a>
+      <button type="submit" class="qa-account-primary" data-i18n="account.sign_in">Sign in</button>
+      <button type="button" class="qa-account-mode" data-i18n="account.create_instead">Create an account instead</button>
+      <a href="/password.html" data-i18n="account.forgot">Forgot password or need to set one?</a>
       <p class="qa-account-note">
         Use your QuickAd AI test account.
         Self-service signup is not available yet.
@@ -60,11 +64,12 @@
     </form>
     <div class="qa-account-signed-in" hidden>
       <p class="qa-account-identity"></p>
-      <button type="button" class="qa-account-logout">Sign out</button>
+      <button type="button" class="qa-account-logout" data-i18n="account.sign_out">Sign out</button>
     </div>
   `;
 
   document.body.append(dialog);
+  window.QuickAdI18n?.applyTranslations?.();
 
   const closeButton = dialog.querySelector(".qa-account-close");
   const status = dialog.querySelector(".qa-account-status");
@@ -87,13 +92,13 @@
     passwordInput.autocomplete = signup
       ? "new-password"
       : "current-password";
-    submitButton.textContent = signup ? "Create account" : "Sign in";
+    submitButton.textContent = signup ? accountText("account.create", "Create account") : accountText("account.sign_in", "Sign in");
     modeButton.textContent = signup
-      ? "Already have an account? Sign in"
-      : "Create an account instead";
+      ? accountText("account.already_sign_in", "Already have an account? Sign in")
+      : accountText("account.create_instead", "Create an account instead");
     note.textContent = signup
-      ? "Choose a unique QuickAd AI password of at least 12 characters. Confirm your email, then return here to sign in."
-      : "Use your QuickAd AI password, not your Gmail password. Signing in reloads this page and discards unsaved edits.";
+      ? accountText("account.note_signup", "Choose a unique QuickAd AI password of at least 12 characters. Confirm your email, then return here to sign in.")
+      : accountText("account.note_signin", "Use your QuickAd AI password, not your Gmail password. Signing in reloads this page and discards unsaved edits.");
   }
 
   setMode(false);
@@ -102,8 +107,8 @@
     if (busy) return;
     setMode(!signupMode);
     status.textContent = signupMode
-      ? "Create your QuickAd AI account."
-      : "Sign in to QuickAd AI.";
+      ? accountText("account.create_status", "Create your QuickAd AI account.")
+      : accountText("account.sign_in_status", "Sign in to QuickAd AI.");
     emailInput.focus();
   });
 
@@ -122,8 +127,8 @@
     window.quickAdAccountChanged?.(user);
     loginForm.hidden = signedIn;
     signedInPanel.hidden = !signedIn;
-    identity.textContent = signedIn ? (user.email || "Signed in") : "";
-    button.textContent = signedIn ? "My Account" : "Sign in";
+    identity.textContent = signedIn ? (user.email || accountText("account.signed_in_fallback", "Signed in")) : "";
+    button.textContent = signedIn ? accountText("account.my_account", "My Account") : accountText("account.sign_in", "Sign in");
     passwordInput.value = "";
   }
 
@@ -150,7 +155,7 @@
 
     loginForm.hidden = true;
     signedInPanel.hidden = true;
-    status.textContent = "Checking your session...";
+    status.textContent = accountText("account.checking", "Checking your session...");
     dialog.showModal();
     setBusy(true);
 
@@ -162,17 +167,17 @@
         setMode(false);
         status.textContent = returnedFromEmail
           ? emailLinkMessage
-          : "Sign in to QuickAd AI.";
+          : accountText("account.sign_in_status", "Sign in to QuickAd AI.");
       } else if (response.ok && data.ok && data.user?.id) {
         showUser(data.user);
-        status.textContent = "You are signed in.";
+        status.textContent = accountText("account.signed_in", "You are signed in.");
       } else {
         status.textContent =
-          "Cannot verify your session right now. Close and try again.";
+          accountText("account.verify_error", "Cannot verify your session right now. Close and try again.");
       }
     } catch {
       status.textContent =
-        "Cannot reach the server. Close and try again.";
+        accountText("account.server_error", "Cannot reach the server. Close and try again.");
     } finally {
       setBusy(false);
       if (!loginForm.hidden) emailInput.focus();
@@ -198,8 +203,8 @@
 
     setBusy(true);
     status.textContent = signupMode
-      ? "Creating your account..."
-      : "Signing in...";
+      ? accountText("account.creating", "Creating your account...")
+      : accountText("account.signing_in", "Signing in...");
 
     try {
       const { response, data } = await request(signupMode ? "signup" : "login", {
@@ -211,19 +216,19 @@
         setMode(false);
         status.textContent = typeof data.message === "string"
           ? data.message
-          : "Check your email for a confirmation link, then sign in.";
+          : accountText("account.check_email", "Check your email for a confirmation link, then sign in.");
       } else if (!signupMode && response.ok && data.ok && data.user?.id) {
         window.quickAdNotifyAccountChange?.();
         showUser(data.user);
-        status.textContent = "You are signed in.";
+        status.textContent = accountText("account.signed_in", "You are signed in.");
       } else {
         status.textContent = typeof data.error === "string"
           ? data.error
-          : "The request failed. Please try again.";
+          : accountText("account.request_failed", "The request failed. Please try again.");
       }
     } catch {
       status.textContent =
-        "The request could not be confirmed. Check your email or reopen Account before retrying.";
+        accountText("account.request_unconfirmed", "The request could not be confirmed. Check your email or reopen Account before retrying.");
     } finally {
       passwordInput.value = "";
       setBusy(false);
@@ -233,10 +238,10 @@
   logoutButton.addEventListener("click", async () => {
     if (busy) return;
     if (!window.confirm(
-      "Sign out and clear this page? Unsaved edits will be discarded. Saved project files will remain."
+      accountText("account.sign_out_confirm", "Sign out and clear this page? Unsaved edits will be discarded. Saved project files will remain.")
     )) return;
     setBusy(true);
-    status.textContent = "Signing out...";
+    status.textContent = accountText("account.signing_out", "Signing out...");
 
     try {
       const { response, data } = await request("logout", {});
@@ -244,13 +249,13 @@
       if (response.ok && data.ok) {
         window.quickAdNotifyAccountChange?.();
         showUser(null);
-        status.textContent = "You have signed out of this browser.";
+        status.textContent = accountText("account.signed_out", "You have signed out of this browser.");
       } else {
-        status.textContent = "Sign-out failed. Please try again.";
+        status.textContent = accountText("account.sign_out_failed", "Sign-out failed. Please try again.");
       }
     } catch {
       status.textContent =
-        "Sign-out could not be confirmed. Close and reopen Account to check.";
+        accountText("account.sign_out_unconfirmed", "Sign-out could not be confirmed. Close and reopen Account to check.");
     } finally {
       setBusy(false);
     }

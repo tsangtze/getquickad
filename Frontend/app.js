@@ -1,37 +1,8 @@
-async function updateQuota(){
-  fetch("/api/projects/usage",{credentials:"include"})
-  .then(r=>r.json())
-  .then(data=>{
-    if(!data.ok) return;
-    const u=data.usage;
-    const el=document.getElementById("quotaBanner");
-    if(!el) return;
-    const videosLeft = u.freeVideosRemaining;
-    const projects = u.projectCount;
-    const maxProjects = data.limits.MAX_PROJECTS;
-    
-    el.innerHTML = `
-      <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;">
-        <div>
-          <span style="font-weight:700;">🎬 Free videos:</span> You have <b>${videosLeft} free ${videosLeft==1?"video":"videos"} left</b> (out of 2). 
-          <span style="color:#6b7280;">Editing and changing music is always free.</span>
-        </div>
-        <div>
-          <span style="font-weight:700;">📁 Saved projects:</span> You have <b>${projects} saved</b> (max ${maxProjects}). 
-          ${projects>=maxProjects 
-            ? `<span style="color:#b91c1c;font-weight:700;"> — Your folder is full. Please hit Delete on an old project to make space.</span>`
-            : `<span style="color:#6b7280;">Delete old ones to free space.</span>`
-          }
-        </div>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:12px;">
-        <div style="flex:1;background:#f3f4f6;border-radius:6px;height:8px;overflow:hidden;"><div style="width:${(projects/maxProjects)*100}%;height:100%;background:${projects>=8?"#ef4444":"#6366f1"}"></div></div>
-        <div style="flex:1;background:#f3f4f6;border-radius:6px;height:8px;overflow:hidden;"><div style="width:${((2-videosLeft)/2)*100}%;height:100%;background:${videosLeft==0?"#ef4444":"#10b981"}"></div></div>
-      </div>
-    `;
-  })
-  .catch(()=>{});
-} async function updateQuota_old() {
+function uiText(key, fallback, params = {}) {
+  return window.QuickAdI18n?.t(key, params) || fallback;
+}
+
+async function updateQuota_old() {
   try {
     const res = await fetch('/api/projects/usage', { credentials: 'include' });
     const data = await res.json();
@@ -39,7 +10,7 @@ async function updateQuota(){
     const u = data.usage;
     const el = document.getElementById('quotaBanner');
     if (el) {
-      el.innerHTML = '<strong>' + u.freeVideosRemaining + ' / ' + data.limits.FREE_FINAL_VIDEOS + ' free videos left</strong> - ' + u.projectCount + ' / ' + data.limits.MAX_PROJECTS + ' projects' + (!u.canCreateMoreProjects ? ' <span style="color:#b91c1c"> — Limit reached, delete a project</span>' : '') + (!u.canGenerateMoreVideos ? ' <span style="color:#b91c1c"> — Free video limit reached</span>' : '');
+      el.innerHTML = uiText("quota.html", "<strong>{remaining} / {freeLimit} free videos left</strong> - {projects} / {projectLimit} projects", { remaining: u.freeVideosRemaining, freeLimit: data.limits.FREE_FINAL_VIDEOS, projects: u.projectCount, projectLimit: data.limits.MAX_PROJECTS }) + (!u.canCreateMoreProjects ? ' <span style="color:#b91c1c">' + uiText("quota.project_limit", "Limit reached, delete a project") + '</span>' : "") + (!u.canGenerateMoreVideos ? ' <span style="color:#b91c1c">' + uiText("quota.video_limit", "Free video limit reached") + '</span>' : "");
     }
   } catch {}
 }
@@ -66,7 +37,7 @@ const uploadZone = document.querySelector("#upload-zone");
 const previewList = document.querySelector("#image-preview-list");
 const imageCount = document.querySelector("#image-count");
 const logoName = document.querySelector("#logo-name");
-const description = document.querySelector("#description");
+const description = document.querySelector("#productDesc");
 const characterCount = document.querySelector("#character-count");
 const uploadError = document.querySelector("#upload-error");
 const descriptionError = document.querySelector("#description-error");
@@ -159,7 +130,7 @@ function renderImagePreviews() {
     preview.className = "image-preview";
 
     const image = document.createElement("img");
-    image.alt = `Selected product image ${index + 1}`;
+    image.alt = uiText("upload.preview_alt", `Selected product image ${index + 1}`, { number: index + 1 });
 
     const imageUrl = URL.createObjectURL(file);
     image.src = imageUrl;
@@ -190,7 +161,7 @@ renderImagePreviews();
     previewList.append(preview);
   });
 
-  imageCount.textContent = `${selectedImages.length} of ${MAX_IMAGES}`;
+  imageCount.textContent = uiText("upload.count", `${selectedImages.length} of ${MAX_IMAGES}`, { count: selectedImages.length, max: MAX_IMAGES });
 
   if (selectedImages.length > 0) {
     imageCount.style.color = "var(--success)";
@@ -210,7 +181,7 @@ function addImages(files) {
 
   if (invalidFile) {
     setUploadError(
-      "Please use only JPG, PNG, or WebP product images."
+      uiText("upload.type_error", "Please use only JPG, PNG, or WebP product images.")
     );
     return;
   }
@@ -222,7 +193,7 @@ function addImages(files) {
 
   if (selectedImages.length + uniqueFiles.length > MAX_IMAGES) {
     setUploadError(
-      `You can upload a maximum of ${MAX_IMAGES} product images.`
+      uiText("upload.max_error", `You can upload a maximum of ${MAX_IMAGES} product images.`, { max: MAX_IMAGES })
     );
     return;
   }
@@ -276,7 +247,7 @@ logoInput.addEventListener("change", () => {
   logoName.textContent = logo.name;
 });
 
-description.addEventListener("input", () => {
+description?.addEventListener("input", () => {
   characterCount.textContent = `${description.value.length} / 500`;
 
   if (description.value.trim()) {
@@ -511,8 +482,7 @@ function deleteScene(scene) {
 
   renderCurrentScenePlan();
 
-  planStatus.textContent =
-    `Scene deleted. Review and confirm the remaining ${currentStoryboard.scenes.length} scenes.`;
+  planStatus.textContent = uiText("review.scene_deleted", `Scene deleted. Review and confirm the remaining ${currentStoryboard.scenes.length} scenes.`, { count: currentStoryboard.scenes.length });
 }
 
 function validateVideoPlan() {
@@ -540,8 +510,7 @@ function validateVideoPlan() {
 
   if (invalidScene) {
     finalVideoButton.disabled = true;
-    planStatus.textContent =
-      `Scene ${invalidScene.sceneNumber} needs a valid picture and a caption containing 1–60 characters.`;
+    planStatus.textContent = uiText("review.invalid_scene", `Scene ${invalidScene.sceneNumber} needs a valid picture and a caption containing 1-60 characters.`, { number: invalidScene.sceneNumber });
 
     return false;
   }
@@ -556,8 +525,7 @@ function validateVideoPlan() {
 
   if (approvedCount !== totalScenes) {
     finalVideoButton.disabled = true;
-    planStatus.textContent =
-      `${approvedCount} of ${totalScenes} scenes approved. Confirm every scene to create the final video.`;
+    planStatus.textContent = uiText("review.approval_progress", `${approvedCount} of ${totalScenes} scenes approved. Confirm every scene to create the final video.`, { approved: approvedCount, total: totalScenes });
 
     return false;
   }
@@ -585,12 +553,10 @@ function createSceneReviewCard(scene) {
   const sceneHeading = document.createElement("div");
 
   const sceneTitle = document.createElement("strong");
-  sceneTitle.textContent =
-    `Scene ${scene.sceneNumber}`;
+  sceneTitle.textContent = uiText("scene.title", `Scene ${scene.sceneNumber}`, { number: scene.sceneNumber });
 
   const sceneTiming = document.createElement("small");
-  sceneTiming.textContent =
-    `${scene.startSeconds}–${scene.endSeconds} seconds • ${scene.role}`;
+  sceneTiming.textContent = uiText("scene.timing", `${scene.startSeconds}-${scene.endSeconds} seconds - ${scene.role}`, { start: scene.startSeconds, end: scene.endSeconds, role: uiText(`scene.role.${scene.role}`, scene.role) });
 
   sceneHeading.append(
     sceneTitle,
@@ -609,7 +575,7 @@ function createSceneReviewCard(scene) {
     "scene-approval-badge";
 
   approvalBadge.textContent =
-    "AI suggested";
+    window.QuickAdI18n?.t("scene.ai_suggested") || "AI suggested";
 
   const sceneHeaderActions =
     document.createElement("div");
@@ -625,15 +591,12 @@ function createSceneReviewCard(scene) {
     "delete-scene-button";
 
   deleteSceneButton.textContent =
-    "Delete Scene";
+    window.QuickAdI18n?.t("scene.delete") || "Delete Scene";
 
   deleteSceneButton.disabled =
     currentStoryboard.scenes.length <= 3;
 
-  deleteSceneButton.title =
-    deleteSceneButton.disabled
-      ? "A video must retain at least 3 scenes."
-      : "Remove this scene from the video.";
+  deleteSceneButton.title = deleteSceneButton.disabled ? uiText("scene.minimum_title", "A video must retain at least 3 scenes.") : uiText("scene.remove_title", "Remove this scene from the video.");
 
   deleteSceneButton.addEventListener(
     "click",
@@ -662,8 +625,7 @@ function createSceneReviewCard(scene) {
   pictureFrame.className = "scene-picture-frame";
 
   const picture = document.createElement("img");
-  picture.alt =
-    `Picture assigned to scene ${scene.sceneNumber}`;
+  picture.alt = uiText("scene.picture_alt", `Picture assigned to scene ${scene.sceneNumber}`, { number: scene.sceneNumber });
 
   picture.src =
     reviewImageUrls[scene.imageIndex - 1] ||
@@ -672,7 +634,7 @@ function createSceneReviewCard(scene) {
   pictureFrame.append(picture);
 
   const pictureLabel = document.createElement("label");
-  pictureLabel.textContent = "Picture";
+  pictureLabel.textContent = window.QuickAdI18n?.t("scene.picture") || "Picture";
 
   const pictureSelect =
     document.createElement("select");
@@ -680,10 +642,7 @@ function createSceneReviewCard(scene) {
   pictureSelect.className =
     "scene-picture-select";
 
-  pictureSelect.setAttribute(
-    "aria-label",
-    `Picture for scene ${scene.sceneNumber}`
-  );
+  pictureSelect.setAttribute("aria-label", uiText("scene.picture_for", `Picture for scene ${scene.sceneNumber}`, { number: scene.sceneNumber }));
 
   reviewImageUrls.forEach(
     (_imageUrl, imageIndex) => {
@@ -698,10 +657,7 @@ function createSceneReviewCard(scene) {
           imageIndex
         ]?.name;
 
-      option.textContent =
-        uploadedFileName
-          ? `Picture ${imageIndex + 1}: ${uploadedFileName}`
-          : `Picture ${imageIndex + 1}`;
+      option.textContent = uploadedFileName ? uiText("scene.picture_named", `Picture ${imageIndex + 1}: ${uploadedFileName}`, { number: imageIndex + 1, name: uploadedFileName }) : uiText("scene.picture_number", `Picture ${imageIndex + 1}`, { number: imageIndex + 1 });
 
       option.selected =
         imageIndex + 1 ===
@@ -743,7 +699,7 @@ function createSceneReviewCard(scene) {
   captionColumn.className = "scene-caption-column";
 
   const captionLabel = document.createElement("label");
-  captionLabel.textContent = "AI caption";
+  captionLabel.textContent = window.QuickAdI18n?.t("scene.ai_caption") || "AI caption";
 
   const captionInput =
     document.createElement("textarea");
@@ -756,10 +712,7 @@ function createSceneReviewCard(scene) {
   captionInput.value =
     scene.caption;
 
-  captionInput.setAttribute(
-    "aria-label",
-    `Caption for scene ${scene.sceneNumber}`
-  );
+  captionInput.setAttribute("aria-label", uiText("scene.caption_for", `Caption for scene ${scene.sceneNumber}`, { number: scene.sceneNumber }));
 
   const captionMeta = document.createElement("div");
   captionMeta.className = "scene-caption-meta";
@@ -767,14 +720,12 @@ function createSceneReviewCard(scene) {
   const captionAdvice =
     document.createElement("span");
 
-  captionAdvice.textContent =
-    "Recommended: 3–8 words · Maximum: 60 characters";
+  captionAdvice.textContent = uiText("scene.caption_advice", "Recommended: 3–8 words · Maximum: 60 characters");
 
   const captionCounter =
     document.createElement("span");
 
-  captionCounter.textContent =
-    `${captionInput.value.length} / 60 characters`;
+  captionCounter.textContent = uiText("scene.caption_count", `${captionInput.value.length} / 60 characters`, { count: captionInput.value.length, max: 60 });
 
   captionInput.addEventListener(
     "input",
@@ -793,8 +744,7 @@ function createSceneReviewCard(scene) {
           currentStoryboard.scenes
         );
 
-      captionCounter.textContent =
-        `${captionInput.value.length} / 60 characters`;
+      captionCounter.textContent = uiText("scene.caption_count", `${captionInput.value.length} / 60 characters`, { count: captionInput.value.length, max: 60 });
 
       captionCounter.classList.toggle(
         "limit-warning",
@@ -821,7 +771,7 @@ function createSceneReviewCard(scene) {
     "scene-narration-label";
 
   narrationLabel.textContent =
-    "Narration preview";
+    window.QuickAdI18n?.t("scene.narration_preview") || "Narration preview";
 
   const narrationText =
     document.createElement("p");
@@ -864,28 +814,28 @@ function createSceneReviewCard(scene) {
   function updateSceneApprovalState() {
     if (scene.approved === true) {
       approvalBadge.textContent =
-        "Scene approved";
+        window.QuickAdI18n?.t("scene.approved") || "Scene approved";
 
       approvalBadge.classList.add(
         "approved"
       );
 
       confirmSceneButton.textContent =
-        "✓ Scene approved";
+        `✓ ${uiText("scene.approved", "Scene approved")}`;
 
       confirmSceneButton.classList.add(
         "approved"
       );
     } else {
       approvalBadge.textContent =
-        "Needs approval";
+        window.QuickAdI18n?.t("scene.needs_approval") || "Needs approval";
 
       approvalBadge.classList.remove(
         "approved"
       );
 
       confirmSceneButton.textContent =
-        "Confirm Scene";
+        window.QuickAdI18n?.t("scene.confirm") || "Confirm Scene";
 
       confirmSceneButton.classList.remove(
         "approved"
@@ -1016,8 +966,7 @@ undoSceneButton.addEventListener(
 
     renderCurrentScenePlan();
 
-    planStatus.textContent =
-      `Deleted scene restored. Review and confirm all ${currentStoryboard.scenes.length} scenes.`;
+    planStatus.textContent = uiText("review.scene_restored", `Deleted scene restored. Review and confirm all ${currentStoryboard.scenes.length} scenes.`, { count: currentStoryboard.scenes.length });
   }
 );
 
@@ -1132,7 +1081,7 @@ finalVideoButton.addEventListener(
         "video-result-heading";
 
       resultHeading.textContent =
-        "Your final video is ready";
+        uiText("result.final_ready", "Your final video is ready");
 
       const resultSummary =
         document.createElement("span");
@@ -1161,7 +1110,7 @@ finalVideoButton.addEventListener(
         "video-result-link primary";
 
       watchLink.textContent =
-        "▶ Watch Video";
+        window.QuickAdI18n?.t("result.watch") || "Watch Video";
 
       const downloadLink =
         document.createElement("a");
@@ -1176,7 +1125,7 @@ finalVideoButton.addEventListener(
         "video-result-link";
 
       downloadLink.textContent =
-        "↓ Download MP4";
+        window.QuickAdI18n?.t("result.download") || "Download MP4";
 
       resultActions.append(
         watchLink,
@@ -1209,7 +1158,7 @@ finalVideoButton.addEventListener(
         document.createElement("strong");
 
       successTitle.textContent =
-        "Your final video is ready";
+        uiText("result.final_ready", "Your final video is ready");
 
       const successDetails =
         document.createElement("span");
@@ -1302,7 +1251,7 @@ customCtaInput.addEventListener(
   "input",
   () => {
     customCtaCount.textContent =
-      `${customCtaInput.value.length} / 40 characters`;
+      uiText("cta.count", `${customCtaInput.value.length} / 40 characters`, { count: customCtaInput.value.length, max: 40 });
 
     customCtaError.textContent = "";
   }
@@ -1419,10 +1368,10 @@ function rememberProject(
 function projectStatusLabel(status) {
   switch (status) {
     case "video_ready":
-      return "Video ready";
+      return window.QuickAdI18n?.t("status.video_ready") || "Video ready";
 
     case "storyboard_ready":
-      return "Plan ready";
+      return window.QuickAdI18n?.t("status.plan_ready") || "Plan ready";
 
     case "narration_failed":
     case "video_failed":
@@ -1475,7 +1424,7 @@ async function deleteSavedProject(entry, button) {
     recentProjectStatus.classList.add("error");
   } finally {
     button.disabled = false;
-    button.textContent = "Delete";
+    button.textContent = window.QuickAdI18n?.t("recent.delete") || "Delete";
   }
 }
 
@@ -1547,8 +1496,8 @@ function renderRecentProjects() {
 
     openButton.textContent =
       entry.status === "video_ready"
-        ? "Open Video"
-        : "Continue";
+        ? window.QuickAdI18n?.t("recent.open_video") || "Open Video"
+        : window.QuickAdI18n?.t("recent.continue") || "Continue";
 
     openButton.addEventListener(
       "click",
@@ -1563,7 +1512,7 @@ function renderRecentProjects() {
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "delete-recent-project";
-    deleteButton.textContent = "Delete";
+    deleteButton.textContent = window.QuickAdI18n?.t("recent.delete") || "Delete";
     deleteButton.setAttribute("aria-label", `Delete project ${entry.title}`);
     deleteButton.addEventListener("click", () => deleteSavedProject(entry, deleteButton));
     const actions = document.createElement("div");
@@ -1602,7 +1551,7 @@ function renderRecoveredVideoResult(
     "video-result-heading";
 
   resultHeading.textContent =
-    "Your saved video is ready";
+    window.QuickAdI18n?.t("result.saved_ready") || "Your saved video is ready";
 
   const resultSummary =
     document.createElement("span");
@@ -1612,7 +1561,7 @@ function renderRecoveredVideoResult(
 
   resultSummary.textContent =
     `${currentStoryboard.scenes.length} scenes · ` +
-    `${currentStoryboard.totalDurationSeconds || 25}-second MP4 · ` +
+    uiText("video.mp4_duration", `${currentStoryboard.totalDurationSeconds || 25}-second MP4 · `, { seconds: currentStoryboard.totalDurationSeconds || 25 }) +
     "AI narration complete";
 
   const resultActions =
@@ -1633,7 +1582,7 @@ function renderRecoveredVideoResult(
     "video-result-link primary";
 
   watchLink.textContent =
-    "▶ Watch Video";
+    window.QuickAdI18n?.t("result.watch") || "Watch Video";
 
   const downloadLink =
     document.createElement("a");
@@ -1648,7 +1597,7 @@ function renderRecoveredVideoResult(
     "video-result-link";
 
   downloadLink.textContent =
-    "↓ Download MP4";
+    window.QuickAdI18n?.t("result.download") || "Download MP4";
 
   resultActions.append(
     watchLink,
@@ -1674,7 +1623,7 @@ async function openSavedProject(
     "Opening...";
 
   recentProjectStatus.textContent =
-    "Opening your saved project...";
+    uiText("saved.opening", "Opening your saved project...");
 
   recentProjectStatus.classList.remove(
     "error"
@@ -1701,7 +1650,7 @@ async function openSavedProject(
 
       throw new Error(
         recovery.error ||
-        "The saved project could not be opened."
+        uiText("saved.open_error", "The saved project could not be opened.")
       );
     }
 
@@ -1712,7 +1661,7 @@ async function openSavedProject(
       )
     ) {
       throw new Error(
-        "This saved project does not have a recoverable video plan."
+        uiText("saved.no_plan", "This saved project does not have a recoverable video plan.")
       );
     }
 
@@ -1732,12 +1681,12 @@ async function openSavedProject(
 
     if (savedImageUrls.length === 0) {
       throw new Error(
-        "This saved project does not have recoverable product images."
+        uiText("saved.no_images", "This saved project does not have recoverable product images.")
       );
     }
 
     finalVideoButton.textContent =
-      "Create Final Video →";
+      uiText("review.final_btn_arrow", "Create Final Video →");
 
     renderVideoPlanReview(
       recovery.project,
@@ -1757,7 +1706,7 @@ async function openSavedProject(
     ) {
       if (!recovery.videoUrl) {
         throw new Error(
-          "The saved video file is unavailable."
+          uiText("saved.video_missing", "The saved video file is unavailable.")
         );
       }
 
@@ -1766,13 +1715,12 @@ async function openSavedProject(
       );
 
       recentProjectStatus.textContent =
-        "Saved video opened successfully.";
+        uiText("saved.video_opened", "Saved video opened successfully.");
     } else {
-      planStatus.textContent =
-        `Saved plan opened. Review and confirm all ${currentStoryboard.scenes.length} scenes.`;
+      planStatus.textContent = uiText("saved.plan_opened", `Saved plan opened. Review and confirm all ${currentStoryboard.scenes.length} scenes.`, { count: currentStoryboard.scenes.length });
 
       recentProjectStatus.textContent =
-        "Saved video plan opened successfully.";
+        uiText("saved.plan_opened_success", "Saved video plan opened successfully.");
     }
 
     planReview.scrollIntoView({
@@ -1782,7 +1730,7 @@ async function openSavedProject(
   } catch (error) {
     recentProjectStatus.textContent =
       error.message ||
-      "The saved project could not be opened.";
+      uiText("saved.open_error", "The saved project could not be opened.");
 
     recentProjectStatus.classList.add(
       "error"
@@ -1796,7 +1744,7 @@ async function openSavedProject(
   }
 }
 
-clearProjectHistoryButton.textContent = "Refresh projects";
+clearProjectHistoryButton.textContent = window.QuickAdI18n?.t("recent.refresh") || "Refresh projects";
 clearProjectHistoryButton.addEventListener("click", () => {
   loadAccountProjects();
 });
@@ -1817,7 +1765,7 @@ form.addEventListener("submit", async (event) => {
   let firstInvalidElement = null;
 
   if (selectedImages.length === 0) {
-    setUploadError("Please add at least one product image.");
+    setUploadError(uiText("upload.required_error", "Please add at least one product image."));
     firstInvalidElement = uploadZone;
   }
 
@@ -1848,6 +1796,11 @@ form.addEventListener("submit", async (event) => {
     syncImageInput();
 
     const projectData = new FormData(form);
+    // Auto-detect UI language for video generation - Phase 2 Mexico
+    const userLang = localStorage.getItem('quickad_lang') || document.documentElement.lang || navigator.language || 'en';
+    const targetLang = userLang.toLowerCase().startsWith('es') ? 'es-419' : 'en';
+    projectData.set('language', targetLang);
+    projectData.set('targetLanguage', targetLang);
 
     if (
       callToActionSelect.value ===
@@ -1857,19 +1810,20 @@ form.addEventListener("submit", async (event) => {
         customCtaInput.value.trim();
 
       if (!customCallToAction) {
-        customCtaError.textContent =
-          "Enter your call to action.";
+        customCtaError.textContent = uiText("cta.custom_required", "Enter your call to action.");
 
         customCtaInput.focus();
 
-        throw new Error(
-          "Please enter your custom call to action."
-        );
+        throw new Error(uiText("cta.custom_required_error", "Please enter your custom call to action."));
       }
-
       projectData.set(
         "callToAction",
         customCallToAction
+      );
+    } else {
+      projectData.set(
+        "callToAction",
+        getLocalizedCallToAction()
       );
     }
 
@@ -1947,7 +1901,7 @@ form.addEventListener("submit", async (event) => {
       `Project ${shortProjectId} • ` +
       `"${result.storyboard.title}" • ` +
       `${sceneCount} scenes • ` +
-      `${result.storyboard.totalDurationSeconds} seconds`;
+      uiText("video.duration_seconds", `${result.storyboard.totalDurationSeconds} seconds`, { seconds: result.storyboard.totalDurationSeconds });
     const successNext =
       document.createElement("span");
 
@@ -1955,7 +1909,7 @@ form.addEventListener("submit", async (event) => {
       "success-next";
 
     successNext.textContent =
-      "Review the assigned pictures and AI captions before creating narration and video.";
+      uiText("review.generated_desc", "Review the assigned pictures and AI captions before creating narration and video.");
 
     successContent.append(
       successTitle,
@@ -2093,11 +2047,11 @@ async function quickAdProjectFetch(url, options = {}) {
   const user = await quickAdCheckPageSession();
 
   if (quickAdPageLeaving) {
-    throw new Error("Account changed. Reloading.");
+    throw new Error(uiText("account.changed_reload", "Account changed. Reloading."));
   }
 
   if (!user) {
-    throw new Error("Please sign in using the Account button first.");
+    throw new Error(uiText("account.sign_in_required", "Please sign in using the Account button first."));
   }
 
   const requestUserId = user.id;
@@ -2117,7 +2071,7 @@ async function quickAdProjectFetch(url, options = {}) {
     response.status === 401
   ) {
     quickAdReloadPrivatePage();
-    throw new Error("Your account session changed. Reloading.");
+    throw new Error(uiText("account.session_changed", "Your account session changed. Reloading."));
   }
 
   return {
@@ -2125,7 +2079,7 @@ async function quickAdProjectFetch(url, options = {}) {
     status: response.status,
     async json() {
       if (quickAdPageLeaving || quickAdHistoryUser !== requestUserId) {
-        throw new Error("Account changed. Reloading.");
+        throw new Error(uiText("account.changed_reload", "Account changed. Reloading."));
       }
       return data;
     }
@@ -2139,7 +2093,7 @@ quickAdCheckPageSession()
   .catch(() => {
     recentProjects.hidden = false;
     recentProjectStatus.textContent =
-      "Session unavailable. Open Account to try again.";
+      uiText("account.session_unavailable", "Session unavailable. Open Account to try again.");
   });
 
 window.addEventListener("focus", () => {
@@ -2162,13 +2116,13 @@ async function loadAccountProjects() {
 
   if (!historyKey) {
     recentProjects.hidden = false;
-    recentProjectStatus.textContent = "Sign in to see your saved projects.";
+    recentProjectStatus.textContent = window.QuickAdI18n?.t("recent.sign_in") || "Sign in to see your saved projects.";
     return;
   }
 
   clearProjectHistoryButton.disabled = true;
   recentProjects.hidden = false;
-  recentProjectStatus.textContent = "Loading your saved projects...";
+  recentProjectStatus.textContent = window.QuickAdI18n?.t("recent.loading") || "Loading your saved projects...";
 
   try {
     const response = await quickAdProjectFetch("/api/projects");
@@ -2197,13 +2151,13 @@ async function loadAccountProjects() {
     if (projects.length === 0) {
       recentProjects.hidden = false;
       recentProjectStatus.textContent =
-        "No saved projects in this account yet.";
+        window.QuickAdI18n?.t("recent.empty") || "No saved projects in this account yet.";
     }
   } catch (error) {
     if (!quickAdPageLeaving && historyKey === PROJECT_HISTORY_KEY) {
       recentProjects.hidden = false;
       recentProjectStatus.textContent =
-        error.message || "Project list unavailable. Click Refresh projects to retry.";
+        error.message || window.QuickAdI18n?.t("recent.error") || "Project list unavailable. Click Refresh projects to retry.";
     }
   } finally {
     if (!quickAdPageLeaving && requestNumber === accountListRequest) {
@@ -2217,7 +2171,7 @@ for (const paragraph of recentProjects.querySelectorAll("p")) {
   if (paragraph.textContent.trim() ===
       "Projects created in this browser appear here.") {
     paragraph.textContent =
-      "Your 10 most recent saved projects in this account appear here.";
+      window.QuickAdI18n?.t("recent.desc") || "Your 10 most recent saved projects in this account appear here.";
   }
 }
 
@@ -2242,3 +2196,97 @@ setTimeout(updateQuota, 1000);
   };
 })();
 
+async function updateQuota(){
+  const banner = document.getElementById('quotaBanner');
+  if(!banner) return;
+  const isEs = (window.QuickAdI18n?.currentLang === 'es') || (localStorage.getItem('quickad_lang') === 'es');
+  try{
+    const res = await fetch('/api/quota');
+    let remaining = 5, limit = 5, projects = 0;
+    if(res.ok){
+      const d = await res.json();
+      remaining = d.remaining?? d.freeVideosLeft?? 5;
+      limit = d.limit?? d.freeLimit?? 5;
+      projects = d.projects?? d.projectsCount?? d.totalProjects?? 0;
+    } else {
+      // fallback to local project count from DOM
+      projects = document.querySelectorAll('[data-project-id],.project-card,.recent-project').length;
+      // try count from Proyectos Recientes section
+      const recent = document.querySelectorAll('#recentProjects > div, #recentProjects.project-item');
+      if(recent.length) projects = recent.length;
+    }
+    // If projects still 0, count from localStorage or API /api/projects
+    try{
+      const pRes = await fetch('/api/projects');
+      if(pRes.ok){
+        const pData = await pRes.json();
+        if(Array.isArray(pData)) projects = pData.length;
+        else if(pData.projects) projects = pData.projects.length;
+        else if(pData.count) projects = pData.count;
+      }
+    }catch{}
+
+    banner.innerHTML = isEs
+     ? `🎬 Videos gratis: Te quedan <b>${remaining}</b> de ${limit} • 📁 Proyectos guardados: <b>${projects}</b>`
+      : `🎬 Free videos: <b>${remaining}</b> of ${limit} left • 📁 Saved projects: <b>${projects}</b>`;
+    banner.style.display='block';
+    banner.style.background='linear-gradient(90deg,#EEF2FF,#F5F3FF)';
+    banner.style.borderBottom='1px solid #DDD6FE';
+    banner.style.padding='10px';
+    banner.style.textAlign='center';
+    banner.style.fontSize='13px';
+    banner.style.fontWeight='600';
+    banner.style.color='#4338CA';
+  }catch(e){
+    console.warn('quota error', e);
+    const fallbackProjects = document.querySelectorAll('#recentProjects > div').length || 0;
+    banner.innerHTML = isEs
+     ? `🎬 Videos gratis: <b>5</b> de <b>5</b> • 📁 Proyectos guardados: <b>${fallbackProjects}</b>`
+      : `🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>${fallbackProjects}</b>`;
+    banner.style.display='block';
+  }
+}
+// Run on load + after projects load
+document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(updateQuota, 500); });
+window.addEventListener('load', ()=>{ setTimeout(updateQuota, 1000); });
+if(typeof window.refreshProjects === 'function'){
+  const _origRefresh = window.refreshProjects;
+  window.refreshProjects = async function(...args){ const r = await _origRefresh(...args); updateQuota(); return r; };
+}
+
+
+function translatePageToSpanish(){
+  const dict = {
+    "Upload your photos, describe what you are promoting, and receive a ready-to-post vertical video.": "Sube tus fotos, describe lo que promocionas y recibe un video vertical listo para publicar.",
+    "Your 10 most recent saved projects in this account appear here.": "Tus 10 proyectos guardados más recientes aparecerán aquí.",
+    "Tell us what you're promoting": "Cuéntanos qué promocionas"
+  };
+  document.body.innerHTML = Object.keys(dict).reduce((html,key)=> html.replace(key, dict[key]), document.body.innerHTML);
+}
+
+
+window.addEventListener("quickad:languagechange", () => {
+  renderImagePreviews();
+  if (currentStoryboard) {
+    renderCurrentScenePlan();
+    validateVideoPlan();
+  }
+  renderRecentProjects();
+  updateQuota();
+});
+function getLocalizedCallToAction() {
+  const selectedValue = callToActionSelect?.value || "Shop Now";
+  if (selectedValue === "custom") {
+    return customCtaInput?.value.trim() || "";
+  }
+
+  const ctaKeys = {
+    "Shop Now": "cta.shop",
+    "Learn More": "cta.learn",
+    "Order Today": "cta.order",
+    "Visit Our Website": "cta.visit",
+    "Book Now": "cta.book"
+  };
+
+  return uiText(ctaKeys[selectedValue] || "cta.shop", selectedValue);
+}
