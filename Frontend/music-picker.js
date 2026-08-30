@@ -1,5 +1,9 @@
 (() => {
   "use strict";
+
+  function musicText(key, fallback, params = {}) {
+    return window.QuickAdI18n?.t(key, params) || fallback;
+  }
   const field = document.getElementById("music-options");
   const note = document.getElementById("music-note");
   const player = document.getElementById("music-preview");
