@@ -152,5 +152,17 @@
   "result.scenes_prefix": "{count} cenas · ",
   "music.creating_selected": "Criando seu vídeo com a trilha selecionada…",
   "recent.delete_failed": "Não foi possível excluir o projeto. Atualize antes de tentar novamente.",
-  "recent.delete_project_aria": "Excluir projeto {title}"
+  "recent.delete_project_aria": "Excluir projeto {title}",
+  "upload.title": "Envie suas imagens",
+  "description.title": "Conte o que você está promovendo",
+  "cta.shop": "Comprar agora",
+  "cta.learn": "Saiba mais",
+  "cta.order": "Peça hoje",
+  "cta.visit": "Visite nosso site",
+  "cta.book": "Reserve agora",
+  "cta.custom": "Escrever minha própria chamada...",
+  "style.professional": "Profissional",
+  "style.energetic": "Energético",
+  "style.elegant": "Elegante",
+  "style.simple": "Simples"
 }

@@ -1798,7 +1798,12 @@ form.addEventListener("submit", async (event) => {
     const projectData = new FormData(form);
     // Auto-detect UI language for video generation - Phase 2 Mexico
     const userLang = localStorage.getItem('quickad_lang') || document.documentElement.lang || navigator.language || 'en';
-    const targetLang = userLang.toLowerCase().startsWith('es') ? 'es-419' : 'en';
+    const normalizedLang = userLang.toLowerCase();
+    const targetLang = normalizedLang.startsWith("es")
+      ? "es-419"
+      : normalizedLang.startsWith("pt")
+        ? "pt-BR"
+        : "en";
     projectData.set('language', targetLang);
     projectData.set('targetLanguage', targetLang);
 
