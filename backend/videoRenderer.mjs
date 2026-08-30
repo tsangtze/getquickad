@@ -103,6 +103,8 @@ async function findVideoFont(language = "en") {
     normalizedLanguage.startsWith("zh") ||
     normalizedLanguage.startsWith("ja") ||
     normalizedLanguage.startsWith("ko");
+  const needsHindiFont =
+    normalizedLanguage.startsWith("hi");
 
   const bundledFont = path.join(
     process.cwd(),
@@ -114,7 +116,13 @@ async function findVideoFont(language = "en") {
     "backend/fonts/NotoSansCJKsc-Bold.otf"
   );
 
+  const bundledHindiFont = path.join(
+    process.cwd(),
+    "backend/fonts/NotoSansDevanagari-Bold.ttf"
+  );
+
   const candidates = [
+    ...(needsHindiFont ? [bundledHindiFont] : []),
     ...(needsCjkFont ? [bundledCjkFont] : []),
     bundledFont,
     path.join(
