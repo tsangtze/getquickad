@@ -228,5 +228,8 @@
   "cta.custom_required_error": "Escribe tu llamada a la acción personalizada.",
   "review.final_btn_arrow": "Crear video final →",
   "scene.role.product": "Producto",
-  "scene.role.proof": "Prueba"
+  "scene.role.proof": "Prueba",
+  "quota.banner_fallback_html": "🎬 Videos gratis: <b>5</b> de <b>5</b> • 📁 Proyectos guardados: <b>{projects}</b>",
+  "quota.banner_html": "🎬 Videos gratis: te quedan <b>{remaining}</b> de {limit} • 📁 Proyectos guardados: <b>{projects}</b>",
+  "quota.free_limit_reached": "Ya usaste tus 2 videos gratis. Actualiza tu plan para crear más videos. Tus videos y vistas previas existentes seguirán disponibles."
 }

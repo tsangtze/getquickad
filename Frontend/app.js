@@ -1049,7 +1049,7 @@ finalVideoButton.addEventListener(
 
       if (!response.ok || !result.ok) {
         throw new Error(
-          result.error ||
+          localizedApiError(result) ||
           "The final video could not be created."
         );
       }
@@ -1839,7 +1839,7 @@ form.addEventListener("submit", async (event) => {
 
     if (!response.ok || !result.ok) {
       throw new Error(
-        result.error ||
+        localizedApiError(result) ||
         "QuickAd AI could not create the project."
       );
     }
@@ -2228,7 +2228,7 @@ async function updateQuota(){
 
     banner.innerHTML = isEs
      ? `🎬 Videos gratis: Te quedan <b>${remaining}</b> de ${limit} • 📁 Proyectos guardados: <b>${projects}</b>`
-      : `🎬 Free videos: <b>${remaining}</b> of ${limit} left • 📁 Saved projects: <b>${projects}</b>`;
+      : uiText("quota.banner_html", "🎬 Free videos: <b>{remaining}</b> of {limit} left • 📁 Saved projects: <b>{projects}</b>", { remaining, limit, projects });
     banner.style.display='block';
     banner.style.background='linear-gradient(90deg,#EEF2FF,#F5F3FF)';
     banner.style.borderBottom='1px solid #DDD6FE';
@@ -2242,7 +2242,7 @@ async function updateQuota(){
     const fallbackProjects = document.querySelectorAll('#recentProjects > div').length || 0;
     banner.innerHTML = isEs
      ? `🎬 Videos gratis: <b>5</b> de <b>5</b> • 📁 Proyectos guardados: <b>${fallbackProjects}</b>`
-      : `🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>${fallbackProjects}</b>`;
+      : uiText("quota.banner_fallback_html", "🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>{projects}</b>", { projects: fallbackProjects });
     banner.style.display='block';
   }
 }
@@ -2293,4 +2293,11 @@ function getLocalizedCallToAction() {
 function roleText(role) {
   const normalized = String(role || "").trim().toLowerCase();
   return uiText(`scene.role.${normalized}`, role || "");
+}
+function localizedApiError(result) {
+  if (result?.code === "FREE_VIDEO_LIMIT_REACHED") {
+    return uiText("quota.free_limit_reached", "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available.");
+  }
+
+  return result?.error || "";
 }

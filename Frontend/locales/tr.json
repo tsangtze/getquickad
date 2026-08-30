@@ -138,5 +138,8 @@
   "cta.custom_required_error": "Please enter your custom call to action.",
   "review.final_btn_arrow": "Create Final Video →",
   "scene.role.product": "Product",
-  "scene.role.proof": "Proof"
+  "scene.role.proof": "Proof",
+  "quota.banner_fallback_html": "🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>{projects}</b>",
+  "quota.banner_html": "🎬 Free videos: <b>{remaining}</b> of {limit} left • 📁 Saved projects: <b>{projects}</b>",
+  "quota.free_limit_reached": "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available."
 }
