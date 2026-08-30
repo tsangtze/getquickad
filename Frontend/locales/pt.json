@@ -196,5 +196,16 @@
   "recent.loading": "Carregando seus projetos salvos...",
   "logo.optional": "Opcional",
   "result.watch": "Ver vídeo",
-  "scene.ai_caption": "Texto de IA"
+  "scene.ai_caption": "Texto de IA",
+  "status.saved_project": "Projeto salvo",
+  "result.video_ready_check": "Vídeo pronto ✓",
+  "promise.timeline": "Sem editor de linha do tempo",
+  "promise.prompts": "Sem prompts complicados",
+  "upload.desc": "Adicione 1–10 fotos claras do produto. Você também pode adicionar seu logo.",
+  "review.ready": "Tudo certo?",
+  "footer.promise": "Envie suas fotos. Nós entregamos o anúncio finalizado.",
+  "recent.project_id": "Projeto {id}",
+  "result.generating_desc": "Gerando sua narração de IA selecionada e renderizando o MP4 final. Isso pode levar cerca de um minuto.",
+  "promise.mp4": "MP4 pronto para postar",
+  "status.video_ready": "Vídeo pronto"
 }

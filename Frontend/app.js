@@ -1007,7 +1007,7 @@ finalVideoButton.addEventListener(
     );
 
     planStatus.textContent =
-      "Generating your selected AI narration and rendering the final MP4. This may take about one minute.";
+      uiText("result.generating_desc", "Generating your selected AI narration and rendering the final MP4. This may take about one minute.");
 
     try {
       const finalStoryboard = {
@@ -1056,7 +1056,7 @@ finalVideoButton.addEventListener(
 
       window.quickAdMusic.lock("ready");
       finalVideoButton.textContent =
-        "Video Ready"; try{ updateQuota(); }catch(e){} try{ loadAccountProjects(); }catch(e){} // auto-refresh quota ✓";
+        uiText("result.video_ready", "Video Ready"); try{ updateQuota(); }catch(e){} try{ loadAccountProjects(); }catch(e){} // auto-refresh quota ✓";
 
       rememberProject(
         {
@@ -1379,7 +1379,7 @@ function projectStatusLabel(status) {
       return "Needs attention";
 
     default:
-      return "Saved project";
+      return uiText("status.saved_project", "Saved project");
   }
 }
 
@@ -1476,7 +1476,7 @@ function renderRecentProjects() {
         entry.updatedAt ||
         entry.createdAt
       ),
-      `Project ${entry.id.slice(0, 8)}`
+      uiText("recent.project_id", `Project ${entry.id.slice(0, 8)}`, { id: entry.id.slice(0, 8) })
     ].filter(Boolean);
 
     details.textContent =
@@ -1537,7 +1537,7 @@ function renderRecoveredVideoResult(
 
   finalVideoButton.disabled = true;
   finalVideoButton.textContent =
-    "Video Ready ✓";
+    uiText("result.video_ready_check", "Video Ready ✓");
 
   planStatus.classList.add(
     "approved",
