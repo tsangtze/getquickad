@@ -36,7 +36,7 @@
   "scene.role.benefit": "Benefit",
   "scene.picture_alt": "Picture assigned to scene {number}",
   "scene.minimum_title": "A video must retain at least 3 scenes.",
-  "review.scene_count": "{count} scenes in this plan · Minimum 3",
+  "review.scene_count": "{count} scenes in this plan · Minimum {minimum}",
   "scene.remove_title": "Remove this scene from the video.",
   "upload.count": "{count} of {max}",
   "scene.picture_named": "Picture {number}: {name}",
@@ -142,5 +142,6 @@
   "quota.banner_fallback_html": "🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>{projects}</b>",
   "quota.banner_html": "🎬 Free videos: <b>{remaining}</b> of {limit} left • 📁 Saved projects: <b>{projects}</b>",
   "quota.free_limit_reached": "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available.",
-  "recent.delete_blocked": "This project is still processing or needs review. It cannot be deleted yet."
+  "recent.delete_blocked": "This project is still processing or needs review. It cannot be deleted yet.",
+  "review.plan_ready_title": "Your AI video plan is ready"
 }

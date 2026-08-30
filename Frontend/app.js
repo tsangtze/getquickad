@@ -333,7 +333,7 @@ function updateSceneTools() {
     currentStoryboard?.scenes?.length ?? 0;
 
   sceneCountMessage.textContent =
-    `${sceneCount} scene${sceneCount === 1 ? "" : "s"} in this plan · Minimum 3`;
+    uiText("review.scene_count", `${sceneCount} scenes in this plan · Minimum 3`, { count: sceneCount, minimum: 3 });
 
   undoSceneButton.hidden =
     deletedSceneHistory.length === 0;
@@ -1889,7 +1889,7 @@ form.addEventListener("submit", async (event) => {
       "success-title";
 
     successTitle.textContent =
-      "Your AI video plan is ready";
+      uiText("review.plan_ready_title", "Your AI video plan is ready");
 
     const successDetails =
       document.createElement("span");

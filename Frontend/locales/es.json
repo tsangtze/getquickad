@@ -126,7 +126,7 @@
   "scene.role.benefit": "Beneficio",
   "scene.picture_alt": "Imagen asignada a la escena {number}",
   "scene.minimum_title": "Un video debe mantener al menos 3 escenas.",
-  "review.scene_count": "{count} escenas en este plan · Mínimo 3",
+  "review.scene_count": "{count} escenas en este plan · Mínimo {minimum}",
   "scene.remove_title": "Eliminar esta escena del video.",
   "upload.count": "{count} de {max}",
   "scene.picture_named": "Imagen {number}: {name}",
@@ -232,5 +232,6 @@
   "quota.banner_fallback_html": "🎬 Videos gratis: <b>5</b> de <b>5</b> • 📁 Proyectos guardados: <b>{projects}</b>",
   "quota.banner_html": "🎬 Videos gratis: te quedan <b>{remaining}</b> de {limit} • 📁 Proyectos guardados: <b>{projects}</b>",
   "quota.free_limit_reached": "Ya usaste tus 2 videos gratis. Actualiza tu plan para crear más videos. Tus videos y vistas previas existentes seguirán disponibles.",
-  "recent.delete_blocked": "Este proyecto aún se está procesando o necesita revisión. Todavía no se puede eliminar."
+  "recent.delete_blocked": "Este proyecto aún se está procesando o necesita revisión. Todavía no se puede eliminar.",
+  "review.plan_ready_title": "Tu plan de video con IA está listo"
 }
