@@ -118,7 +118,7 @@ async function findVideoFont(language = "en") {
 
   const bundledHindiFont = path.join(
     process.cwd(),
-    "backend/fonts/NotoSansDevanagari-Bold.ttf"
+    "backend/fonts/NotoSerifDevanagari-Bold.ttf"
   );
 
   const candidates = [
