@@ -394,6 +394,11 @@ export async function renderVideo({
   );
 
   const textFiles = [];
+  const hideRoleLabel =
+    String(project.language || project.targetLanguage || "en")
+      .toLowerCase()
+      .startsWith("hi");
+
 
   const createTextFile =
     async (name, content) => {
@@ -502,7 +507,9 @@ export async function renderVideo({
       const rolePath =
         await createTextFile(
           `video-role-${sceneIndex + 1}.tmp.txt`,
-          getRoleLabel(scene.role)
+          hideRoleLabel
+            ? ""
+            : getRoleLabel(scene.role)
         );
 
       commandArguments.push(
