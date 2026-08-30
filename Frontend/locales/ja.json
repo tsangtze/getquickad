@@ -152,5 +152,11 @@
   "result.scenes_prefix": "{count} scenes · ",
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
-  "recent.delete_project_aria": "Delete project {title}"
+  "recent.delete_project_aria": "Delete project {title}",
+  "cta.learn": "詳しく見る",
+  "cta.book": "今すぐ予約",
+  "cta.custom": "自分のCTAを書く...",
+  "cta.order": "今日注文する",
+  "cta.visit": "ウェブサイトを見る",
+  "cta.shop": "今すぐ購入"
 }

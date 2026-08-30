@@ -152,5 +152,11 @@
   "result.scenes_prefix": "{count} scenes · ",
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
-  "recent.delete_project_aria": "Delete project {title}"
+  "recent.delete_project_aria": "Delete project {title}",
+  "cta.learn": "了解更多",
+  "cta.book": "立即预约",
+  "cta.custom": "编写自己的行动号召...",
+  "cta.order": "今天下单",
+  "cta.visit": "访问我们的网站",
+  "cta.shop": "立即购买"
 }

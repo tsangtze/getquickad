@@ -152,5 +152,11 @@
   "result.scenes_prefix": "{count} scenes · ",
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
-  "recent.delete_project_aria": "Delete project {title}"
+  "recent.delete_project_aria": "Delete project {title}",
+  "cta.learn": "자세히 보기",
+  "cta.book": "지금 예약하기",
+  "cta.custom": "직접 문구 작성...",
+  "cta.order": "오늘 주문하기",
+  "cta.visit": "웹사이트 방문하기",
+  "cta.shop": "지금 구매하기"
 }
