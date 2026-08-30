@@ -1,7 +1,10 @@
 const SUPPORTED_LANGS = {
   en: { name: "English", flag: "🇺🇸" },
   es: { name: "Español (MX)", flag: "🇲🇽" },
-  pt: { name: "Português", flag: "🇧🇷" }
+  pt: { name: "Português", flag: "🇧🇷" },
+  fr: { name: "Français", flag: "🇫🇷" },
+  de: { name: "Deutsch", flag: "🇩🇪" },
+  it: { name: "Italiano", flag: "🇮🇹" }
 };
 let currentLang = localStorage.getItem('quickad_lang') || 'en';
 let translations = {};
