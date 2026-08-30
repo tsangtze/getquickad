@@ -152,5 +152,11 @@
   "result.scenes_prefix": "{count} scenes · ",
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
-  "recent.delete_project_aria": "Delete project {title}"
+  "recent.delete_project_aria": "Delete project {title}",
+  "cta.custom": "अपना संदेश लिखें...",
+  "cta.learn": "और जानें",
+  "cta.order": "आज ऑर्डर करें",
+  "cta.shop": "अभी खरीदें",
+  "cta.book": "अभी बुक करें",
+  "cta.visit": "हमारी वेबसाइट देखें"
 }

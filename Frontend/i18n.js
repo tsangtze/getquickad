@@ -8,7 +8,8 @@ const SUPPORTED_LANGS = {
   ja: { name: "日本語", flag: "JP" },
   ko: { name: "한국어", flag: "KR" },
   zh: { name: "中文", flag: "CN" },
-  tr: { name: "Türkçe", flag: "TR" }
+  tr: { name: "Türkçe", flag: "TR" },
+  hi: { name: "हिन्दी", flag: "IN" }
 };
 let currentLang = localStorage.getItem('quickad_lang') || 'en';
 let translations = {};

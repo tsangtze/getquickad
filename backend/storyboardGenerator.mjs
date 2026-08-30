@@ -29,6 +29,7 @@ function describeLanguage(language = "en") {
   if (normalized.startsWith("ko")) return "Korean (ko)";
   if (normalized.startsWith("zh")) return "Chinese (Simplified Chinese, zh)";
   if (normalized.startsWith("tr")) return "Turkish (tr)";
+  if (normalized.startsWith("hi")) return "Hindi (hi)";
 
   return "English (en)";
 }

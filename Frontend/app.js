@@ -1817,7 +1817,9 @@ form.addEventListener("submit", async (event) => {
                     ? "zh"
                     : normalizedLang.startsWith("tr")
                       ? "tr"
-                      : "en";
+                      : normalizedLang.startsWith("hi")
+                        ? "hi"
+                        : "en";
     projectData.set('language', targetLang);
     projectData.set('targetLanguage', targetLang);
 
