@@ -4,7 +4,11 @@ const SUPPORTED_LANGS = {
   pt: { name: "Português", flag: "🇧🇷" },
   fr: { name: "Français", flag: "🇫🇷" },
   de: { name: "Deutsch", flag: "🇩🇪" },
-  it: { name: "Italiano", flag: "🇮🇹" }
+  it: { name: "Italiano", flag: "🇮🇹" },
+  ja: { name: "日本語", flag: "JP" },
+  ko: { name: "한국어", flag: "KR" },
+  zh: { name: "中文", flag: "CN" },
+  tr: { name: "Türkçe", flag: "TR" }
 };
 let currentLang = localStorage.getItem('quickad_lang') || 'en';
 let translations = {};

@@ -1809,7 +1809,15 @@ form.addEventListener("submit", async (event) => {
             ? "de"
             : normalizedLang.startsWith("it")
               ? "it"
-              : "en";
+              : normalizedLang.startsWith("ja")
+                ? "ja"
+                : normalizedLang.startsWith("ko")
+                  ? "ko"
+                  : normalizedLang.startsWith("zh")
+                    ? "zh"
+                    : normalizedLang.startsWith("tr")
+                      ? "tr"
+                      : "en";
     projectData.set('language', targetLang);
     projectData.set('targetLanguage', targetLang);
 
