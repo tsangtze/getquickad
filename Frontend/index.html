@@ -10,7 +10,7 @@
   <title>Create a Product Video | QuickAd AI</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="/music-picker.js" defer></script>
-  <script src="/app.js" defer></script>
+  <script src="/i18n.js" defer></script><script src="/app.js" defer></script>
   <link rel="stylesheet" href="/account.css">
   <script src="/account.js" defer></script>
 </head>
@@ -23,28 +23,25 @@
     </a>
 
     <nav class="site-nav" aria-label="Main navigation">
-      <a class="active" href="/">Create Video</a>
-      <a href="#" aria-disabled="true">My Videos</a>
-      <a href="#" aria-disabled="true">Pricing</a>
-      <button class="account-button" type="button">Account</button>
+      <a class="active" href="/" data-i18n="nav.create">Create Video</a>
+      <a href="#" aria-disabled="true" data-i18n="nav.videos">My Videos</a>
+      <a href="#" aria-disabled="true" data-i18n="nav.pricing">Pricing</a>
+      <div id="lang-switcher" style="position:relative;display:inline-block"><button id="lang-current" type="button" style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:14px">🌐 English</button><div id="lang-dropdown" style="display:none;position:absolute;right:0;top:36px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:9999"><button data-lang="en" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇺🇸 English</button><button data-lang="es" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇲🇽 Español</button><button data-lang="pt" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇧🇷 Português</button></div></div><button class="account-button" type="button" data-i18n="nav.account">Account</button>
     </nav>
   </header>
 
   <main class="page-shell">
     <section class="intro">
       <div>
-        <p class="eyebrow">Photos in. Ad out.</p>
+        <p class="eyebrow" data-i18n="intro.eyebrow">Photos in. Ad out.</p>
         <h1 data-i18n="intro.h1">Turn product photos into ready-to-post vertical videos</h1>
         <p class="intro-copy" data-i18n="intro.copy">Upload your photos, describe what you are promoting, and receive a ready-to-post vertical video.</p>
 <div id="quotaBanner" style="margin:16px auto;max-width:800px;padding:14px 18px;border-radius:12px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.04);font-size:14px;line-height:1.5;"></div>
-                  Upload your photos, describe what you are promoting, and receive
-          a ready-to-post vertical video.
-        </p>
       </div>
 
       <div class="video-summary" aria-label="Video output">
         <span>9:16</span>
-        <span>20–30 seconds</span>
+        <span data-i18n="video.seconds">20–30 seconds</span>
         <span>MP4</span>
       </div>
     </section>
@@ -57,10 +54,10 @@
     >
       <div class="recent-projects-header">
         <div>
-          <p class="eyebrow">Continue where you stopped</p>
-          <h2 id="recent-projects-heading">Recent Projects</h2>
+          <p class="eyebrow"><span data-i18n="recent.eyebrow">Continue where you stopped</span></p>
+          <h2 id="recent-projects-heading"><span data-i18n="recent.h2">Recent Projects</span></h2>
           <p>
-            Projects created in this browser appear here.
+            <span data-i18n="recent.desc">Your 10 most recent saved projects in this account appear here.</span>
           </p>
         </div>
 
@@ -69,7 +66,7 @@
           class="clear-project-history"
           type="button"
         >
-          Clear history
+          <span data-i18n="recent.refresh">Refresh projects</span>
         </button>
       </div>
 
@@ -93,8 +90,8 @@
         <div class="step-content">
           <div class="step-heading">
             <div>
-              <h2 id="upload-heading">Upload your images</h2>
-              <p>Add 1–10 clear product photos. You can also add your logo.</p>
+              <h2 id="upload-heading"><span data-i18n="upload.title">Upload your images</span></h2>
+              <p><span data-i18n="upload.desc">Add 1–10 clear product photos. You can also add your logo.</span></p>
             </div>
 
             <span id="image-count" class="step-status">0 of 10</span>
@@ -111,9 +108,9 @@
 
           <label id="upload-zone" class="upload-zone" for="product-images">
             <span class="upload-icon" aria-hidden="true">+</span>
-            <strong>Choose product photos</strong>
-            <span>or drag and drop them here</span>
-            <small>JPG, PNG or WebP · Maximum 10 images</small>
+            <strong><span data-i18n="upload.choose">Choose product photos</span></strong>
+            <span><span data-i18n="upload.drag">or drag and drop them here</span></span>
+            <small data-i18n="upload.formats">JPG, PNG or WebP · Maximum 10 images</small>
           </label>
 
           <div
@@ -124,8 +121,8 @@
 
           <div class="logo-row">
             <div>
-              <strong>Product logo</strong>
-              <span>Optional</span>
+              <strong><span data-i18n="logo.title">Product logo</span></strong>
+              <span><span data-i18n="logo.optional">Optional</span></span>
             </div>
 
             <input
@@ -137,7 +134,7 @@
             >
 
             <label class="secondary-button" for="product-logo">
-              Add logo
+              <span data-i18n="logo.add">Add logo</span>
             </label>
 
             <span id="logo-name" class="file-name"></span>
@@ -153,33 +150,27 @@
         <div class="step-content">
           <div class="step-heading">
             <div>
-              <h2 id="description-heading">Tell us what you’re promoting</h2>
-              <p>A few useful details are enough. QuickAd AI writes the script.</p>
+              <h2 id="description-heading" data-i18n="step2.title">Tell us what you are promoting</h2>
+              <p><span data-i18n="step2.desc">A few useful details are enough. QuickAd AI writes the script.</span></p>
             </div>
           </div>
 
           <label class="field-label" for="description">
-            Product or business description
-            <span>Optional</span>
+            <span data-i18n="step2.label">Product or business description</span>
+            <span><span data-i18n="logo.optional">Optional</span></span>
           </label>
 
-          <textarea
-            id="description"
-            name="description"
-            rows="5"
-            maxlength="500"
-            placeholder="Add useful facts, or leave blank and QuickAd AI will identify what is visible."
-          ></textarea>
+          <textarea data-i18n-placeholder="step2.placeholder" id="productDesc" rows="4" class="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Add useful facts, or leave blank and QuickAd AI will identify what is visible."></textarea>
 
           <div class="text-meta">
-            <span>Add known facts such as price or benefits, or leave blank for image-based identification.</span>
+            <span><span data-i18n="step2.hint">Add known facts such as price or benefits, or leave blank for image-based identification.</span></span>
             <span id="character-count">0 / 500</span>
           </div>
 
           <div class="field-grid">
             <div>
               <label class="field-label" for="website">
-                Website <span>Optional</span>
+                <span data-i18n="website">Website</span> <span><span data-i18n="logo.optional">Optional</span></span>
               </label>
               <input
                 id="website"
@@ -191,15 +182,15 @@
 
             <div>
               <label class="field-label" for="call-to-action">
-                Call to action
+                <span data-i18n="cta">Call to action</span>
               </label>
               <select id="call-to-action" name="callToAction">
-                <option value="Shop Now">Shop Now</option>
-                <option value="Learn More">Learn More</option>
-                <option value="Order Today">Order Today</option>
-                <option value="Visit Our Website">Visit Our Website</option>
-                <option value="Book Now">Book Now</option>
-                <option value="custom">Write my own…</option>
+                <option value="Shop Now" data-i18n="cta.shop">Shop Now</option>
+                <option value="Learn More" data-i18n="cta.learn">Learn More</option>
+                <option value="Order Today" data-i18n="cta.order">Order Today</option>
+                <option value="Visit Our Website" data-i18n="cta.visit">Visit Our Website</option>
+                <option value="Book Now" data-i18n="cta.book">Book Now</option>
+                <option value="custom" data-i18n="cta.custom">Write my own...</option>
               </select>
 
               <div
@@ -208,7 +199,7 @@
                 hidden
               >
                 <label class="field-label" for="custom-call-to-action">
-                  Your call to action
+                  <span data-i18n="cta.custom_label">Your call to action</span>
                 </label>
 
                 <input
@@ -219,8 +210,8 @@
                 >
 
                 <div class="text-meta">
-                  <span>Keep it short and action-oriented.</span>
-                  <span id="custom-cta-count">0 / 40 characters</span>
+                  <span><span data-i18n="cta.hint">Keep it short and action-oriented.</span></span>
+                  <span id="custom-cta-count" data-i18n="cta.count_initial">0 / 40 characters</span>
                 </div>
 
                 <p
@@ -242,8 +233,8 @@
         <div class="step-content">
           <div class="step-heading">
             <div>
-              <h2 id="style-heading">Choose a style</h2>
-              <p>One choice controls the pacing, text, transitions, and music.</p>
+              <h2 id="style-heading"><span data-i18n="step3.title">Choose a style</span></h2>
+              <p><span data-i18n="step3.desc">One choice controls the pacing, text, transitions, and music.</span></p>
             </div>
           </div>
 
@@ -258,29 +249,29 @@
                 checked
               >
               <span class="style-swatch professional"></span>
-              <strong>Professional</strong>
-              <small>Clean, confident, and polished</small>
+              <strong data-i18n="style.professional">Professional</strong>
+              <small data-i18n="style.professional_desc">Clean, confident, and polished</small>
             </label>
 
             <label class="style-option">
               <input type="radio" name="style" value="Energetic">
               <span class="style-swatch energetic"></span>
-              <strong>Energetic</strong>
-              <small>Fast, bold, and attention-grabbing</small>
+              <strong data-i18n="style.energetic">Energetic</strong>
+              <small data-i18n="style.energetic_desc">Fast, bold, and attention-grabbing</small>
             </label>
 
             <label class="style-option">
               <input type="radio" name="style" value="Elegant">
               <span class="style-swatch elegant"></span>
-              <strong>Elegant</strong>
-              <small>Refined, calm, and premium</small>
+              <strong data-i18n="style.elegant">Elegant</strong>
+              <small data-i18n="style.elegant_desc">Refined, calm, and premium</small>
             </label>
 
             <label class="style-option">
               <input type="radio" name="style" value="Simple">
               <span class="style-swatch simple"></span>
-              <strong>Simple</strong>
-              <small>Minimal, clear, and direct</small>
+              <strong data-i18n="style.simple">Simple</strong>
+              <small data-i18n="style.simple_desc">Minimal, clear, and direct</small>
             </label>
           </fieldset>
         </div>
@@ -290,13 +281,13 @@
         <div>
           <span class="final-step">4</span>
           <div>
-            <h2 id="create-heading">Ready to create your video?</h2>
-            <p>QuickAd AI will prepare one complete vertical promotional video.</p>
+            <h2 id="create-heading"><span data-i18n="step4.title">Ready to create your video?</span></h2>
+            <p><span data-i18n="step4.desc">QuickAd AI will prepare one complete vertical promotional video.</span></p>
           </div>
         </div>
 
         <button id="create-button" class="create-button" type="submit">
-          <span>Generate Video Plan</span>
+          <span><span data-i18n="step4.btn">Generate Video Plan</span></span>
           <span aria-hidden="true">→</span>
         </button>
       </section>
@@ -314,15 +305,15 @@
         <div>
           <span class="review-step">5</span>
           <div>
-            <p class="review-eyebrow">Review before spending more credits</p>
-            <h2 id="plan-review-heading">Review your video plan</h2>
+            <p class="review-eyebrow" data-i18n="review.eyebrow">Review before spending more credits</p>
+            <h2 id="plan-review-heading" data-i18n="review.title">Review your video plan</h2>
             <p>
-              Check every picture and caption. Editing and changing pictures use no API credits.
+              <span data-i18n="review.desc">Check every picture and caption. Editing and changing pictures use no API credits.</span>
             </p>
           </div>
         </div>
 
-        <span class="plan-badge">AI plan ready</span>
+        <span class="plan-badge" data-i18n="review.badge">AI plan ready</span>
       </div>
 
       <div class="scene-plan-tools">
@@ -336,16 +327,16 @@
           type="button"
           hidden
         >
-          ↶ Undo deleted scene
+          <span data-i18n="review.undo">Undo deleted scene</span>
         </button>
       </div>
 
       <div id="plan-scenes" class="plan-scenes"></div>
 
       <fieldset class="narrator-section">
-        <legend>Choose a narrator</legend>
+        <legend data-i18n="narrator.title">Choose a narrator</legend>
         <p>
-          Select a voice now. Full narration is generated only after final approval.
+          <span data-i18n="narrator.desc">Select a voice now. Full narration is generated only after final approval.</span>
         </p>
 
         <div class="narrator-options">
@@ -357,8 +348,8 @@
               checked
             >
             <span>
-              <strong>Automatic</strong>
-              <small>Recommended for your selected style</small>
+              <strong data-i18n="narrator.automatic">Automatic</strong>
+              <small data-i18n="narrator.automatic_desc">Recommended for your selected style</small>
             </span>
           </label>
 
@@ -369,8 +360,8 @@
               value="woman-warm"
             >
             <span>
-              <strong>Woman — Warm</strong>
-              <small>Smooth and welcoming</small>
+              <strong data-i18n="narrator.woman_warm">Woman — Warm</strong>
+              <small data-i18n="narrator.woman_warm_desc">Smooth and welcoming</small>
             </span>
           </label>
 
@@ -381,8 +372,8 @@
               value="woman-energetic"
             >
             <span>
-              <strong>Woman — Energetic</strong>
-              <small>Upbeat and promotional</small>
+              <strong data-i18n="narrator.woman_energetic">Woman — Energetic</strong>
+              <small data-i18n="narrator.woman_energetic_desc">Upbeat and promotional</small>
             </span>
           </label>
 
@@ -393,8 +384,8 @@
               value="man-confident"
             >
             <span>
-              <strong>Man — Confident</strong>
-              <small>Clear and professional</small>
+              <strong data-i18n="narrator.man_confident">Man — Confident</strong>
+              <small data-i18n="narrator.man_confident_desc">Clear and professional</small>
             </span>
           </label>
 
@@ -405,38 +396,38 @@
               value="man-calm"
             >
             <span>
-              <strong>Man — Calm</strong>
-              <small>Natural and reassuring</small>
+              <strong data-i18n="narrator.man_calm">Man — Calm</strong>
+              <small data-i18n="narrator.man_calm_desc">Natural and reassuring</small>
             </span>
           </label>
         </div>
       </fieldset>
 
       <section class="music-section" aria-labelledby="music-heading">
-        <h3 id="music-heading">Choose background music</h3>
-        <p>Optional music plays quietly beneath your narration. Previews use no API credits.</p>
+        <h3 id="music-heading" data-i18n="music.title">Choose background music</h3>
+        <p data-i18n="music.desc">Optional music plays quietly beneath your narration. Previews use no API credits.</p>
         <fieldset id="music-options"><legend class="music-sr-only">Music track</legend><div class="music-options">
-<div class="music-card"><label><input type="radio" name="musicChoice" value="none" checked> <strong>No music</strong><small>Narration only</small></label></div>
-<div class="music-card"><label><input type="radio" name="musicChoice" value="upbeat" > <strong>Upbeat</strong><small>Funky rhythm</small></label><button type="button" data-music-preview="upbeat" aria-label="Preview Upbeat music">Preview</button></div>
-<div class="music-card"><label><input type="radio" name="musicChoice" value="calm" > <strong>Calm</strong><small>Piano and soft pads</small></label><button type="button" data-music-preview="calm" aria-label="Preview Calm music">Preview</button></div>
-<div class="music-card"><label><input type="radio" name="musicChoice" value="piano" > <strong>Elegant</strong><small>Gentle piano</small></label><button type="button" data-music-preview="piano" aria-label="Preview Elegant music">Preview</button></div>
-<div class="music-card"><label><input type="radio" name="musicChoice" value="ambient" > <strong>Ambient</strong><small>Relaxing atmosphere</small></label><button type="button" data-music-preview="ambient" aria-label="Preview Ambient music">Preview</button></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="none" checked> <strong data-i18n="music.none">No music</strong><small data-i18n="music.none_desc">Narration only</small></label></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="upbeat" > <strong data-i18n="music.upbeat">Upbeat</strong><small data-i18n="music.upbeat_desc">Funky rhythm</small></label><button type="button" data-music-preview="upbeat" aria-label="Preview Upbeat music" data-i18n-aria-label="music.preview_upbeat_aria" data-i18n="music.preview">Preview</button></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="calm" > <strong data-i18n="music.calm">Calm</strong><small data-i18n="music.calm_desc">Piano and soft pads</small></label><button type="button" data-music-preview="calm" aria-label="Preview Calm music" data-i18n-aria-label="music.preview_calm_aria" data-i18n="music.preview">Preview</button></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="piano" > <strong data-i18n="style.elegant">Elegant</strong><small data-i18n="music.elegant_desc">Gentle piano</small></label><button type="button" data-music-preview="piano" aria-label="Preview Elegant music" data-i18n-aria-label="music.preview_elegant_aria" data-i18n="music.preview">Preview</button></div>
+<div class="music-card"><label><input type="radio" name="musicChoice" value="ambient" > <strong data-i18n="music.ambient">Ambient</strong><small data-i18n="music.ambient_desc">Relaxing atmosphere</small></label><button type="button" data-music-preview="ambient" aria-label="Preview Ambient music" data-i18n-aria-label="music.preview_ambient_aria" data-i18n="music.preview">Preview</button></div>
         </div>
         <div class="music-volume-row">
-          <label for="music-volume">Music volume <output id="music-volume-value" for="music-volume">10%</output></label>
+          <label for="music-volume"><span data-i18n="music.volume">Music volume</span> <output id="music-volume-value" for="music-volume">10%</output></label>
           <input id="music-volume" type="range" min="0" max="100" step="1" value="10" aria-describedby="music-volume-help">
-          <small id="music-volume-help">0% mutes music · 10% recommended · Narration stays unchanged</small>
+          <small id="music-volume-help"><span data-i18n="music.volume_help">0% mutes music · 10% recommended · Narration stays unchanged</span></small>
         </div></fieldset>
-        <audio id="music-preview" controls preload="none" hidden aria-label="Music preview"></audio>
-        <p id="music-note" role="status">Choose a track before creating the final video.</p>
-        <p class="music-credits">CC0 tracks by Joth and The Cynic Project. <a href="/music/CREDITS.txt" target="_blank" rel="noopener">Music credits and licenses</a></p>
+        <audio id="music-preview" controls preload="none" hidden aria-label="Music preview" data-i18n-aria-label="music.preview_player_aria"></audio>
+        <p id="music-note" role="status"><span data-i18n="music.choose_before_final">Choose a track before creating the final video.</span></p>
+        <p class="music-credits"><span data-i18n="music.credits_prefix">CC0 tracks by Joth and The Cynic Project.</span> <a href="/music/CREDITS.txt" target="_blank" rel="noopener"><span data-i18n="music.credits_link">Music credits and licenses</span></a></p>
       </section>
 
       <div class="plan-approval">
         <div>
-          <strong>Everything looks right?</strong>
+          <strong data-i18n="review.ready">Everything looks right?</strong>
           <p id="plan-status">
-            Captions must contain 1–60 characters.
+            <span data-i18n="review.caption_rule">Captions must contain 1–60 characters.</span>
           </p>
         </div>
 
@@ -446,25 +437,32 @@
           type="button"
           disabled
         >
-          <span>Create Final Video</span>
+          <span data-i18n="review.final_btn">Create Final Video</span>
           <span aria-hidden="true">→</span>
         </button>
       </div>
     </section>
 
     <section class="promise-bar" aria-label="QuickAd AI benefits">
-      <span>No timeline editor</span>
-      <span>No complicated prompts</span>
-      <span>Ready-to-post MP4</span>
+      <span data-i18n="promise.timeline">No timeline editor</span>
+      <span data-i18n="promise.prompts">No complicated prompts</span>
+      <span data-i18n="promise.mp4">Ready-to-post MP4</span>
     </section>
   </main>
 
   <footer class="site-footer">
     <span>QuickAd AI</span>
-    <span>Give us your photos. We give you the finished ad.</span>
+    <span data-i18n="footer.promise">Give us your photos. We give you the finished ad.</span>
   </footer>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
