@@ -556,7 +556,7 @@ function createSceneReviewCard(scene) {
   sceneTitle.textContent = uiText("scene.title", `Scene ${scene.sceneNumber}`, { number: scene.sceneNumber });
 
   const sceneTiming = document.createElement("small");
-  sceneTiming.textContent = uiText("scene.timing", `${scene.startSeconds}-${scene.endSeconds} seconds - ${scene.role}`, { start: scene.startSeconds, end: scene.endSeconds, role: uiText(`scene.role.${scene.role}`, scene.role) });
+  sceneTiming.textContent = uiText("scene.timing", `${scene.startSeconds}-${scene.endSeconds} seconds - ${scene.role}`, { start: scene.startSeconds, end: scene.endSeconds, role: roleText(scene.role) });
 
   sceneHeading.append(
     sceneTitle,
@@ -2289,4 +2289,8 @@ function getLocalizedCallToAction() {
   };
 
   return uiText(ctaKeys[selectedValue] || "cta.shop", selectedValue);
+}
+function roleText(role) {
+  const normalized = String(role || "").trim().toLowerCase();
+  return uiText(`scene.role.${normalized}`, role || "");
 }

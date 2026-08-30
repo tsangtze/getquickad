@@ -136,5 +136,7 @@
   "account.session_unavailable": "Sessão indisponível. Abra Conta para tentar novamente.",
   "cta.custom_required": "Digite sua chamada para ação.",
   "cta.custom_required_error": "Digite sua chamada para ação personalizada.",
-  "review.final_btn_arrow": "Criar vídeo final →"
+  "review.final_btn_arrow": "Criar vídeo final →",
+  "scene.role.product": "Produto",
+  "scene.role.proof": "Prova"
 }

@@ -174,5 +174,7 @@
   "account.session_unavailable": "Session unavailable. Open Account to try again.",
   "cta.custom_required": "Enter your call to action.",
   "cta.custom_required_error": "Please enter your custom call to action.",
-  "review.final_btn_arrow": "Create Final Video →"
+  "review.final_btn_arrow": "Create Final Video →",
+  "scene.role.product": "Product",
+  "scene.role.proof": "Proof"
 }

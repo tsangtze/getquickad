@@ -226,5 +226,7 @@
   "account.session_unavailable": "Sesión no disponible. Abre Cuenta para intentarlo de nuevo.",
   "cta.custom_required": "Escribe tu llamada a la acción.",
   "cta.custom_required_error": "Escribe tu llamada a la acción personalizada.",
-  "review.final_btn_arrow": "Crear video final →"
+  "review.final_btn_arrow": "Crear video final →",
+  "scene.role.product": "Producto",
+  "scene.role.proof": "Prueba"
 }
