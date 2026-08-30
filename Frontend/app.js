@@ -1413,14 +1413,14 @@ async function deleteSavedProject(entry, button) {
   try {
     const response = await quickAdProjectFetch(`/api/projects/${encodeURIComponent(entry.id)}`, {method: "DELETE"});
     const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Project deletion failed.");
+    if (!response.ok || !data.ok) throw data;
     if (entry.id === currentProjectId) {
       window.location.reload();
       return;
     }
     await loadAccountProjects();
   } catch (error) {
-    recentProjectStatus.textContent = error.message || "Project deletion failed. Please refresh before retrying.";
+    recentProjectStatus.textContent = localizedApiError(error) || error.message || uiText("recent.delete_failed", "Project deletion failed. Please refresh before retrying.");
     recentProjectStatus.classList.add("error");
   } finally {
     button.disabled = false;
@@ -1513,7 +1513,7 @@ function renderRecentProjects() {
     deleteButton.type = "button";
     deleteButton.className = "delete-recent-project";
     deleteButton.textContent = window.QuickAdI18n?.t("recent.delete") || "Delete";
-    deleteButton.setAttribute("aria-label", `Delete project ${entry.title}`);
+    deleteButton.setAttribute("aria-label", uiText("recent.delete_project_aria", `Delete project ${entry.title}`, { title: entry.title }));
     deleteButton.addEventListener("click", () => deleteSavedProject(entry, deleteButton));
     const actions = document.createElement("div");
     actions.className = "recent-project-actions";

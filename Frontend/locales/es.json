@@ -240,5 +240,7 @@
   "result.summary_complete": "{count} escenas · MP4 de 25 segundos · Narración de IA completa",
   "review.final_btn_creating": "Creando video final...",
   "result.scenes_prefix": "{count} escenas · ",
-  "music.creating_selected": "Creando tu video con la pista seleccionada…"
+  "music.creating_selected": "Creando tu video con la pista seleccionada…",
+  "recent.delete_failed": "No se pudo eliminar el proyecto. Actualiza antes de intentarlo de nuevo.",
+  "recent.delete_project_aria": "Eliminar proyecto {title}"
 }

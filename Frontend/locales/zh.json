@@ -150,5 +150,7 @@
   "result.summary_complete": "{count} scenes · 25-second MP4 · AI narration complete",
   "review.final_btn_creating": "Creating Final Video...",
   "result.scenes_prefix": "{count} scenes · ",
-  "music.creating_selected": "Creating your video with the selected soundtrack…"
+  "music.creating_selected": "Creating your video with the selected soundtrack…",
+  "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
+  "recent.delete_project_aria": "Delete project {title}"
 }
