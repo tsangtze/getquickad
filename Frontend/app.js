@@ -1803,7 +1803,13 @@ form.addEventListener("submit", async (event) => {
       ? "es-419"
       : normalizedLang.startsWith("pt")
         ? "pt-BR"
-        : "en";
+        : normalizedLang.startsWith("fr")
+          ? "fr"
+          : normalizedLang.startsWith("de")
+            ? "de"
+            : normalizedLang.startsWith("it")
+              ? "it"
+              : "en";
     projectData.set('language', targetLang);
     projectData.set('targetLanguage', targetLang);
 
