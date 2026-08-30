@@ -190,5 +190,6 @@
   "result.scenes_prefix": "{count} scenes · ",
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
-  "recent.delete_project_aria": "Delete project {title}"
+  "recent.delete_project_aria": "Delete project {title}",
+  "language.renderingNote": "Some languages may render differently in the final video. Please review with your free tries before subscribing."
 }

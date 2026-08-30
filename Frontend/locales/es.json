@@ -242,5 +242,6 @@
   "result.scenes_prefix": "{count} escenas · ",
   "music.creating_selected": "Creando tu video con la pista seleccionada…",
   "recent.delete_failed": "No se pudo eliminar el proyecto. Actualiza antes de intentarlo de nuevo.",
-  "recent.delete_project_aria": "Eliminar proyecto {title}"
+  "recent.delete_project_aria": "Eliminar proyecto {title}",
+  "language.renderingNote": "Algunos idiomas pueden verse diferente en el video final. Revísalo con tus pruebas gratis antes de suscribirte."
 }

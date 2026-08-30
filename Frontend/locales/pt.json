@@ -207,5 +207,6 @@
   "recent.project_id": "Projeto {id}",
   "result.generating_desc": "Gerando sua narração de IA selecionada e renderizando o MP4 final. Isso pode levar cerca de um minuto.",
   "promise.mp4": "MP4 pronto para postar",
-  "status.video_ready": "Vídeo pronto"
+  "status.video_ready": "Vídeo pronto",
+  "language.renderingNote": "Alguns idiomas podem aparecer de forma diferente no vídeo final. Revise com suas tentativas grátis antes de assinar."
 }
