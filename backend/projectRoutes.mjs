@@ -183,9 +183,14 @@ function validateProject(request) {
   ) || "Shop Now";
 
   const style = cleanText(
-    request.body.style,
-    40
-  );
+      request.body.style,
+      40
+    );
+
+    const language = cleanText(
+      request.body.language || request.body.targetLanguage || "en",
+      10
+    ) || "en";
 
   if (productImages.length < 1) {
     return {
@@ -410,7 +415,7 @@ export async function createProjectRouter({
       }
       const idleStatuses = new Set(["storyboard_ready", "video_ready", "storyboard_failed", "narration_failed", "video_failed", "approval_failed"]);
       if (!idleStatuses.has(project.status)) {
-        return response.status(409).json({ok: false, error: "This project is still processing or needs review. It cannot be deleted yet."});
+        return response.status(409).json({ok: false, code: "PROJECT_DELETE_BLOCKED", error: "This project is still processing or needs review. It cannot be deleted yet."});
       }
       await fs.rm(directory, {recursive: true, force: false});
       return response.json({ok: true, deletedProjectId: id});
@@ -606,13 +611,17 @@ export async function createProjectRouter({
             validated.callToAction,
           style:
             validated.style,
+          language:
+            (request.body.language || request.body.targetLanguage || "en").toString().slice(0,10),
+          targetLanguage:
+            (request.body.targetLanguage || request.body.language || "en").toString().slice(0,10),
           output: {
             aspectRatio: "9:16",
             durationSeconds: "20-30",
             format: "mp4"
           },
           assets
-        };
+        };;
 
         const projectPath = path.join(
           projectDirectory,
@@ -1512,3 +1521,5 @@ export async function cleanFailedUpload(
     allUploadedFiles(request)
   );
 }
+
+

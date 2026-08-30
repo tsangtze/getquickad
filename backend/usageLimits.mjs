@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-const FREE_FINAL_VIDEOS = 2;
+const FREE_FINAL_VIDEOS = Number.parseInt(process.env.FREE_FINAL_VIDEOS || "2", 10);
 const MAX_PROJECTS = 10;
 function usersDir(projectRoot) { return path.join(projectRoot, "users"); }
 function userFile(projectRoot, userId) {

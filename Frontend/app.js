@@ -2295,6 +2295,10 @@ function roleText(role) {
   return uiText(`scene.role.${normalized}`, role || "");
 }
 function localizedApiError(result) {
+  if (result?.code === "PROJECT_DELETE_BLOCKED") {
+    return uiText("recent.delete_blocked", "This project is still processing or needs review. It cannot be deleted yet.");
+  }
+
   if (result?.code === "FREE_VIDEO_LIMIT_REACHED") {
     return uiText("quota.free_limit_reached", "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available.");
   }

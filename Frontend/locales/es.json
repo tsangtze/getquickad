@@ -231,5 +231,6 @@
   "scene.role.proof": "Prueba",
   "quota.banner_fallback_html": "🎬 Videos gratis: <b>5</b> de <b>5</b> • 📁 Proyectos guardados: <b>{projects}</b>",
   "quota.banner_html": "🎬 Videos gratis: te quedan <b>{remaining}</b> de {limit} • 📁 Proyectos guardados: <b>{projects}</b>",
-  "quota.free_limit_reached": "Ya usaste tus 2 videos gratis. Actualiza tu plan para crear más videos. Tus videos y vistas previas existentes seguirán disponibles."
+  "quota.free_limit_reached": "Ya usaste tus 2 videos gratis. Actualiza tu plan para crear más videos. Tus videos y vistas previas existentes seguirán disponibles.",
+  "recent.delete_blocked": "Este proyecto aún se está procesando o necesita revisión. Todavía no se puede eliminar."
 }
