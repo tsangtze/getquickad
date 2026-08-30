@@ -17,9 +17,32 @@ function countWords(text) {
     .length;
 }
 
-function buildSystemInstructions() {
+function describeLanguage(language = "en") {
+  const normalized = String(language || "en").toLowerCase();
+
+  if (normalized.startsWith("es")) return "Spanish (Mexican Spanish, es-419)";
+  if (normalized.startsWith("pt")) return "Portuguese (Brazilian Portuguese, pt-BR)";
+  if (normalized.startsWith("fr")) return "French (fr)";
+  if (normalized.startsWith("de")) return "German (de)";
+  if (normalized.startsWith("it")) return "Italian (it)";
+  if (normalized.startsWith("ja")) return "Japanese (ja)";
+  if (normalized.startsWith("ko")) return "Korean (ko)";
+  if (normalized.startsWith("zh")) return "Chinese (Simplified Chinese, zh)";
+  if (normalized.startsWith("tr")) return "Turkish (tr)";
+
+  return "English (en)";
+}
+function buildSystemInstructions(language = "en") {
+  const languageDescription = describeLanguage(language);
+
   return `
-You create concise vertical promotional-video storyboards.
+You create concise vertical promotional-video storyboards in the requested language.
+
+LANGUAGE RULE - CRITICAL:
+- Target language: ${languageDescription}
+- Write ALL titles, captions, and narration in the target language.
+- Use natural marketing language for the target locale.
+- Do not translate product names, brand names, URLs, or file names unless the customer supplied them translated.
 
 Return one complete storyboard for a 20-30 second 9:16 social-media advertisement.
 
@@ -55,12 +78,16 @@ Rules:
 `.trim();
 }
 
-function buildProjectPrompt(project) {
+function buildProjectPrompt(project, language = "en") {
   const imageCount =
     project.assets.productImages.length;
+  const languageDescription = describeLanguage(language);
 
   return `
 Create a finished promotional-video storyboard using these customer details.
+
+TARGET LANGUAGE: ${languageDescription}
+You MUST write ALL titles, captions, and narration in this language.
 
 Product description:
 ${project.description || "(none supplied — identify the product or business only from clearly visible image content)"}
@@ -228,7 +255,7 @@ export async function generateStoryboard({
         {
           role: "system",
           content:
-            buildSystemInstructions()
+            buildSystemInstructions(project.language || project.targetLanguage || "en")
         },
         {
           role: "user",
@@ -236,7 +263,7 @@ export async function generateStoryboard({
             {
               type: "input_text",
               text:
-                buildProjectPrompt(project) +
+                buildProjectPrompt(project, project.language || project.targetLanguage || "en") +
                 "\n\nInspect every supplied image before writing the storyboard. " +
                 "Match each scene to visible image content. " +
                 "Do not claim that an object or feature is visible unless it actually appears. " +
@@ -306,3 +333,5 @@ export async function generateStoryboard({
     }
   };
 }
+
+
