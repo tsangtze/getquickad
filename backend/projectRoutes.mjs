@@ -413,7 +413,7 @@ export async function createProjectRouter({
       if (project.id !== id || project.ownerId !== request.authUser.id) {
         return response.status(404).json({ok: false, error: "Project not found."});
       }
-      const idleStatuses = new Set(["storyboard_ready", "video_ready", "storyboard_failed", "narration_failed", "video_failed", "approval_failed"]);
+      const idleStatuses = new Set(["saved_project", "storyboard_ready", "narration_ready", "video_ready", "storyboard_failed", "narration_failed", "video_failed", "approval_failed"]);
       if (!idleStatuses.has(project.status)) {
         return response.status(409).json({ok: false, code: "PROJECT_DELETE_BLOCKED", error: "This project is still processing or needs review. It cannot be deleted yet."});
       }
