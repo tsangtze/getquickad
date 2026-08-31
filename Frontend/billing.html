@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Manage your QuickAd AI plan and video usage.">
+  <title>Billing & Plans | QuickAd AI</title>
+
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/billing.css">
+  <link rel="stylesheet" href="/account.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="QuickAd AI home">
+      <span class="brand-mark">Q</span>
+      <span>QuickAd <strong>AI</strong></span>
+    </a>
+
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="/">Create Video</a>
+      <a class="active" href="/billing.html">Billing</a>
+      <button class="account-button" type="button">Account</button>
+    </nav>
+  </header>
+
+  <main class="billing-shell">
+    <section class="billing-intro">
+      <p class="eyebrow">Simple pricing</p>
+      <h1>Billing & Plans</h1>
+      <p>Start free. Upgrade when you need more videos.</p>
+    </section>
+
+    <section id="current-plan" class="current-plan-card" aria-live="polite">
+      <div>
+        <p class="billing-label">Your Plan</p>
+        <h2 id="current-plan-name">Checking your plan...</h2>
+        <p id="current-plan-usage">Loading usage...</p>
+      </div>
+
+      <div class="usage-meter">
+        <div id="usage-bar" class="usage-bar" style="width:0%"></div>
+      </div>
+    </section>
+
+    <section class="plan-grid" aria-label="QuickAd AI plans">
+      <article class="plan-card" data-plan="free">
+        <p class="plan-name">Free</p>
+        <p class="plan-price"><strong>$0</strong></p>
+
+        <ul>
+          <li>2 lifetime final videos</li>
+          <li>Videos up to 30 seconds</li>
+          <li>Saved projects</li>
+        </ul>
+
+        <button class="plan-button" type="button" data-plan-button="free" disabled>
+          Free Plan
+        </button>
+      </article>
+
+      <article class="plan-card featured" data-plan="starter">
+        <p class="plan-badge">Great for getting started</p>
+        <p class="plan-name">Starter</p>
+
+        <p class="plan-price">
+          <strong>$9</strong>
+          <span>/month</span>
+        </p>
+
+        <ul>
+          <li>100 credits each month</li>
+          <li>Videos up to 60 seconds</li>
+          <li>About 10 standard short videos</li>
+        </ul>
+
+        <button class="plan-button primary" type="button" data-plan-button="starter">
+          Choose Starter
+        </button>
+      </article>
+
+      <article class="plan-card" data-plan="pro">
+        <p class="plan-name">Pro</p>
+
+        <p class="plan-price">
+          <strong>$29</strong>
+          <span>/month</span>
+        </p>
+
+        <ul>
+          <li>400 credits each month</li>
+          <li>Videos up to 60 seconds</li>
+          <li>About 40 standard short videos</li>
+        </ul>
+
+        <button class="plan-button primary" type="button" data-plan-button="pro">
+          Choose Pro
+        </button>
+      </article>
+    </section>
+
+    <section class="credit-guide">
+      <h2>How credits work</h2>
+
+      <div class="credit-grid">
+        <div>
+          <strong>10 credits</strong>
+          <span>Up to 30 seconds</span>
+        </div>
+
+        <div>
+          <strong>15 credits</strong>
+          <span>31–45 seconds</span>
+        </div>
+
+        <div>
+          <strong>20 credits</strong>
+          <span>46–60 seconds</span>
+        </div>
+      </div>
+
+      <p>Credits are used only when a final video is successfully created.</p>
+    </section>
+
+    <p id="billing-message" class="billing-message" role="status" aria-live="polite"></p>
+  </main>
+
+  <script src="/billing.js" defer></script>
+  <script src="/account.js" defer></script>
+</body>
+</html>
