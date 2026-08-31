@@ -200,5 +200,8 @@
   "status.storyboard_ready": "Plan ready",
   "status.narration_ready": "Narration ready",
   "status.needs_attention": "Needs attention",
-  "status.saved_project": "Saved project"
+  "status.saved_project": "Saved project",
+  "benefit.timeline": "No timeline editor",
+  "benefit.prompts": "No complicated prompts",
+  "benefit.mp4": "Ready-to-post MP4"
 }
