@@ -1744,7 +1744,7 @@ async function openSavedProject(
   }
 }
 
-clearProjectHistoryButton.textContent = window.QuickAdI18n?.t("recent.refresh") || "Refresh projects";
+clearProjectHistoryButton.textContent = uiText("recent.refresh", "Refresh projects");
 clearProjectHistoryButton.addEventListener("click", () => {
   loadAccountProjects();
 });
@@ -2326,3 +2326,4 @@ function localizedApiError(result) {
 
   return result?.error || "";
 }
+
