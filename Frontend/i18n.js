@@ -11,15 +11,28 @@ const SUPPORTED_LANGS = {
   tr: { name: "Türkçe", flag: "TR" },
   hi: { name: "हिन्दी", flag: "IN" }
 };
-let currentLang = localStorage.getItem('quickad_lang') || 'en';
+let currentLang = localStorage.getItem('quickad_lang');
 let translations = {};
+
 function detectBrowserLang(){
-  const nav=(navigator.language||'en').toLowerCase();
-  if(nav.startsWith('es')) return 'es';
-  if(nav.startsWith('pt')) return 'pt';
+  const browserLangs = Array.isArray(navigator.languages) && navigator.languages.length
+    ? navigator.languages
+    : [navigator.language || 'en'];
+
+  for (const browserLang of browserLangs) {
+    const baseLang = String(browserLang || 'en').toLowerCase().split('-')[0];
+    if (SUPPORTED_LANGS[baseLang]) {
+      return baseLang;
+    }
+  }
+
   return 'en';
 }
-if(!currentLang || currentLang==='null'){ currentLang=detectBrowserLang(); localStorage.setItem('quickad_lang',currentLang); }
+
+if(!currentLang || currentLang === 'null'){
+  currentLang = detectBrowserLang();
+  localStorage.setItem('quickad_lang', currentLang);
+}
 async function loadTranslations(lang){
   try{
     const res=await fetch(`/locales/${lang}.json?v=${Date.now()}`);
@@ -96,3 +109,4 @@ function initLang(){
 }
 document.addEventListener('DOMContentLoaded', initLang);
 window.QuickAdI18n={t,setLanguage,get currentLang(){return currentLang}};
+
