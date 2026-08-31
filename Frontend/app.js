@@ -6,18 +6,6 @@ function uiText(key, fallback, params = {}) {
   return translated;
 }
 
-async function updateQuota_old() {
-  try {
-    const res = await fetch('/api/projects/usage', { credentials: 'include' });
-    const data = await res.json();
-    if (!data.ok) return;
-    const u = data.usage;
-    const el = document.getElementById('quotaBanner');
-    if (el) {
-      el.innerHTML = uiText("quota.html", "<strong>{remaining} / {freeLimit} free videos left</strong> - {projects} / {projectLimit} projects", { remaining: u.freeVideosRemaining, freeLimit: data.limits.FREE_FINAL_VIDEOS, projects: u.projectCount, projectLimit: data.limits.MAX_PROJECTS }) + (!u.canCreateMoreProjects ? ' <span style="color:#b91c1c">' + uiText("quota.project_limit", "Limit reached, delete a project") + '</span>' : "") + (!u.canGenerateMoreVideos ? ' <span style="color:#b91c1c">' + uiText("quota.video_limit", "Free video limit reached") + '</span>' : "");
-    }
-  } catch {}
-}
 let accountProjectHistory = [];
 let accountHistoryRevision = 0;
 let accountListRequest = 0;
@@ -2222,52 +2210,121 @@ setTimeout(updateQuota, 1000);
 })();
 
 async function updateQuota(){
-  const banner = document.getElementById('quotaBanner');
-  if(!banner) return;
-  const isEs = (window.QuickAdI18n?.currentLang === 'es') || (localStorage.getItem('quickad_lang') === 'es');
-  try{
-    const res = await fetch('/api/projects/usage');
-    let remaining = 5, limit = 5, projects = 0;
-    if(res.ok){
-      const d = await res.json();
-      remaining = d.usage?.freeVideosRemaining ?? d.remaining ?? d.freeVideosLeft ?? 0;
-      limit = d.limits?.FREE_FINAL_VIDEOS ?? d.limit ?? d.freeLimit ?? 2;
-      projects = d.usage?.projectCount ?? d.projects ?? d.projectsCount ?? d.totalProjects ?? 0;
-    } else {
-      // fallback to local project count from DOM
-      projects = document.querySelectorAll('[data-project-id],.project-card,.recent-project').length;
-      // try count from Proyectos Recientes section
-      const recent = document.querySelectorAll('#recentProjects > div, #recentProjects.project-item');
-      if(recent.length) projects = recent.length;
-    }
-    // If projects still 0, count from localStorage or API /api/projects
-    try{
-      const pRes = await fetch('/api/projects');
-      if(pRes.ok){
-        const pData = await pRes.json();
-        if(Array.isArray(pData)) projects = pData.length;
-        else if(pData.projects) projects = pData.projects.length;
-        else if(pData.count) projects = pData.count;
-      }
-    }catch{}
+  const banner =
+    document.getElementById('quotaBanner');
 
-    banner.innerHTML = isEs
-     ? `🎬 Videos gratis: Te quedan <b>${remaining}</b> de ${limit} • 📁 Proyectos guardados: <b>${projects}</b>`
-      : uiText("quota.banner_html", "🎬 Free videos: <b>{remaining}</b> of {limit} left • 📁 Saved projects: <b>{projects}</b>", { remaining, limit, projects });
+  if(!banner) return;
+
+  const isEs =
+    (window.QuickAdI18n?.currentLang === 'es') ||
+    (localStorage.getItem('quickad_lang') === 'es');
+
+  try{
+    const res =
+      await fetch('/api/projects/usage');
+
+    let usage = null;
+    let projects = 0;
+
+    if(res.ok){
+      const data =
+        await res.json();
+
+      usage =
+        data.usage || null;
+
+      projects =
+        usage?.projectCount ??
+        data.projects ??
+        data.projectsCount ??
+        data.totalProjects ??
+        0;
+    }
+
+    if(!usage){
+      try{
+        const pRes =
+          await fetch('/api/projects');
+
+        if(pRes.ok){
+          const pData =
+            await pRes.json();
+
+          if(Array.isArray(pData)){
+            projects =
+              pData.length;
+          } else if(pData.projects){
+            projects =
+              pData.projects.length;
+          } else if(pData.count){
+            projects =
+              pData.count;
+          }
+
+          usage =
+            pData.usage || null;
+        }
+      }catch{}
+    }
+
+    if(usage?.planId && usage.planId !== 'free'){
+      const planName =
+        usage.planName || usage.planId;
+
+      const creditsRemaining =
+        usage.monthlyCreditsRemaining ?? 0;
+
+      const creditsTotal =
+        usage.monthlyCreditsTotal ?? 0;
+
+      banner.innerHTML =
+        isEs
+          ? `🎬 ${planName}: <b>${creditsRemaining}</b> de ${creditsTotal} créditos disponibles • 📁 Proyectos guardados: <b>${projects}</b>`
+          : `🎬 ${planName}: <b>${creditsRemaining}</b> of ${creditsTotal} credits left • 📁 Saved projects: <b>${projects}</b>`;
+    } else {
+      const remaining =
+        usage?.freeVideosRemaining ?? 2;
+
+      banner.innerHTML =
+        isEs
+          ? `🎬 Videos gratis: Te quedan <b>${remaining}</b> de 2 • 📁 Proyectos guardados: <b>${projects}</b>`
+          : uiText(
+              "quota.banner_html",
+              "🎬 Free videos: <b>{remaining}</b> of 2 left • 📁 Saved projects: <b>{projects}</b>",
+              {
+                remaining,
+                projects
+              }
+            );
+    }
+
     banner.style.display='block';
-    banner.style.background='linear-gradient(90deg,#EEF2FF,#F5F3FF)';
-    banner.style.borderBottom='1px solid #DDD6FE';
+    banner.style.background=
+      'linear-gradient(90deg,#EEF2FF,#F5F3FF)';
+    banner.style.borderBottom=
+      '1px solid #DDD6FE';
     banner.style.padding='10px';
     banner.style.textAlign='center';
     banner.style.fontSize='13px';
     banner.style.fontWeight='600';
     banner.style.color='#4338CA';
   }catch(e){
-    console.warn('quota error', e);
-    const fallbackProjects = document.querySelectorAll('#recentProjects > div').length || 0;
-    banner.innerHTML = isEs
-     ? `🎬 Videos gratis: <b>5</b> de <b>5</b> • 📁 Proyectos guardados: <b>${fallbackProjects}</b>`
-      : uiText("quota.banner_fallback_html", "🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>{projects}</b>", { projects: fallbackProjects });
+    console.warn(
+      'quota error',
+      e
+    );
+
+    const fallbackProjects =
+      document
+        .querySelectorAll(
+          '#recentProjects > div'
+        ).length || 0;
+
+    banner.innerHTML =
+      isEs
+        ? `🎬 Videos gratis: Te quedan <b>2</b> de 2 • 📁 Proyectos guardados: <b>${fallbackProjects}</b>`
+        : `🎬 Free videos: <b>2</b> of 2 left • 📁 Saved projects: <b>${fallbackProjects}</b>`;
+
     banner.style.display='block';
   }
 }
