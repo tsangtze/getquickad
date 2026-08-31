@@ -2226,7 +2226,7 @@ async function updateQuota(){
   if(!banner) return;
   const isEs = (window.QuickAdI18n?.currentLang === 'es') || (localStorage.getItem('quickad_lang') === 'es');
   try{
-    const res = await fetch('/api/quota');
+    const res = await fetch('/api/projects/usage');
     let remaining = 5, limit = 5, projects = 0;
     if(res.ok){
       const d = await res.json();
