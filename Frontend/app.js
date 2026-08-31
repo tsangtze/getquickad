@@ -2230,9 +2230,9 @@ async function updateQuota(){
     let remaining = 5, limit = 5, projects = 0;
     if(res.ok){
       const d = await res.json();
-      remaining = d.remaining?? d.freeVideosLeft?? 5;
-      limit = d.limit?? d.freeLimit?? 5;
-      projects = d.projects?? d.projectsCount?? d.totalProjects?? 0;
+      remaining = d.usage?.freeVideosRemaining ?? d.remaining ?? d.freeVideosLeft ?? 0;
+      limit = d.limits?.FREE_FINAL_VIDEOS ?? d.limit ?? d.freeLimit ?? 2;
+      projects = d.usage?.projectCount ?? d.projects ?? d.projectsCount ?? d.totalProjects ?? 0;
     } else {
       // fallback to local project count from DOM
       projects = document.querySelectorAll('[data-project-id],.project-card,.recent-project').length;
