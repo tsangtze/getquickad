@@ -1,5 +1,9 @@
 function uiText(key, fallback, params = {}) {
-  return window.QuickAdI18n?.t(key, params) || fallback;
+  const translated = window.QuickAdI18n?.t?.(key, params);
+  if (!translated || translated === key) {
+    return fallback;
+  }
+  return translated;
 }
 
 async function updateQuota_old() {
