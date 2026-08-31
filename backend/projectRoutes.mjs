@@ -1,5 +1,5 @@
 import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
-import { getUserUsage, incrementFinalVideo, countUserProjects, canCreateProject, canGenerateFinalVideo, LIMITS } from "./usageLimits.mjs";
+import { getUserUsage, recordSuccessfulFinalVideo, countUserProjects, canCreateProject, canGenerateFinalVideo, LIMITS } from "./usageLimits.mjs";
 import cookieParser from "cookie-parser";
 import { requireUser } from "./authRoutes.mjs";
 import { authConfiguration } from "./authService.mjs";
@@ -1442,13 +1442,35 @@ export async function createProjectRouter({
           "utf8"
         );
 
-        // --- v0.9.4: Only spend a credit on first final video for this project ---
+        // Record usage only after the first successful final render.
+        // Free users consume one lifetime video.
+        // Paid users consume credits based on actual rendered duration.
         if (!isFreeRerender) {
           try {
-            await incrementFinalVideo(projectRoot, request.authUser.id);
+            const usageResult =
+              await recordSuccessfulFinalVideo(
+                projectRoot,
+                request.authUser.id,
+                video.durationSeconds
+              );
+
+            console.log(
+              "Recorded final video usage:",
+              {
+                userId: request.authUser.id,
+                planId: usageResult.planId,
+                creditCost: usageResult.creditCost,
+                durationSeconds:
+                  video.durationSeconds
+              }
+            );
           } catch (e) {
-            console.error("Failed to increment usage:", e);
-            // Don't fail the request - video is already ready
+            console.error(
+              "Failed to record final video usage:",
+              e
+            );
+
+            // Don't fail the request - video is already ready.
           }
         }
 

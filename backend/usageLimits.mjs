@@ -195,6 +195,110 @@ export async function incrementFinalVideo(
   return next;
 }
 
+export async function recordSuccessfulFinalVideo(
+  projectRoot,
+  userId,
+  durationSeconds
+) {
+  const dir = usersDir(projectRoot);
+  await fs.mkdir(dir, { recursive: true });
+
+  const file = userFile(projectRoot, userId);
+
+  let current = {
+    finalVideoCount: 0,
+    planId: PLAN_IDS.FREE,
+    monthlyCreditsUsed: 0,
+    currentPeriodStart: null,
+    currentPeriodEnd: null
+  };
+
+  try {
+    current = JSON.parse(
+      await fs.readFile(file, "utf8")
+    );
+  } catch (e) {
+    if (e.code !== "ENOENT") {
+      throw e;
+    }
+  }
+
+  const planId =
+    normalizePlanId(current.planId);
+
+  const now =
+    new Date().toISOString();
+
+  const next = {
+    ...current,
+
+    finalVideoCount:
+      Number(current.finalVideoCount) || 0,
+
+    planId,
+
+    monthlyCreditsUsed:
+      Number(current.monthlyCreditsUsed) || 0,
+
+    currentPeriodStart:
+      current.currentPeriodStart || null,
+
+    currentPeriodEnd:
+      current.currentPeriodEnd || null,
+
+    createdAt:
+      current.createdAt || now,
+
+    updatedAt:
+      now
+  };
+
+  let creditCost = 0;
+
+  if (planId === PLAN_IDS.FREE) {
+    next.finalVideoCount += 1;
+  } else {
+    creditCost =
+      getVideoCreditCost(durationSeconds);
+
+    const plan =
+      getPlan(planId);
+
+    const creditsRemaining =
+      Math.max(
+        0,
+        plan.monthlyCredits -
+          next.monthlyCreditsUsed
+      );
+
+    if (creditCost > creditsRemaining) {
+      const error =
+        new Error(
+          "Not enough credits to record this video."
+        );
+
+      error.code =
+        "CREDIT_LIMIT_REACHED";
+
+      throw error;
+    }
+
+    next.monthlyCreditsUsed +=
+      creditCost;
+  }
+
+  await fs.writeFile(
+    file,
+    JSON.stringify(next, null, 2),
+    "utf8"
+  );
+
+  return {
+    usage: next,
+    planId,
+    creditCost
+  };
+}
 export async function countUserProjects(
   projectRoot,
   userId
