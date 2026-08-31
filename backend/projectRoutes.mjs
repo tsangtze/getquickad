@@ -1,5 +1,5 @@
 import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
-import { getUserUsage, recordSuccessfulFinalVideo, countUserProjects, canCreateProject, canGenerateFinalVideo, LIMITS } from "./usageLimits.mjs";
+import { getUserUsage, getPlan, recordSuccessfulFinalVideo, countUserProjects, canCreateProject, canGenerateFinalVideo, LIMITS } from "./usageLimits.mjs";
 import cookieParser from "cookie-parser";
 import { requireUser } from "./authRoutes.mjs";
 import { authConfiguration } from "./authService.mjs";
@@ -425,6 +425,81 @@ export async function createProjectRouter({
     }
   }));
 
+  function buildUsageResponse(
+    usage,
+    projectCount
+  ) {
+    const plan =
+      getPlan(usage.planId);
+
+    const monthlyCreditsUsed =
+      Number(usage.monthlyCreditsUsed) || 0;
+
+    const monthlyCreditsTotal =
+      plan.monthlyCredits;
+
+    const monthlyCreditsRemaining =
+      Math.max(
+        0,
+        monthlyCreditsTotal -
+          monthlyCreditsUsed
+      );
+
+    const isFree =
+      plan.id === "free";
+
+    const freeVideosRemaining =
+      isFree
+        ? Math.max(
+            0,
+            LIMITS.FREE_FINAL_VIDEOS -
+              usage.finalVideoCount
+          )
+        : 0;
+
+    const canGenerateMoreVideos =
+      isFree
+        ? freeVideosRemaining > 0
+        : monthlyCreditsRemaining >= 10;
+
+    return {
+      finalVideoCount:
+        usage.finalVideoCount,
+
+      projectCount,
+
+      planId:
+        plan.id,
+
+      planName:
+        plan.name,
+
+      priceMonthlyUsd:
+        plan.priceMonthlyUsd,
+
+      monthlyCreditsTotal,
+
+      monthlyCreditsUsed,
+
+      monthlyCreditsRemaining,
+
+      maxVideoSeconds:
+        plan.maxVideoSeconds,
+
+      currentPeriodStart:
+        usage.currentPeriodStart || null,
+
+      currentPeriodEnd:
+        usage.currentPeriodEnd || null,
+
+      freeVideosRemaining,
+
+      canCreateMoreProjects:
+        projectCount < LIMITS.MAX_PROJECTS,
+
+      canGenerateMoreVideos
+    };
+  }
   router.get("/usage", async (request, response) => {
     try {
       const [usage, projectCount] = await Promise.all([
@@ -434,13 +509,11 @@ export async function createProjectRouter({
       response.json({
         ok: true,
         limits: LIMITS,
-        usage: {
-          finalVideoCount: usage.finalVideoCount,
-          projectCount,
-          freeVideosRemaining: Math.max(0, LIMITS.FREE_FINAL_VIDEOS - usage.finalVideoCount),
-          canCreateMoreProjects: projectCount < LIMITS.MAX_PROJECTS,
-          canGenerateMoreVideos: usage.finalVideoCount < LIMITS.FREE_FINAL_VIDEOS
-        }
+        usage:
+          buildUsageResponse(
+            usage,
+            projectCount
+          )
       });
     } catch {
       response.status(503).json({ ok: false, error: "Usage could not be loaded." });
@@ -523,13 +596,11 @@ export async function createProjectRouter({
         ok: true,
         projects: projects.slice(0, 10),
         limits: LIMITS,
-        usage: {
-          finalVideoCount: usage.finalVideoCount,
-          projectCount: projects.length,
-          freeVideosRemaining: Math.max(0, LIMITS.FREE_FINAL_VIDEOS - usage.finalVideoCount),
-          canCreateMoreProjects: projects.length < LIMITS.MAX_PROJECTS,
-          canGenerateMoreVideos: usage.finalVideoCount < LIMITS.FREE_FINAL_VIDEOS
-        }
+        usage:
+          buildUsageResponse(
+            usage,
+            projects.length
+          )
       });
     } catch {
       response.status(503).json({
