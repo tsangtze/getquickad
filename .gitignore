@@ -9,3 +9,6 @@ temp/
 .DS_Store
 Thumbs.db
 projects/
+
+# Runtime account usage and billing data
+users/
