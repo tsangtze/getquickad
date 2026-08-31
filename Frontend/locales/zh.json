@@ -140,7 +140,7 @@
   "scene.role.product": "Product",
   "scene.role.proof": "Proof",
   "quota.banner_fallback_html": "🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>{projects}</b>",
-  "quota.banner_html": "🎬 Free videos: <b>{remaining}</b> of {limit} left • 📁 Saved projects: <b>{projects}</b>",
+  "quota.banner_html": "免费视频：还剩 <b>{remaining}</b> / {limit} 个 - 已保存项目：<b>{projects}</b>",
   "quota.free_limit_reached": "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available.",
   "recent.delete_blocked": "This project is still processing or needs review. It cannot be deleted yet.",
   "review.plan_ready_title": "Your AI video plan is ready",
@@ -159,5 +159,15 @@
   "cta.order": "今天下单",
   "cta.visit": "访问我们的网站",
   "cta.shop": "立即购买",
-  "language.renderingNote": "某些语言在最终视频中的显示效果可能不同。订阅前请先使用免费试用进行确认。"
+  "language.renderingNote": "某些语言在最终视频中的显示效果可能不同。订阅前请先使用免费试用进行确认。",
+  "recent.refresh": "刷新项目",
+  "recent.open_video": "打开视频",
+  "recent.continue": "继续",
+  "recent.delete": "删除",
+  "recent.project_id": "项目 {id}",
+  "status.video_ready": "视频已完成",
+  "status.storyboard_ready": "方案已完成",
+  "status.narration_ready": "旁白已完成",
+  "status.needs_attention": "需要处理",
+  "status.saved_project": "已保存项目"
 }

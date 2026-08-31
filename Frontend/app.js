@@ -2156,7 +2156,7 @@ async function loadAccountProjects() {
     ) return;
 
     if (!response.ok || !data.ok || !Array.isArray(data.projects)) {
-      throw new Error("Your project list could not be loaded.");
+      throw new Error(uiText("recent.load_failed", "Your project list could not be loaded."));
     }
 
     // Do not overwrite a project added while this request was running.

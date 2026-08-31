@@ -178,7 +178,7 @@
   "scene.role.product": "Product",
   "scene.role.proof": "Proof",
   "quota.banner_fallback_html": "🎬 Free videos: <b>5</b> of <b>5</b> • 📁 Saved projects: <b>{projects}</b>",
-  "quota.banner_html": "🎬 Free videos: <b>{remaining}</b> of {limit} left • 📁 Saved projects: <b>{projects}</b>",
+  "quota.banner_html": "Free videos: <b>{remaining}</b> of {limit} left - Saved projects: <b>{projects}</b>",
   "quota.free_limit_reached": "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available.",
   "recent.delete_blocked": "This project is still processing or needs review. It cannot be deleted yet.",
   "review.plan_ready_title": "Your AI video plan is ready",
@@ -191,5 +191,14 @@
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
   "recent.delete_project_aria": "Delete project {title}",
-  "language.renderingNote": "Some languages may render differently in the final video. Please review with your free tries before subscribing."
+  "language.renderingNote": "Some languages may render differently in the final video. Please review with your free tries before subscribing.",
+  "recent.open_video": "Open Video",
+  "recent.continue": "Continue",
+  "recent.delete": "Delete",
+  "recent.project_id": "Project {id}",
+  "status.video_ready": "Video ready",
+  "status.storyboard_ready": "Plan ready",
+  "status.narration_ready": "Narration ready",
+  "status.needs_attention": "Needs attention",
+  "status.saved_project": "Saved project"
 }
