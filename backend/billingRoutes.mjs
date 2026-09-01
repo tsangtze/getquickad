@@ -115,6 +115,32 @@ export function createBillingRouter({
         const userId =
           String(request.authUser.id);
 
+        const billingState =
+          await getStripeBillingState(
+            projectRoot,
+            userId
+          );
+
+        const subscriptionStatus =
+          String(
+            billingState.stripeSubscriptionStatus ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+        if (
+          subscriptionStatus === "active" ||
+          subscriptionStatus === "trialing"
+        ) {
+          return response.status(409).json({
+            ok: false,
+            code: "ACTIVE_SUBSCRIPTION_EXISTS",
+            error:
+              "You already have an active subscription. Use Manage Subscription to change or cancel your plan."
+          });
+        }
+
         const session =
           await stripe.checkout.sessions.create({
             mode: "subscription",
