@@ -25,15 +25,17 @@ function setMessage(text) {
 }
 
 function markCurrentPlan(planId) {
+  const hasPaidPlan =
+    planId === "starter" ||
+    planId === "pro";
+
   if (manageSubscriptionButton) {
-    manageSubscriptionButton.hidden =
-      planId !== "starter" &&
-      planId !== "pro";
+    manageSubscriptionButton.hidden = !hasPaidPlan;
   }
 
   for (const card of document.querySelectorAll("[data-plan]")) {
-    const isCurrent =
-      card.dataset.plan === planId;
+    const cardPlanId = card.dataset.plan;
+    const isCurrent = cardPlanId === planId;
 
     card.classList.toggle("current", isCurrent);
 
@@ -42,9 +44,23 @@ function markCurrentPlan(planId) {
 
     if (!button) continue;
 
+    button.onclick = null;
+
     if (isCurrent) {
       button.textContent = "Current Plan";
       button.disabled = true;
+      button.dataset.action = "current";
+    } else if (hasPaidPlan) {
+      button.textContent = "Manage to Change Plan";
+      button.disabled = false;
+      button.dataset.action = "portal";
+    } else {
+      button.textContent =
+        cardPlanId === "starter"
+          ? "Choose Starter"
+          : "Choose Pro";
+      button.disabled = false;
+      button.dataset.action = "checkout";
     }
   }
 }
@@ -290,6 +306,11 @@ for (
   document.querySelectorAll("[data-plan-button]")
 ) {
   button.addEventListener("click", () => {
+    if (button.dataset.action === "portal") {
+      openSubscriptionPortal();
+      return;
+    }
+
     startCheckout(button);
   });
 }
