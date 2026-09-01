@@ -1527,13 +1527,13 @@ export async function createProjectRouter({
 
         // Record usage before exposing the project as video_ready.
         // Free users consume one lifetime video.
-        // Paid users consume credits based on actual rendered duration.
+        // Paid users consume credits based on approved storyboard duration.
         if (!isFreeRerender) {
           const usageResult =
             await recordSuccessfulFinalVideo(
               projectRoot,
               request.authUser.id,
-              video.durationSeconds
+              approvedStoryboard.totalDurationSeconds
             );
 
           console.log(
@@ -1543,7 +1543,7 @@ export async function createProjectRouter({
               planId: usageResult.planId,
               creditCost: usageResult.creditCost,
               durationSeconds:
-                video.durationSeconds
+                approvedStoryboard.totalDurationSeconds
             }
           );
         }
