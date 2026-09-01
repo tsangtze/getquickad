@@ -164,12 +164,17 @@ export function validateStoryboard(
   const actualWordCount =
     countWords(narration);
 
+  const maxNarrationWords =
+    maxDurationSeconds > 30
+      ? 100
+      : 50;
+
   if (
     actualWordCount < 9 ||
-    actualWordCount > 50
+    actualWordCount > maxNarrationWords
   ) {
     errors.push(
-      "Narration must contain between 9 and 50 words."
+      `Narration must contain between 9 and ${maxNarrationWords} words.`
     );
   }
 

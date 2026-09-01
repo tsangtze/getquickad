@@ -219,3 +219,70 @@ if (overSixtyResult.ok) {
 }
 
 console.log("PASS: Storyboard over 60 seconds rejected.");
+
+// --- v0.9.4 narration-limit boundary tests ---
+
+function storyboardWithWordCount(seconds, wordCount) {
+  const copy = storyboardWithDuration(seconds);
+  const words =
+    Array.from(
+      { length: wordCount },
+      () => "a"
+    );
+
+  const sceneCount = copy.scenes.length;
+  const baseWords = Math.floor(wordCount / sceneCount);
+  let wordIndex = 0;
+
+  copy.scenes.forEach((scene, index) => {
+    const count =
+      index === sceneCount - 1
+        ? wordCount - wordIndex
+        : baseWords;
+
+    const text =
+      words
+        .slice(wordIndex, wordIndex + count)
+        .join(" ");
+
+    scene.caption = text;
+    scene.narration = text;
+    wordIndex += count;
+  });
+
+  copy.narrationWordCount = wordCount;
+  return copy;
+}
+
+const fiftyOneWordDefaultResult =
+  validateStoryboard(
+    storyboardWithWordCount(30, 51),
+    {
+      imageCount: 2
+    }
+  );
+
+if (fiftyOneWordDefaultResult.ok) {
+  throw new Error(
+    "Expected default validator to reject 51 narration words."
+  );
+}
+
+console.log("PASS: 51-word default narration rejected.");
+
+const fiftyOneWordPaidResult =
+  validateStoryboard(
+    storyboardWithWordCount(60, 51),
+    {
+      imageCount: 2,
+      maxDurationSeconds: 60
+    }
+  );
+
+if (!fiftyOneWordPaidResult.ok) {
+  throw new Error(
+    `Expected paid validator to accept 51 narration words: ${fiftyOneWordPaidResult.errors.join(" ")}`
+  );
+}
+
+console.log("PASS: 51-word paid narration accepted.");
