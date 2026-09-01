@@ -122,16 +122,82 @@ async function loadBilling() {
   }
 }
 
+async function startCheckout(button) {
+  if (button.disabled) return;
+
+  const planId =
+    button.dataset.planButton;
+
+  if (
+    planId !== "starter" &&
+    planId !== "pro"
+  ) {
+    return;
+  }
+
+  const originalText =
+    button.textContent;
+
+  button.disabled = true;
+  button.textContent = "Opening checkout...";
+
+  setMessage("");
+
+  try {
+    const response =
+      await fetch(
+        "/api/billing/checkout",
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            planId
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (response.status === 401) {
+      setMessage(
+        "Please sign in before choosing a plan."
+      );
+      return;
+    }
+
+    if (
+      !response.ok ||
+      !data.ok ||
+      !data.url
+    ) {
+      throw new Error(
+        data.error ||
+        "Checkout could not be opened."
+      );
+    }
+
+    window.location.assign(data.url);
+  } catch (error) {
+    setMessage(
+      error.message ||
+      "Checkout could not be opened. Please try again."
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
 for (
   const button of
   document.querySelectorAll("[data-plan-button]")
 ) {
   button.addEventListener("click", () => {
-    if (button.disabled) return;
-
-    setMessage(
-      "Online upgrades are coming next. No payment has been made."
-    );
+    startCheckout(button);
   });
 }
 

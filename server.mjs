@@ -1,4 +1,6 @@
 import { createAuthRouter } from "./backend/authRoutes.mjs";
+import { createBillingRouter } from "./backend/billingRoutes.mjs";
+import { createStripeWebhookHandler } from "./backend/stripeWebhook.mjs";
 import path from "node:path";
 import express from "express";
 import { cleanupExpiredProjects } from "./backend/cleanup.mjs";
@@ -39,6 +41,13 @@ if (fs.existsSync(environmentPath)) {
 }
 
 app.disable("x-powered-by");
+app.post(
+  "/api/billing/webhook",
+  ...createStripeWebhookHandler({
+    projectRoot
+  })
+);
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(frontendPath));
@@ -65,6 +74,7 @@ app.get(
 );
 
 app.use("/api/auth", createAuthRouter());
+app.use("/api/billing", createBillingRouter());
 
 const projectRouter = await createProjectRouter({
   projectRoot

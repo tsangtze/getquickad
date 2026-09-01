@@ -139,6 +139,111 @@ export async function getUserUsage(
   }
 }
 
+export async function updateStripeSubscription(
+  projectRoot,
+  userId,
+  {
+    planId,
+    stripeCustomerId = null,
+    stripeSubscriptionId = null,
+    stripeSubscriptionStatus = null,
+    currentPeriodStart = null,
+    currentPeriodEnd = null
+  }
+) {
+  const normalizedPlanId =
+    normalizePlanId(planId);
+
+  const dir = usersDir(projectRoot);
+  await fs.mkdir(dir, { recursive: true });
+
+  const file = userFile(projectRoot, userId);
+
+  let current = {
+    finalVideoCount: 0,
+    planId: PLAN_IDS.FREE,
+    monthlyCreditsUsed: 0,
+    currentPeriodStart: null,
+    currentPeriodEnd: null
+  };
+
+  try {
+    current = JSON.parse(
+      await fs.readFile(file, "utf8")
+    );
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+  }
+
+  const now =
+    new Date().toISOString();
+
+  const oldPeriodStart =
+    current.currentPeriodStart || null;
+
+  const nextPeriodStart =
+    currentPeriodStart || null;
+
+  const periodChanged =
+    Boolean(
+      nextPeriodStart &&
+      oldPeriodStart &&
+      nextPeriodStart !== oldPeriodStart
+    );
+
+  const firstPaidPeriod =
+    Boolean(
+      normalizedPlanId !== PLAN_IDS.FREE &&
+      nextPeriodStart &&
+      !oldPeriodStart
+    );
+
+  const next = {
+    ...current,
+
+    finalVideoCount:
+      Number(current.finalVideoCount) || 0,
+
+    planId:
+      normalizedPlanId,
+
+    monthlyCreditsUsed:
+      periodChanged || firstPaidPeriod
+        ? 0
+        : Number(current.monthlyCreditsUsed) || 0,
+
+    currentPeriodStart:
+      nextPeriodStart,
+
+    currentPeriodEnd:
+      currentPeriodEnd || null,
+
+    stripeCustomerId:
+      stripeCustomerId || null,
+
+    stripeSubscriptionId:
+      stripeSubscriptionId || null,
+
+    stripeSubscriptionStatus:
+      stripeSubscriptionStatus || null,
+
+    createdAt:
+      current.createdAt || now,
+
+    updatedAt:
+      now
+  };
+
+  await fs.writeFile(
+    file,
+    JSON.stringify(next, null, 2),
+    "utf8"
+  );
+
+  return next;
+}
 export async function incrementFinalVideo(
   projectRoot,
   userId
