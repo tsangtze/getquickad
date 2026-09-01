@@ -132,3 +132,90 @@ console.log(
 console.log(
   `Narration: ${validStoryboard.narrationWordCount} words`
 );
+
+// --- v0.9.4 duration-limit boundary tests ---
+
+function storyboardWithDuration(seconds) {
+  const copy = structuredClone(validStoryboard);
+  const sceneCount = copy.scenes.length;
+  const baseDuration = Math.floor(seconds / sceneCount);
+  let startSeconds = 0;
+
+  copy.scenes.forEach((scene, index) => {
+    scene.startSeconds = startSeconds;
+    scene.endSeconds =
+      index === sceneCount - 1
+        ? seconds
+        : startSeconds + baseDuration;
+    startSeconds = scene.endSeconds;
+  });
+
+  copy.totalDurationSeconds = seconds;
+  return copy;
+}
+
+const thirtySecondResult =
+  validateStoryboard(
+    storyboardWithDuration(30),
+    {
+      imageCount: 2
+    }
+  );
+
+if (!thirtySecondResult.ok) {
+  throw new Error(
+    `Expected default validator to accept 30 seconds: ${thirtySecondResult.errors.join(" ")}`
+  );
+}
+
+console.log("PASS: 30-second default storyboard accepted.");
+
+const sixtySecondDefaultResult =
+  validateStoryboard(
+    storyboardWithDuration(60),
+    {
+      imageCount: 2
+    }
+  );
+
+if (sixtySecondDefaultResult.ok) {
+  throw new Error(
+    "Expected default validator to reject 60 seconds."
+  );
+}
+
+console.log("PASS: 60-second storyboard rejected by default.");
+
+const sixtySecondPaidResult =
+  validateStoryboard(
+    storyboardWithDuration(60),
+    {
+      imageCount: 2,
+      maxDurationSeconds: 60
+    }
+  );
+
+if (!sixtySecondPaidResult.ok) {
+  throw new Error(
+    `Expected paid validator to accept 60 seconds: ${sixtySecondPaidResult.errors.join(" ")}`
+  );
+}
+
+console.log("PASS: 60-second paid storyboard accepted.");
+
+const overSixtyResult =
+  validateStoryboard(
+    storyboardWithDuration(61),
+    {
+      imageCount: 2,
+      maxDurationSeconds: 60
+    }
+  );
+
+if (overSixtyResult.ok) {
+  throw new Error(
+    "Expected validator to reject a storyboard over 60 seconds."
+  );
+}
+
+console.log("PASS: Storyboard over 60 seconds rejected.");

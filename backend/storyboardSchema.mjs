@@ -74,7 +74,8 @@ function countWords(text) {
 export function validateStoryboard(
   storyboard,
   {
-    imageCount
+    imageCount,
+    maxDurationSeconds = 30
   }
 ) {
   const parsed =
@@ -95,10 +96,10 @@ export function validateStoryboard(
 
   if (
     value.totalDurationSeconds < 20 ||
-    value.totalDurationSeconds > 30
+    value.totalDurationSeconds > maxDurationSeconds
   ) {
     errors.push(
-      "Video duration must be between 20 and 30 seconds."
+      `Video duration must be between 20 and ${maxDurationSeconds} seconds.`
     );
   }
 
