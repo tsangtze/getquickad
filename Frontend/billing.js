@@ -76,7 +76,8 @@ function renderUsage(usage) {
           {
             year: "numeric",
             month: "long",
-            day: "numeric"
+            day: "numeric",
+            timeZone: "UTC"
           }
         )}`;
 
