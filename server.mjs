@@ -74,7 +74,12 @@ app.get(
 );
 
 app.use("/api/auth", createAuthRouter());
-app.use("/api/billing", createBillingRouter());
+app.use(
+  "/api/billing",
+  createBillingRouter({
+    projectRoot
+  })
+);
 
 const projectRouter = await createProjectRouter({
   projectRoot

@@ -12,6 +12,9 @@ const usageBar =
 const message =
   document.getElementById("billing-message");
 
+const manageSubscriptionButton =
+  document.getElementById("manage-subscription-button");
+
 function setMessage(text) {
   if (message) {
     message.textContent = text;
@@ -19,6 +22,12 @@ function setMessage(text) {
 }
 
 function markCurrentPlan(planId) {
+  if (manageSubscriptionButton) {
+    manageSubscriptionButton.hidden =
+      planId !== "starter" &&
+      planId !== "pro";
+  }
+
   for (const card of document.querySelectorAll("[data-plan]")) {
     const isCurrent =
       card.dataset.plan === planId;
@@ -122,6 +131,55 @@ async function loadBilling() {
   }
 }
 
+async function openSubscriptionPortal() {
+  if (!manageSubscriptionButton) return;
+
+  const originalText =
+    manageSubscriptionButton.textContent;
+
+  manageSubscriptionButton.disabled = true;
+  manageSubscriptionButton.textContent =
+    "Opening...";
+
+  setBillingMessage("");
+
+  try {
+    const response =
+      await fetch(
+        "/api/billing/portal",
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+    const data =
+      await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.url) {
+      throw new Error(
+        data.error ||
+        "Unable to open subscription management."
+      );
+    }
+
+    window.location.assign(data.url);
+  } catch (error) {
+    setBillingMessage(
+      error.message ||
+      "Unable to open subscription management.",
+      true
+    );
+
+    manageSubscriptionButton.disabled = false;
+    manageSubscriptionButton.textContent =
+      originalText;
+  }
+}
+
 async function startCheckout(button) {
   if (button.disabled) return;
 
@@ -199,6 +257,13 @@ for (
   button.addEventListener("click", () => {
     startCheckout(button);
   });
+}
+
+if (manageSubscriptionButton) {
+  manageSubscriptionButton.addEventListener(
+    "click",
+    openSubscriptionPortal
+  );
 }
 
 loadBilling();

@@ -4,6 +4,7 @@ import Stripe from "stripe";
 
 import { requireUser } from "./authRoutes.mjs";
 import { authConfiguration } from "./authService.mjs";
+import { getStripeBillingState } from "./usageLimits.mjs";
 
 function cleanEnvironmentValue(value) {
   return String(value ?? "").trim();
@@ -65,7 +66,9 @@ function applicationUrl(pathname) {
   return new URL(pathname, origin).toString();
 }
 
-export function createBillingRouter() {
+export function createBillingRouter({
+  projectRoot
+}) {
   const router = express.Router();
 
   router.use(cookieParser());
@@ -172,6 +175,62 @@ export function createBillingRouter() {
           ok: false,
           error:
             "Checkout is temporarily unavailable. Please try again."
+        });
+      }
+    }
+  );
+
+  router.post(
+    "/portal",
+    requireUser,
+    async (request, response) => {
+      try {
+        const userId =
+          String(request.authUser.id);
+
+        const billingState =
+          await getStripeBillingState(
+            projectRoot,
+            userId
+          );
+        if (!billingState.stripeCustomerId) {
+          return response.status(400).json({
+            ok: false,
+            error:
+              "No paid subscription was found for this account."
+          });
+        }
+
+        const stripe =
+          createStripeClient();
+
+        const session =
+          await stripe.billingPortal.sessions.create({
+            customer: billingState.stripeCustomerId,
+            return_url:
+              applicationUrl("/billing.html")
+          });
+
+        if (!session.url) {
+          throw new Error(
+            "Stripe did not return a Customer Portal URL."
+          );
+        }
+
+        response.json({
+          ok: true,
+          url: session.url
+        });
+      } catch (error) {
+        console.error(
+          "Stripe Customer Portal session failed:",
+          error
+        );
+
+        response.status(503).json({
+          ok: false,
+          error:
+            "Subscription management is temporarily unavailable. Please try again."
         });
       }
     }

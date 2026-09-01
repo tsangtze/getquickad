@@ -138,6 +138,40 @@ export async function getUserUsage(
     throw e;
   }
 }
+export async function getStripeBillingState(
+  projectRoot,
+  userId
+) {
+  try {
+    const raw = await fs.readFile(
+      userFile(projectRoot, userId),
+      "utf8"
+    );
+
+    const data = JSON.parse(raw);
+
+    return {
+      stripeCustomerId:
+        data.stripeCustomerId || null,
+
+      stripeSubscriptionId:
+        data.stripeSubscriptionId || null,
+
+      stripeSubscriptionStatus:
+        data.stripeSubscriptionStatus || null
+    };
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return {
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        stripeSubscriptionStatus: null
+      };
+    }
+
+    throw error;
+  }
+}
 
 export async function updateStripeSubscription(
   projectRoot,
