@@ -141,7 +141,7 @@ async function openSubscriptionPortal() {
   manageSubscriptionButton.textContent =
     "Opening...";
 
-  setBillingMessage("");
+  setMessage("");
 
   try {
     const response =
@@ -168,7 +168,7 @@ async function openSubscriptionPortal() {
 
     window.location.assign(data.url);
   } catch (error) {
-    setBillingMessage(
+    setMessage(
       error.message ||
       "Unable to open subscription management.",
       true
