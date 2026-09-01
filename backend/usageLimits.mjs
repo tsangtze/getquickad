@@ -371,6 +371,28 @@ export async function recordSuccessfulFinalVideo(
   const planId =
     normalizePlanId(current.planId);
 
+  const plan =
+    getPlan(planId);
+
+  const requestedDurationSeconds =
+    Number(durationSeconds);
+
+  if (
+    !Number.isFinite(requestedDurationSeconds) ||
+    requestedDurationSeconds < 20 ||
+    requestedDurationSeconds > plan.maxVideoSeconds
+  ) {
+    const error =
+      new Error(
+        `Your ${plan.name} plan supports videos from 20 to ${plan.maxVideoSeconds} seconds.`
+      );
+
+    error.code =
+      "VIDEO_DURATION_LIMIT_EXCEEDED";
+
+    throw error;
+  }
+
   const now =
     new Date().toISOString();
 
@@ -401,13 +423,25 @@ export async function recordSuccessfulFinalVideo(
   let creditCost = 0;
 
   if (planId === PLAN_IDS.FREE) {
+    if (
+      next.finalVideoCount >=
+      FREE_FINAL_VIDEOS
+    ) {
+      const error =
+        new Error(
+          `You have used your ${FREE_FINAL_VIDEOS} free videos.`
+        );
+
+      error.code =
+        "FREE_VIDEO_LIMIT_REACHED";
+
+      throw error;
+    }
+
     next.finalVideoCount += 1;
   } else {
     creditCost =
-      getVideoCreditCost(durationSeconds);
-
-    const plan =
-      getPlan(planId);
+      getVideoCreditCost(requestedDurationSeconds);
 
     const creditsRemaining =
       Math.max(
@@ -533,6 +567,23 @@ export function canGenerateFinalVideo(
 
   const plan =
     getPlan(planId);
+
+  const requestedDurationSeconds =
+    Number(durationSeconds);
+
+  if (
+    !Number.isFinite(requestedDurationSeconds) ||
+    requestedDurationSeconds < 20 ||
+    requestedDurationSeconds > plan.maxVideoSeconds
+  ) {
+    return {
+      ok: false,
+      code: "VIDEO_DURATION_LIMIT_EXCEEDED",
+      error:
+        `Your ${plan.name} plan supports videos from 20 to ${plan.maxVideoSeconds} seconds.`,
+      status: 403
+    };
+  }
 
   if (planId === PLAN_IDS.FREE) {
     if (
