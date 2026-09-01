@@ -514,7 +514,8 @@ export function canCreateProject(projectCount) {
 
 export function canGenerateFinalVideo(
   usage,
-  project
+  project,
+  durationSeconds = 30
 ) {
   const alreadyFinal =
     project.status === "video_ready" ||
@@ -564,9 +565,11 @@ export function canGenerateFinalVideo(
       plan.monthlyCredits - creditsUsed
     );
 
+  const creditCost =
+    getVideoCreditCost(durationSeconds);
+
   if (
-    creditsRemaining <
-    CREDIT_COSTS.UP_TO_30_SECONDS
+    creditCost > creditsRemaining
   ) {
     return {
       ok: false,
@@ -581,8 +584,7 @@ export function canGenerateFinalVideo(
     ok: true,
     freeRerender: false,
     planId,
-    creditCost:
-      CREDIT_COSTS.UP_TO_30_SECONDS
+    creditCost
   };
 }
 

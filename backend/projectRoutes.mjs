@@ -1392,7 +1392,12 @@ export async function createProjectRouter({
 
                 // --- v0.9.4: Enforce 2 free final videos ---
         const usage = await getUserUsage(projectRoot, request.authUser.id);
-        const videoCheck = canGenerateFinalVideo(usage, project);
+        const videoCheck =
+          canGenerateFinalVideo(
+            usage,
+            project,
+            approvedStoryboard.totalDurationSeconds
+          );
         if (!videoCheck.ok) {
           response.status(videoCheck.status).json({
             ok: false,
