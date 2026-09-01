@@ -33,7 +33,7 @@ function describeLanguage(language = "en") {
 
   return "English (en)";
 }
-function buildSystemInstructions(language = "en") {
+function buildSystemInstructions(language = "en", maxDurationSeconds = 30) {
   const languageDescription = describeLanguage(language);
 
   return `
@@ -45,20 +45,20 @@ LANGUAGE RULE - CRITICAL:
 - Use natural marketing language for the target locale.
 - Do not translate product names, brand names, URLs, or file names unless the customer supplied them translated.
 
-Return one complete storyboard for a 20-30 second 9:16 social-media advertisement.
+Return one complete storyboard for a 9:16 social-media advertisement lasting between 20 and ${maxDurationSeconds} seconds.
 
 Rules:
 - Use exactly 5 scenes.
 - Scene 1 must be the hook.
 - Scene 5 must be the call to action.
-- Use this exact timeline:
-  Scene 1: 0-4 seconds
-  Scene 2: 4-9 seconds
-  Scene 3: 9-15 seconds
-  Scene 4: 15-20 seconds
-  Scene 5: 20-25 seconds
-- Set totalDurationSeconds to 25.
-- Narration across all scenes must contain 9-50 words.
+- Choose the total video duration automatically based on the amount of useful customer content.
+- The total duration must be at least 20 seconds and no more than ${maxDurationSeconds} seconds.
+- Do not make the video longer merely because the maximum allows it.
+- Give every scene a continuous timeline with no gaps or overlaps.
+- Scene 1 must start at 0 seconds.
+- Scene 5 must end exactly at totalDurationSeconds.
+- Set totalDurationSeconds to the actual chosen duration.
+- Narration across all scenes must contain 9-${maxDurationSeconds > 30 ? 100 : 50} words.
 - Captions must be concise and contain no more than 60 characters.
 - For every scene, narration must exactly equal caption so the spoken and displayed words match.
 - Never invent certifications, reviews, discounts, guarantees, or product features.
@@ -210,6 +210,7 @@ function normalizeWordCount(storyboard) {
 export async function generateStoryboard({
   project,
   projectDirectory,
+  maxDurationSeconds = 30,
   apiKey = process.env.OPENAI_API_KEY,
   model =
     process.env.OPENAI_MODEL ||
@@ -256,7 +257,7 @@ export async function generateStoryboard({
         {
           role: "system",
           content:
-            buildSystemInstructions(project.language || project.targetLanguage || "en")
+            buildSystemInstructions(project.language || project.targetLanguage || "en", maxDurationSeconds)
         },
         {
           role: "user",
@@ -303,7 +304,8 @@ export async function generateStoryboard({
       storyboard,
       {
         imageCount:
-          project.assets.productImages.length
+          project.assets.productImages.length,
+        maxDurationSeconds
       }
     );
 

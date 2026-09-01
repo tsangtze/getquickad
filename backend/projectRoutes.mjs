@@ -650,6 +650,18 @@ export async function createProjectRouter({
           return;
         }
 
+        const usage =
+          await getUserUsage(
+            projectRoot,
+            request.authUser.id
+          );
+
+        const plan =
+          getPlan(usage.planId);
+
+        const maxVideoSeconds =
+          plan.maxVideoSeconds;
+
         const projectId =
           crypto.randomUUID();
 
@@ -690,7 +702,10 @@ export async function createProjectRouter({
             (request.body.targetLanguage || request.body.language || "en").toString().slice(0,10),
           output: {
             aspectRatio: "9:16",
-            durationSeconds: "20-30",
+            durationSeconds:
+              `20-${maxVideoSeconds}`,
+            maxDurationSeconds:
+              maxVideoSeconds,
             format: "mp4"
           },
           assets
@@ -714,7 +729,9 @@ export async function createProjectRouter({
           const result =
             await generateStoryboard({
               project,
-              projectDirectory
+              projectDirectory,
+              maxDurationSeconds:
+                maxVideoSeconds
             });
 
           const storyboardRecord = {
