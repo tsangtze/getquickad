@@ -6,6 +6,9 @@ const planName =
 const planUsage =
   document.getElementById("current-plan-usage");
 
+const planCancellation =
+  document.getElementById("current-plan-cancellation");
+
 const usageBar =
   document.getElementById("usage-bar");
 
@@ -52,6 +55,37 @@ function renderUsage(usage) {
 
   planName.textContent =
     usage.planName || "Free";
+
+  if (planCancellation) {
+    const cancellationDate =
+      usage.currentPeriodEnd
+        ? new Date(usage.currentPeriodEnd)
+        : null;
+
+    const hasValidCancellationDate =
+      cancellationDate &&
+      !Number.isNaN(cancellationDate.getTime());
+
+    if (
+      usage.cancelAtPeriodEnd &&
+      hasValidCancellationDate
+    ) {
+      planCancellation.textContent =
+        `Cancels ${cancellationDate.toLocaleDateString(
+          undefined,
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          }
+        )}`;
+
+      planCancellation.hidden = false;
+    } else {
+      planCancellation.textContent = "";
+      planCancellation.hidden = true;
+    }
+  }
 
   if (id === "free") {
     const remaining =

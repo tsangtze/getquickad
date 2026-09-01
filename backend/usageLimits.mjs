@@ -115,6 +115,8 @@ export async function getUserUsage(
 
       currentPeriodEnd:
         data.currentPeriodEnd || null,
+      cancelAtPeriodEnd:
+        Boolean(data.cancelAtPeriodEnd),
 
       createdAt:
         data.createdAt || null,
@@ -130,6 +132,7 @@ export async function getUserUsage(
         monthlyCreditsUsed: 0,
         currentPeriodStart: null,
         currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
         createdAt: null,
         updatedAt: null
       };
@@ -182,7 +185,8 @@ export async function updateStripeSubscription(
     stripeSubscriptionId = null,
     stripeSubscriptionStatus = null,
     currentPeriodStart = null,
-    currentPeriodEnd = null
+    currentPeriodEnd = null,
+    cancelAtPeriodEnd = false
   }
 ) {
   const normalizedPlanId =
@@ -253,6 +257,8 @@ export async function updateStripeSubscription(
 
     currentPeriodEnd:
       currentPeriodEnd || null,
+    cancelAtPeriodEnd:
+      Boolean(cancelAtPeriodEnd),
 
     stripeCustomerId:
       stripeCustomerId || null,

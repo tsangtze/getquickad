@@ -491,6 +491,8 @@ export async function createProjectRouter({
 
       currentPeriodEnd:
         usage.currentPeriodEnd || null,
+      cancelAtPeriodEnd:
+        Boolean(usage.cancelAtPeriodEnd),
 
       freeVideosRemaining,
 

@@ -152,7 +152,10 @@ async function applySubscription(
       currentPeriodEnd:
         unixTimeToIso(
           subscription.current_period_end
-        )
+        ),
+
+      cancelAtPeriodEnd:
+        Boolean(subscription.cancel_at_period_end)
     }
   );
 
