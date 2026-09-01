@@ -1508,6 +1508,29 @@ export async function createProjectRouter({
           "utf8"
         );
 
+        // Record usage before exposing the project as video_ready.
+        // Free users consume one lifetime video.
+        // Paid users consume credits based on actual rendered duration.
+        if (!isFreeRerender) {
+          const usageResult =
+            await recordSuccessfulFinalVideo(
+              projectRoot,
+              request.authUser.id,
+              video.durationSeconds
+            );
+
+          console.log(
+            "Recorded final video usage:",
+            {
+              userId: request.authUser.id,
+              planId: usageResult.planId,
+              creditCost: usageResult.creditCost,
+              durationSeconds:
+                video.durationSeconds
+            }
+          );
+        }
+
         project.status =
           "video_ready";
 
@@ -1520,37 +1543,6 @@ export async function createProjectRouter({
           "utf8"
         );
 
-        // Record usage only after the first successful final render.
-        // Free users consume one lifetime video.
-        // Paid users consume credits based on actual rendered duration.
-        if (!isFreeRerender) {
-          try {
-            const usageResult =
-              await recordSuccessfulFinalVideo(
-                projectRoot,
-                request.authUser.id,
-                video.durationSeconds
-              );
-
-            console.log(
-              "Recorded final video usage:",
-              {
-                userId: request.authUser.id,
-                planId: usageResult.planId,
-                creditCost: usageResult.creditCost,
-                durationSeconds:
-                  video.durationSeconds
-              }
-            );
-          } catch (e) {
-            console.error(
-              "Failed to record final video usage:",
-              e
-            );
-
-            // Don't fail the request - video is already ready.
-          }
-        }
 
         response.status(201).json({
           ok: true,
