@@ -78,29 +78,6 @@ function markCurrentPlan(planId, cancelAtPeriodEnd = false, currentPeriodEnd = n
         button.dataset.action = "portal";
       }
     } else if (hasPaidPlan) {
-
-      const hasValidFreePlanDate =
-        freePlanDate &&
-        !Number.isNaN(freePlanDate.getTime());
-
-      if (cancelAtPeriodEnd && hasValidFreePlanDate) {
-        button.textContent =
-          `Free Plan Starts ${freePlanDate.toLocaleDateString(
-            undefined,
-            {
-              month: "short",
-              day: "numeric",
-              timeZone: "UTC"
-            }
-          )}`;
-        button.disabled = true;
-        button.dataset.action = "scheduled-free";
-      } else {
-        button.textContent = "Cancel to Free Plan";
-        button.disabled = false;
-        button.dataset.action = "portal";
-      }
-    } else if (hasPaidPlan) {
       button.textContent = "Change Plan";
       button.disabled = false;
       button.dataset.action = "portal";
