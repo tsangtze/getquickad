@@ -50,8 +50,12 @@ function markCurrentPlan(planId) {
       button.textContent = "Current Plan";
       button.disabled = true;
       button.dataset.action = "current";
+    } else if (hasPaidPlan && cardPlanId === "free") {
+      button.textContent = "Cancel to Free Plan";
+      button.disabled = false;
+      button.dataset.action = "portal";
     } else if (hasPaidPlan) {
-      button.textContent = "Manage to Change Plan";
+      button.textContent = "Change Plan";
       button.disabled = false;
       button.dataset.action = "portal";
     } else {
