@@ -164,6 +164,7 @@ const narratorOptions = [
 
 let selectedImages = [];
 let currentPlanMaxVideoSeconds = 30;
+let currentPlanId = "free";
 let currentProjectId = "";
 let currentStoryboard = null;
 let reviewImageUrls = [];
@@ -1120,10 +1121,15 @@ function renderDurationReviewSummary(project, storyboard) {
   const aiSelected =
     project?.output?.durationMode === "auto";
 
+  const costLabel =
+    currentPlanId === "free"
+      ? "Free video"
+      : `${creditCost} credits`;
+
   durationReviewSummary.textContent =
     aiSelected
-      ? `✨ AI selected: Up to ${durationTierSeconds} seconds · ${creditCost} credits · Actual plan: ${actualDurationSeconds} seconds`
-      : `Selected: Up to ${durationTierSeconds} seconds · ${creditCost} credits · Actual plan: ${actualDurationSeconds} seconds`;
+      ? `✨ AI selected: Up to ${durationTierSeconds} seconds · ${costLabel} · Actual plan: ${actualDurationSeconds} seconds`
+      : `Selected: Up to ${durationTierSeconds} seconds · ${costLabel} · Actual plan: ${actualDurationSeconds} seconds`;
 }
 
 function renderVideoPlanReview(
@@ -2474,6 +2480,11 @@ setTimeout(updateQuota, 1000);
 function updateDurationOptionsForPlan(usage) {
   currentPlanMaxVideoSeconds =
     Number(usage?.maxVideoSeconds) || 30;
+
+  currentPlanId =
+    String(usage?.planId || "free")
+      .trim()
+      .toLowerCase();
 
   updateDurationAvailability();
 
