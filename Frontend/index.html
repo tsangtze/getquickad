@@ -41,7 +41,7 @@
 
       <div class="video-summary" aria-label="Video output">
         <span>9:16</span>
-        <span data-i18n="video.seconds">20–30 seconds</span>
+        <span data-i18n="video.seconds">Up to 60 seconds</span>
         <span>MP4</span>
       </div>
     </section>
@@ -222,6 +222,49 @@
               </div>
             </div>
           </div>
+
+          <fieldset class="duration-options" id="duration-options">
+            <legend class="field-label">Video length</legend>
+
+            <p class="duration-help">
+              Choose the maximum length. QuickAd AI may finish earlier when that makes a better ad.
+            </p>
+
+            <div class="duration-choice-grid">
+              <label class="duration-option selected">
+                <input
+                  type="radio"
+                  name="maxDurationSeconds"
+                  value="30"
+                  checked
+                >
+                <strong>Up to 30 sec</strong>
+                <small>10 credits</small>
+              </label>
+
+              <label class="duration-option">
+                <input
+                  type="radio"
+                  name="maxDurationSeconds"
+                  value="45"
+                >
+                <strong>Up to 45 sec</strong>
+                <small>15 credits</small>
+              </label>
+
+              <label class="duration-option">
+                <input
+                  type="radio"
+                  name="maxDurationSeconds"
+                  value="60"
+                >
+                <strong>Up to 60 sec</strong>
+                <small>20 credits</small>
+              </label>
+            </div>
+
+            <p id="duration-note" class="duration-note"></p>
+          </fieldset>
 
           <p id="description-error" class="field-error" role="alert"></p>
         </div>

@@ -175,8 +175,8 @@ export async function generateNarration({
 
       const sceneText =
         String(
-          scene.caption ??
           scene.narration ??
+          scene.caption ??
           ""
         ).trim();
 
@@ -208,7 +208,7 @@ export async function generateNarration({
             sceneText,
           instructions:
             voiceSelection.instructions +
-            " Read only the supplied caption. " +
+            " Read only the supplied narration. " +
             "Do not add, remove, or rewrite words. " +
             "Finish naturally without introducing the next scene.",
           response_format:

@@ -54,6 +54,7 @@ const clearProjectHistoryButton =
 
 const styleOptions = [...document.querySelectorAll(".style-option")];
 const planReview = document.querySelector("#plan-review");
+const durationOptions = [...document.querySelectorAll(".duration-option")];
 const planScenes = document.querySelector("#plan-scenes");
 const planStatus = document.querySelector("#plan-status");
 const callToActionSelect =
@@ -260,6 +261,20 @@ styleOptions.forEach((option) => {
   });
 });
 
+durationOptions.forEach((option) => {
+  const radio =
+    option.querySelector('input[type="radio"]');
+
+  radio.addEventListener("change", () => {
+    durationOptions.forEach((item) => {
+      item.classList.toggle(
+        "selected",
+        item.querySelector('input[type="radio"]').checked
+      );
+    });
+  });
+});
+
 function clearReviewImageUrls() {
   window.quickAdMusic.stop();
   reviewImageUrls.forEach((imageUrl) => {
@@ -287,25 +302,10 @@ function selectedNarratorVoice() {
 
 const deletedSceneHistory = [];
 
-const SCENE_TIMELINES = {
-  3: [
-    [0, 7],
-    [7, 17],
-    [17, 25]
-  ],
-  4: [
-    [0, 5],
-    [5, 12],
-    [12, 19],
-    [19, 25]
-  ],
-  5: [
-    [0, 4],
-    [4, 9],
-    [9, 15],
-    [15, 20],
-    [20, 25]
-  ]
+const SCENE_TIMELINE_WEIGHTS = {
+  3: [7, 10, 8],
+  4: [5, 7, 7, 6],
+  5: [4, 5, 6, 5, 5]
 };
 
 function countNarrationWords(scenes) {
@@ -337,10 +337,10 @@ function normalizeSceneTimeline({
   const scenes =
     currentStoryboard.scenes;
 
-  const timeline =
-    SCENE_TIMELINES[scenes.length];
+  const timelineWeights =
+    SCENE_TIMELINE_WEIGHTS[scenes.length];
 
-  if (!timeline) {
+  if (!timelineWeights) {
     throw new Error(
       "A video plan must contain between 3 and 5 scenes."
     );
@@ -350,11 +350,44 @@ function normalizeSceneTimeline({
     scene.sceneNumber =
       index + 1;
 
+    const totalDuration =
+      Number(currentStoryboard.totalDurationSeconds) || 30;
+
+    const totalWeight =
+      timelineWeights.reduce(
+        (sum, weight) => sum + weight,
+        0
+      );
+
+    const elapsedWeight =
+      timelineWeights
+        .slice(0, index)
+        .reduce(
+          (sum, weight) => sum + weight,
+          0
+        );
+
+    const nextElapsedWeight =
+      elapsedWeight +
+      timelineWeights[index];
+
     scene.startSeconds =
-      timeline[index][0];
+      index === 0
+        ? 0
+        : Math.round(
+            totalDuration *
+            elapsedWeight /
+            totalWeight
+          );
 
     scene.endSeconds =
-      timeline[index][1];
+      index === scenes.length - 1
+        ? totalDuration
+        : Math.round(
+            totalDuration *
+            nextElapsedWeight /
+            totalWeight
+          );
 
     if (index === 0) {
       scene.role = "hook";
@@ -402,9 +435,6 @@ function normalizeSceneTimeline({
     }
   }
 
-  currentStoryboard.totalDurationSeconds =
-    25;
-
   currentStoryboard.narrationWordCount =
     countNarrationWords(scenes);
 }
@@ -414,8 +444,6 @@ function renderCurrentScenePlan() {
 
   currentStoryboard.scenes.forEach(
     (scene) => {
-      scene.narration =
-        String(scene.caption ?? "").trim();
 
       planScenes.append(
         createSceneReviewCard(scene)
@@ -725,8 +753,6 @@ function createSceneReviewCard(scene) {
       scene.caption =
         captionInput.value;
 
-      scene.narration =
-        captionInput.value.trim();
 
       narrationText.textContent =
         scene.narration;
@@ -840,7 +866,6 @@ function createSceneReviewCard(scene) {
     () => {
       const caption =
         String(scene.caption ?? "").trim();
-
       const validScene =
         caption.length > 0 &&
         caption.length <= 60 &&
@@ -858,7 +883,6 @@ function createSceneReviewCard(scene) {
       }
 
       scene.caption = caption;
-      scene.narration = caption;
       captionInput.value = caption;
       narrationText.textContent =
         scene.narration;
@@ -1082,7 +1106,7 @@ finalVideoButton.addEventListener(
         "video-result-summary";
 
       resultSummary.textContent =
-        uiText("result.summary_complete", `${currentStoryboard.scenes.length} scenes · 25-second MP4 · AI narration complete`, { count: currentStoryboard.scenes.length });
+        uiText("result.summary_complete", `${currentStoryboard.scenes.length} scenes · ${currentStoryboard.totalDurationSeconds || 30}-second MP4 · AI narration complete`, { count: currentStoryboard.scenes.length, seconds: currentStoryboard.totalDurationSeconds || 30 });
 
       const resultActions =
         document.createElement("span");
@@ -1156,7 +1180,7 @@ finalVideoButton.addEventListener(
         document.createElement("span");
 
       successDetails.textContent =
-        uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · 25-second MP4`, { count: currentStoryboard.scenes.length });
+        uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · ${currentStoryboard.totalDurationSeconds || 30}-second MP4`, { count: currentStoryboard.scenes.length, seconds: currentStoryboard.totalDurationSeconds || 30 });
 
       const successNext =
         document.createElement("small");
@@ -1553,7 +1577,7 @@ function renderRecoveredVideoResult(
 
   resultSummary.textContent =
     uiText("result.scenes_prefix", `${currentStoryboard.scenes.length} scenes · `, { count: currentStoryboard.scenes.length }) +
-    uiText("video.mp4_duration", `${currentStoryboard.totalDurationSeconds || 25}-second MP4 · `, { seconds: currentStoryboard.totalDurationSeconds || 25 }) +
+    uiText("video.mp4_duration", `${currentStoryboard.totalDurationSeconds || 30}-second MP4 · `, { seconds: currentStoryboard.totalDurationSeconds || 30 }) +
     "AI narration complete";
 
   const resultActions =
@@ -2209,6 +2233,72 @@ setTimeout(updateQuota, 1000);
   };
 })();
 
+function updateDurationOptionsForPlan(usage) {
+  const planMaxSeconds =
+    Number(usage?.maxVideoSeconds) || 30;
+
+  durationOptions.forEach((option) => {
+    const radio =
+      option.querySelector('input[type="radio"]');
+
+    const seconds =
+      Number(radio?.value) || 30;
+
+    const locked =
+      seconds > planMaxSeconds;
+
+    if (radio) {
+      radio.disabled = locked;
+    }
+
+    option.classList.toggle("locked", locked);
+
+    if (locked && radio?.checked) {
+      radio.checked = false;
+    }
+  });
+
+  const selectedRadio =
+    durationOptions
+      .map((option) =>
+        option.querySelector('input[type="radio"]')
+      )
+      .find((radio) =>
+        radio?.checked && !radio.disabled
+      );
+
+  if (!selectedRadio) {
+    const defaultRadio =
+      durationOptions[0]?.querySelector(
+        'input[type="radio"]'
+      );
+
+    if (defaultRadio) {
+      defaultRadio.checked = true;
+    }
+  }
+
+  durationOptions.forEach((option) => {
+    const radio =
+      option.querySelector('input[type="radio"]');
+
+    option.classList.toggle(
+      "selected",
+      Boolean(radio?.checked)
+    );
+  });
+
+  const durationNote =
+    document.querySelector("#duration-note");
+
+  if (durationNote) {
+    durationNote.textContent =
+      planMaxSeconds <= 30
+        ? "45- and 60-second videos are available with Starter or Pro."
+        : "Your plan supports all video length options.";
+  }
+}
+
 async function updateQuota(){
   const banner =
     document.getElementById('quotaBanner');
@@ -2266,6 +2356,8 @@ async function updateQuota(){
         }
       }catch{}
     }
+
+    updateDurationOptionsForPlan(usage);
 
     if(usage?.planId && usage.planId !== 'free'){
       const planName =
@@ -2387,4 +2479,3 @@ function localizedApiError(result) {
 
   return result?.error || "";
 }
-

@@ -71,6 +71,14 @@ function countWords(text) {
     .length;
 }
 
+export function getNarrationWordLimit(maxDurationSeconds = 30) {
+  const duration = Number(maxDurationSeconds);
+
+  if (duration <= 30) return 65;
+  if (duration <= 45) return 95;
+  return 125;
+}
+
 export function validateStoryboard(
   storyboard,
   {
@@ -148,6 +156,29 @@ export function validateStoryboard(
       );
     }
 
+
+    const sceneDurationSeconds =
+      scene.endSeconds - scene.startSeconds;
+
+    const sceneNarrationWords =
+      countWords(scene.narration);
+
+    const maxSceneNarrationWords =
+      Math.max(
+        1,
+        Math.floor(
+          sceneDurationSeconds * 2.5
+        )
+      );
+
+    if (
+      sceneNarrationWords >
+      maxSceneNarrationWords
+    ) {
+      errors.push(
+        `Scene ${scene.sceneNumber} narration is too long for its ${sceneDurationSeconds}-second duration.`
+      );
+    }
     expectedStart = scene.endSeconds;
   });
 
@@ -165,9 +196,9 @@ export function validateStoryboard(
     countWords(narration);
 
   const maxNarrationWords =
-    maxDurationSeconds > 30
-      ? 100
-      : 50;
+    getNarrationWordLimit(
+      maxDurationSeconds
+    );
 
   if (
     actualWordCount < 9 ||

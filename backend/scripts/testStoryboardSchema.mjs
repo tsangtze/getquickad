@@ -245,7 +245,7 @@ function storyboardWithWordCount(seconds, wordCount) {
         .slice(wordIndex, wordIndex + count)
         .join(" ");
 
-    scene.caption = text;
+    scene.caption = `Scene ${index + 1}`;
     scene.narration = text;
     wordIndex += count;
   });
@@ -254,35 +254,71 @@ function storyboardWithWordCount(seconds, wordCount) {
   return copy;
 }
 
-const fiftyOneWordDefaultResult =
-  validateStoryboard(
-    storyboardWithWordCount(30, 51),
-    {
-      imageCount: 2
-    }
-  );
 
-if (fiftyOneWordDefaultResult.ok) {
-  throw new Error(
-    "Expected default validator to reject 51 narration words."
+function assertNarrationBoundary({
+  seconds,
+  maxDurationSeconds,
+  acceptedWords,
+  rejectedWords
+}) {
+  const acceptedResult =
+    validateStoryboard(
+      storyboardWithWordCount(
+        seconds,
+        acceptedWords
+      ),
+      {
+        imageCount: 2,
+        maxDurationSeconds
+      }
+    );
+
+  if (!acceptedResult.ok) {
+    throw new Error(
+      `Expected ${acceptedWords} narration words to be accepted for ${maxDurationSeconds} seconds: ${acceptedResult.errors.join(" ")}`
+    );
+  }
+
+  const rejectedResult =
+    validateStoryboard(
+      storyboardWithWordCount(
+        seconds,
+        rejectedWords
+      ),
+      {
+        imageCount: 2,
+        maxDurationSeconds
+      }
+    );
+
+  if (rejectedResult.ok) {
+    throw new Error(
+      `Expected ${rejectedWords} narration words to be rejected for ${maxDurationSeconds} seconds.`
+    );
+  }
+
+  console.log(
+    `PASS: ${maxDurationSeconds}-second narration limit is ${acceptedWords} words.`
   );
 }
 
-console.log("PASS: 51-word default narration rejected.");
+assertNarrationBoundary({
+  seconds: 30,
+  maxDurationSeconds: 30,
+  acceptedWords: 65,
+  rejectedWords: 66
+});
 
-const fiftyOneWordPaidResult =
-  validateStoryboard(
-    storyboardWithWordCount(60, 51),
-    {
-      imageCount: 2,
-      maxDurationSeconds: 60
-    }
-  );
+assertNarrationBoundary({
+  seconds: 45,
+  maxDurationSeconds: 45,
+  acceptedWords: 95,
+  rejectedWords: 96
+});
 
-if (!fiftyOneWordPaidResult.ok) {
-  throw new Error(
-    `Expected paid validator to accept 51 narration words: ${fiftyOneWordPaidResult.errors.join(" ")}`
-  );
-}
-
-console.log("PASS: 51-word paid narration accepted.");
+assertNarrationBoundary({
+  seconds: 60,
+  maxDurationSeconds: 60,
+  acceptedWords: 125,
+  rejectedWords: 126
+});

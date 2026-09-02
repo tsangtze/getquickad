@@ -6,7 +6,8 @@ import {
 } from "openai/helpers/zod";
 import {
   StoryboardSchema,
-  validateStoryboard
+  validateStoryboard,
+  getNarrationWordLimit
 } from "./storyboardSchema.mjs";
 
 function countWords(text) {
@@ -35,6 +36,10 @@ function describeLanguage(language = "en") {
 }
 function buildSystemInstructions(language = "en", maxDurationSeconds = 30) {
   const languageDescription = describeLanguage(language);
+  const maxNarrationWords =
+    getNarrationWordLimit(
+      maxDurationSeconds
+    );
 
   return `
 You create concise vertical promotional-video storyboards in the requested language.
@@ -58,9 +63,11 @@ Rules:
 - Scene 1 must start at 0 seconds.
 - Scene 5 must end exactly at totalDurationSeconds.
 - Set totalDurationSeconds to the actual chosen duration.
-- Narration across all scenes must contain 9-${maxDurationSeconds > 30 ? 100 : 50} words.
+- Narration across all scenes must contain 9-${maxNarrationWords} words.
 - Captions must be concise and contain no more than 60 characters.
-- For every scene, narration must exactly equal caption so the spoken and displayed words match.
+- Narration is the spoken voiceover and may be longer than the caption.
+- Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
+- Keep captions short and readable on screen; do not copy the full narration into the caption unless it is naturally brief.
 - Never invent certifications, reviews, discounts, guarantees, or product features.
 - Use only facts supplied by the customer.
 - imageIndex must reference an available uploaded image.
@@ -336,5 +343,4 @@ export async function generateStoryboard({
     }
   };
 }
-
 

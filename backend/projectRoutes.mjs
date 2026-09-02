@@ -187,6 +187,23 @@ function validateProject(request) {
       40
     );
 
+  const requestedMaxDurationSeconds =
+    request.body.maxDurationSeconds === undefined ||
+    request.body.maxDurationSeconds === ""
+      ? 30
+      : Number(request.body.maxDurationSeconds);
+
+  if (
+    ![30, 45, 60].includes(
+      requestedMaxDurationSeconds
+    )
+  ) {
+    return {
+      error:
+        "Please choose a video length of 30, 45, or 60 seconds."
+    };
+  }
+
     const language = cleanText(
       request.body.language || request.body.targetLanguage || "en",
       10
@@ -226,7 +243,9 @@ function validateProject(request) {
     website:
       websiteResult.website,
     callToAction,
-    style
+    style,
+    maxDurationSeconds:
+      requestedMaxDurationSeconds
   };
 }
 
@@ -660,7 +679,22 @@ export async function createProjectRouter({
           getPlan(usage.planId);
 
         const maxVideoSeconds =
-          plan.maxVideoSeconds;
+          validated.maxDurationSeconds;
+
+        if (
+          maxVideoSeconds >
+          plan.maxVideoSeconds
+        ) {
+          await removeFiles(uploadedFiles);
+
+          response.status(403).json({
+            ok: false,
+            code: "VIDEO_DURATION_NOT_ALLOWED",
+            error:
+              `Your ${plan.name} plan supports videos up to ${plan.maxVideoSeconds} seconds.`
+          });
+          return;
+        }
 
         const projectId =
           crypto.randomUUID();
@@ -1262,7 +1296,7 @@ export async function createProjectRouter({
                     ...scene,
                     caption,
                     narration:
-                      caption
+                      String(scene.narration ?? "").trim()
                   };
                 }
               )
@@ -1343,12 +1377,19 @@ export async function createProjectRouter({
           return;
         }
 
+        const selectedMaxDurationSeconds =
+          Number(
+            project.output?.maxDurationSeconds
+          ) || 30;
+
         const validation =
           validateStoryboard(
             submittedStoryboard,
             {
               imageCount:
-                project.assets.productImages.length
+                project.assets.productImages.length,
+              maxDurationSeconds:
+                selectedMaxDurationSeconds
             }
           );
 
@@ -1413,7 +1454,7 @@ export async function createProjectRouter({
           canGenerateFinalVideo(
             usage,
             project,
-            approvedStoryboard.totalDurationSeconds
+            selectedMaxDurationSeconds
           );
         if (!videoCheck.ok) {
           response.status(videoCheck.status).json({
@@ -1527,13 +1568,13 @@ export async function createProjectRouter({
 
         // Record usage before exposing the project as video_ready.
         // Free users consume one lifetime video.
-        // Paid users consume credits based on approved storyboard duration.
+        // Paid users consume credits based on the selected duration tier.
         if (!isFreeRerender) {
           const usageResult =
             await recordSuccessfulFinalVideo(
               projectRoot,
               request.authUser.id,
-              approvedStoryboard.totalDurationSeconds
+              selectedMaxDurationSeconds
             );
 
           console.log(
@@ -1542,7 +1583,8 @@ export async function createProjectRouter({
               userId: request.authUser.id,
               planId: usageResult.planId,
               creditCost: usageResult.creditCost,
-              durationSeconds:
+              selectedMaxDurationSeconds,
+              actualDurationSeconds:
                 approvedStoryboard.totalDurationSeconds
             }
           );
