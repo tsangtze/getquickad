@@ -1487,12 +1487,21 @@ export async function createProjectRouter({
             project.output?.maxDurationSeconds
           ) || 30;
 
+        const selectedMinDurationSeconds =
+          selectedMaxDurationSeconds <= 30
+            ? 27
+            : selectedMaxDurationSeconds <= 45
+              ? 41
+              : 55;
+
         const validation =
           validateStoryboard(
             submittedStoryboard,
             {
               imageCount:
                 project.assets.productImages.length,
+              minDurationSeconds:
+                selectedMinDurationSeconds,
               maxDurationSeconds:
                 selectedMaxDurationSeconds
             }
