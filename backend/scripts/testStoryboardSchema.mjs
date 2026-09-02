@@ -220,6 +220,113 @@ if (overSixtyResult.ok) {
 
 console.log("PASS: Storyboard over 60 seconds rejected.");
 
+// --- v1.0.1 duration-target regression tests ---
+
+function assertDurationTargetBoundary({
+  tier,
+  minDurationSeconds,
+  rejectedBelow,
+  acceptedMinimum
+}) {
+  const belowResult =
+    validateStoryboard(
+      storyboardWithDuration(
+        rejectedBelow
+      ),
+      {
+        imageCount: 2,
+        minDurationSeconds,
+        maxDurationSeconds: tier
+      }
+    );
+
+  if (belowResult.ok) {
+    throw new Error(
+      `Expected ${rejectedBelow} seconds to be rejected for the ${tier}-second tier.`
+    );
+  }
+
+  const minimumResult =
+    validateStoryboard(
+      storyboardWithDuration(
+        acceptedMinimum
+      ),
+      {
+        imageCount: 2,
+        minDurationSeconds,
+        maxDurationSeconds: tier
+      }
+    );
+
+  if (!minimumResult.ok) {
+    throw new Error(
+      `Expected ${acceptedMinimum} seconds to be accepted for the ${tier}-second tier: ${minimumResult.errors.join(" ")}`
+    );
+  }
+
+  const maximumResult =
+    validateStoryboard(
+      storyboardWithDuration(
+        tier
+      ),
+      {
+        imageCount: 2,
+        minDurationSeconds,
+        maxDurationSeconds: tier
+      }
+    );
+
+  if (!maximumResult.ok) {
+    throw new Error(
+      `Expected ${tier} seconds to be accepted for the ${tier}-second tier: ${maximumResult.errors.join(" ")}`
+    );
+  }
+
+  console.log(
+    `PASS: ${tier}-second tier requires ${minDurationSeconds}-${tier} seconds.`
+  );
+}
+
+assertDurationTargetBoundary({
+  tier: 30,
+  minDurationSeconds: 27,
+  rejectedBelow: 26,
+  acceptedMinimum: 27
+});
+
+assertDurationTargetBoundary({
+  tier: 45,
+  minDurationSeconds: 41,
+  rejectedBelow: 40,
+  acceptedMinimum: 41
+});
+
+assertDurationTargetBoundary({
+  tier: 60,
+  minDurationSeconds: 55,
+  rejectedBelow: 54,
+  acceptedMinimum: 55
+});
+
+const shortSixtySecondTierResult =
+  validateStoryboard(
+    storyboardWithDuration(25),
+    {
+      imageCount: 2,
+      minDurationSeconds: 55,
+      maxDurationSeconds: 60
+    }
+  );
+
+if (shortSixtySecondTierResult.ok) {
+  throw new Error(
+    "Regression: 25-second storyboard must not pass the 60-second tier."
+  );
+}
+
+console.log(
+  "PASS: 25-second storyboard rejected for the 60-second tier."
+);
 // --- v0.9.4 narration-limit boundary tests ---
 
 function storyboardWithWordCount(seconds, wordCount) {

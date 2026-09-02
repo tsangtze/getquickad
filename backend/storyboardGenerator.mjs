@@ -46,6 +46,14 @@ function describeLanguage(language = "en") {
 
   return "English (en)";
 }
+function getTargetDurationFloor(durationTierSeconds) {
+  const duration = Number(durationTierSeconds);
+
+  if (duration <= 30) return 27;
+  if (duration <= 45) return 41;
+  return 55;
+}
+
 function buildSystemInstructions(language = "en", maxDurationSeconds = 30, durationMode = "manual") {
   const languageDescription = describeLanguage(language);
   const maxNarrationWords =
@@ -70,13 +78,14 @@ Rules:
 - Scene 5 must be the call to action.
 ${durationMode === "manual"
   ? `- Treat the customer's selected maximum duration as the desired ad-length tier, not merely as an upper bound.
-- If maxDurationSeconds is 30, choose 20-30 seconds and aim toward 30 seconds when useful content supports it.
-- If maxDurationSeconds is 45, normally choose 31-45 seconds and aim toward 45 seconds when useful content supports it.
-- If maxDurationSeconds is 60, normally choose 46-60 seconds and aim toward 60 seconds when useful content supports it.
+- If maxDurationSeconds is 30, totalDurationSeconds must be 27-30 seconds.
+- If maxDurationSeconds is 45, totalDurationSeconds must be 41-45 seconds.
+- If maxDurationSeconds is 60, totalDurationSeconds must be 55-60 seconds.
+- The customer chose this duration tier intentionally. Do not shorten the video below its target range because there are few images or limited product details.
 - Develop useful narration across the full selected duration using the customer's supplied facts, description, website, call to action, and the visible content of the uploaded images.
 - A small number of uploaded images does not require a short video. Reuse available images across scenes when necessary to support the selected duration.
 - Never invent unsupported product facts, certifications, reviews, discounts, guarantees, or features just to make the video longer.
-- Avoid repetitive filler. If the supplied factual content genuinely cannot support the selected duration tier naturally, a shorter useful video is allowed.`
+- Avoid repetitive filler. When product facts are limited, use truthful creative structure, pacing, benefits already supplied by the customer, visual emphasis, and a natural call to action to fill the selected duration without inventing claims.`
   : `- maxDurationSeconds is only the plan ceiling while AI duration selection is being performed.
 - Do not treat maxDurationSeconds as the customer's desired video length.
 - Do not prefer the longest available duration.
@@ -138,9 +147,9 @@ AI DURATION DECISION:
 - Do not invent or repeat unsupported claims to justify a longer video.
 - durationTierSeconds must be the duration tier you choose.
 - Generate the storyboard to fit naturally within the chosen durationTierSeconds tier.
-- If durationTierSeconds is 30, totalDurationSeconds must be 20-30 seconds.
-- If durationTierSeconds is 45, totalDurationSeconds must be 31-45 seconds.
-- If durationTierSeconds is 60, totalDurationSeconds must be 46-60 seconds.
+- If durationTierSeconds is 30, totalDurationSeconds must be 27-30 seconds.
+- If durationTierSeconds is 45, totalDurationSeconds must be 41-45 seconds.
+- If durationTierSeconds is 60, totalDurationSeconds must be 55-60 seconds.
 - If durationTierSeconds is 30, total narration must contain 9-65 words.
 - If durationTierSeconds is 45, total narration must contain 9-95 words.
 - If durationTierSeconds is 60, total narration must contain 9-125 words.
@@ -454,6 +463,10 @@ export async function generateStoryboard({
       {
         imageCount:
           project.assets.productImages.length,
+        minDurationSeconds:
+          getTargetDurationFloor(
+            resolvedDurationTierSeconds
+          ),
         maxDurationSeconds:
           resolvedDurationTierSeconds
       }
