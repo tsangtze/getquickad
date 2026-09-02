@@ -2486,6 +2486,24 @@ function updateDurationOptionsForPlan(usage) {
       .trim()
       .toLowerCase();
 
+  const thirtySecondOption =
+    durationOptions.find(
+      (option) =>
+        option.querySelector(
+          'input[name="maxDurationSeconds"]'
+        )?.value === "30"
+    );
+
+  const thirtySecondCost =
+    thirtySecondOption?.querySelector("small");
+
+  if (thirtySecondCost) {
+    thirtySecondCost.textContent =
+      currentPlanId === "free"
+        ? "Free video"
+        : "10 credits";
+  }
+
   updateDurationAvailability();
 
   const durationNote =
