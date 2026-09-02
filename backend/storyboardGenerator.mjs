@@ -56,9 +56,15 @@ Rules:
 - Use exactly 5 scenes.
 - Scene 1 must be the hook.
 - Scene 5 must be the call to action.
-- Choose the total video duration automatically based on the amount of useful customer content.
+- Treat the customer's selected maximum duration as the desired ad-length tier, not merely as an upper bound.
+- If maxDurationSeconds is 30, choose 20-30 seconds and aim toward 30 seconds when useful content supports it.
+- If maxDurationSeconds is 45, normally choose 31-45 seconds and aim toward 45 seconds when useful content supports it.
+- If maxDurationSeconds is 60, normally choose 46-60 seconds and aim toward 60 seconds when useful content supports it.
+- Develop useful narration across the full selected duration using the customer's supplied facts, description, website, call to action, and the visible content of the uploaded images.
+- A small number of uploaded images does not require a short video. Reuse available images across scenes when necessary to support the selected duration.
+- Never invent unsupported product facts, certifications, reviews, discounts, guarantees, or features just to make the video longer.
+- Avoid repetitive filler. If the supplied factual content genuinely cannot support the selected duration tier naturally, a shorter useful video is allowed.
 - The total duration must be at least 20 seconds and no more than ${maxDurationSeconds} seconds.
-- Do not make the video longer merely because the maximum allows it.
 - Give every scene a continuous timeline with no gaps or overlaps.
 - Scene 1 must start at 0 seconds.
 - Scene 5 must end exactly at totalDurationSeconds.
@@ -75,9 +81,10 @@ Rules:
 - Follow the customer's upload order by default.
 - Scene 1 must use imageIndex 1.
 - Scene 2 must use imageIndex 2 when at least 2 images are available.
-- Continue matching scene numbers to image indexes until every uploaded image has been used or all 5 scenes are assigned.
-- Reuse images only after every available uploaded image has appeared once.
-- When images must be reused, restart from imageIndex 1 and continue in upload order.
+- Continue matching scene numbers to image indexes in upload order while unused images are available.
+- Uploaded images are an available creative pool; it is not required to use every uploaded image when more images are supplied than the storyboard needs.
+- When there are fewer uploaded images than scenes, reuse images as needed, restarting from imageIndex 1 and continuing in upload order.
+- One uploaded image may be reused across all 5 scenes when it is the only image available.
 - Write each scene caption and narration specifically for the visible content of its assigned image.
 - Motion must remain controlled and subtle.
 - Avoid rapid or excessive zooming.

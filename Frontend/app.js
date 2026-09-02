@@ -11,6 +11,34 @@ let accountHistoryRevision = 0;
 let accountListRequest = 0;
 
 const MAX_IMAGES = 10;
+
+const IMAGE_LIMITS_BY_DURATION = {
+  30: 5,
+  45: 7,
+  60: 10
+};
+
+function getSelectedDurationSeconds() {
+  const selected =
+    document.querySelector(
+      'input[name="maxDurationSeconds"]:checked'
+    );
+
+  const duration =
+    Number(selected?.value);
+
+  return [30, 45, 60].includes(duration)
+    ? duration
+    : 30;
+}
+
+function getSelectedImageLimit() {
+  return (
+    IMAGE_LIMITS_BY_DURATION[
+      getSelectedDurationSeconds()
+    ] ?? 5
+  );
+}
 let PROJECT_HISTORY_KEY =
   null;
 const MAX_RECENT_PROJECTS = 10;
@@ -154,7 +182,17 @@ renderImagePreviews();
     previewList.append(preview);
   });
 
-  imageCount.textContent = uiText("upload.count", `${selectedImages.length} of ${MAX_IMAGES}`, { count: selectedImages.length, max: MAX_IMAGES });
+  const selectedImageLimit =
+    getSelectedImageLimit();
+
+  imageCount.textContent = uiText(
+    "upload.count",
+    `${selectedImages.length} of ${selectedImageLimit}`,
+    {
+      count: selectedImages.length,
+      max: selectedImageLimit
+    }
+  );
 
   if (selectedImages.length > 0) {
     imageCount.style.color = "var(--success)";
@@ -184,9 +222,19 @@ function addImages(files) {
     (file) => !existingKeys.has(fileKey(file))
   );
 
-  if (selectedImages.length + uniqueFiles.length > MAX_IMAGES) {
+  const selectedDurationSeconds =
+    getSelectedDurationSeconds();
+
+  const selectedImageLimit =
+    getSelectedImageLimit();
+
+  if (
+    selectedImages.length +
+      uniqueFiles.length >
+    selectedImageLimit
+  ) {
     setUploadError(
-      uiText("upload.max_error", `You can upload a maximum of ${MAX_IMAGES} product images.`, { max: MAX_IMAGES })
+      `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove an image or choose a longer video to add more.`
     );
     return;
   }
@@ -272,9 +320,27 @@ durationOptions.forEach((option) => {
         item.querySelector('input[type="radio"]').checked
       );
     });
+
+    renderImagePreviews();
+
+    const selectedDurationSeconds =
+      getSelectedDurationSeconds();
+
+    const selectedImageLimit =
+      getSelectedImageLimit();
+
+    if (selectedImages.length > selectedImageLimit) {
+      const excessImageCount =
+        selectedImages.length - selectedImageLimit;
+
+      setUploadError(
+        `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
+      );
+    } else {
+      setUploadError();
+    }
   });
 });
-
 function clearReviewImageUrls() {
   window.quickAdMusic.stop();
   reviewImageUrls.forEach((imageUrl) => {
@@ -1783,6 +1849,28 @@ form.addEventListener("submit", async (event) => {
   if (selectedImages.length === 0) {
     setUploadError(uiText("upload.required_error", "Please add at least one product image."));
     firstInvalidElement = uploadZone;
+  }
+
+  const selectedDurationSeconds =
+    getSelectedDurationSeconds();
+
+  const selectedImageLimit =
+    getSelectedImageLimit();
+
+  if (
+    selectedImages.length >
+    selectedImageLimit
+  ) {
+    const excessImageCount =
+      selectedImages.length -
+      selectedImageLimit;
+
+    setUploadError(
+      `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
+    );
+
+    firstInvalidElement =
+      uploadZone;
   }
 
 

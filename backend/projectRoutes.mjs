@@ -215,9 +215,20 @@ function validateProject(request) {
     };
   }
 
-  if (productImages.length > MAX_IMAGE_COUNT) {
+  const maxImagesForDuration =
+    requestedMaxDurationSeconds === 30
+      ? 5
+      : requestedMaxDurationSeconds === 45
+        ? 7
+        : 10;
+
+  if (
+    productImages.length >
+    maxImagesForDuration
+  ) {
     return {
-      error: `A maximum of ${MAX_IMAGE_COUNT} product images is allowed.`
+      error:
+        `${requestedMaxDurationSeconds}-second videos support up to ${maxImagesForDuration} product images.`
     };
   }
 
