@@ -235,8 +235,18 @@
                 <input
                   type="radio"
                   name="maxDurationSeconds"
-                  value="30"
+                  value="auto"
                   checked
+                >
+                <strong>✨ Let AI Decide</strong>
+                <small>AI chooses the best length</small>
+              </label>
+
+              <label class="duration-option">
+                <input
+                  type="radio"
+                  name="maxDurationSeconds"
+                  value="30"
                 >
                 <strong>Up to 30 sec</strong>
                 <small>10 credits</small>
@@ -353,6 +363,11 @@
             <p>
               <span data-i18n="review.desc">Check every picture and caption. Editing and changing pictures use no API credits.</span>
             </p>
+
+            <p
+              id="duration-review-summary"
+              class="duration-review-summary"
+            ></p>
           </div>
         </div>
 

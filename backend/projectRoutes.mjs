@@ -163,6 +163,26 @@ async function removeFiles(files) {
   );
 }
 
+export function getMinimumDurationTierForImageCount(imageCount) {
+  const count = Number(imageCount);
+
+  if (!Number.isInteger(count) || count < 1 || count > 10) {
+    throw new Error(
+      "imageCount must be an integer from 1 through 10."
+    );
+  }
+
+  if (count <= 5) {
+    return 30;
+  }
+
+  if (count <= 7) {
+    return 45;
+  }
+
+  return 60;
+}
+
 function validateProject(request) {
   const productImages =
     request.files?.productImages ?? [];
@@ -187,27 +207,37 @@ function validateProject(request) {
       40
     );
 
+  const requestedDurationValue =
+    String(
+      request.body.maxDurationSeconds ?? "auto"
+    ).trim();
+
+  const durationMode =
+    requestedDurationValue === "auto"
+      ? "auto"
+      : "manual";
+
   const requestedMaxDurationSeconds =
-    request.body.maxDurationSeconds === undefined ||
-    request.body.maxDurationSeconds === ""
-      ? 30
-      : Number(request.body.maxDurationSeconds);
+    durationMode === "auto"
+      ? null
+      : Number(requestedDurationValue);
 
   if (
+    durationMode === "manual" &&
     ![30, 45, 60].includes(
       requestedMaxDurationSeconds
     )
   ) {
     return {
       error:
-        "Please choose a video length of 30, 45, or 60 seconds."
+        "Please choose AI Decide or a video length of 30, 45, or 60 seconds."
     };
   }
 
-    const language = cleanText(
-      request.body.language || request.body.targetLanguage || "en",
-      10
-    ) || "en";
+  const language = cleanText(
+    request.body.language || request.body.targetLanguage || "en",
+    10
+  ) || "en";
 
   if (productImages.length < 1) {
     return {
@@ -215,21 +245,35 @@ function validateProject(request) {
     };
   }
 
-  const maxImagesForDuration =
-    requestedMaxDurationSeconds === 30
-      ? 5
-      : requestedMaxDurationSeconds === 45
-        ? 7
-        : 10;
-
-  if (
-    productImages.length >
-    maxImagesForDuration
-  ) {
+  if (productImages.length > 10) {
     return {
       error:
-        `${requestedMaxDurationSeconds}-second videos support up to ${maxImagesForDuration} product images.`
+        "QuickAd AI supports up to 10 product images."
     };
+  }
+
+  const minimumDurationTierSeconds =
+    getMinimumDurationTierForImageCount(
+      productImages.length
+    );
+
+  if (durationMode === "manual") {
+    const maxImagesForDuration =
+      requestedMaxDurationSeconds === 30
+        ? 5
+        : requestedMaxDurationSeconds === 45
+          ? 7
+          : 10;
+
+    if (
+      productImages.length >
+      maxImagesForDuration
+    ) {
+      return {
+        error:
+          `${requestedMaxDurationSeconds}-second videos support up to ${maxImagesForDuration} product images.`
+      };
+    }
   }
 
 
@@ -255,8 +299,9 @@ function validateProject(request) {
       websiteResult.website,
     callToAction,
     style,
-    maxDurationSeconds:
-      requestedMaxDurationSeconds
+    durationMode,
+    minimumDurationTierSeconds,
+    maxDurationSeconds: requestedMaxDurationSeconds
   };
 }
 
@@ -689,12 +734,18 @@ export async function createProjectRouter({
         const plan =
           getPlan(usage.planId);
 
+        const durationMode =
+          validated.durationMode;
+
         const maxVideoSeconds =
-          validated.maxDurationSeconds;
+          durationMode === "auto"
+            ? plan.maxVideoSeconds
+            : validated.maxDurationSeconds;
 
         if (
+          durationMode === "manual" &&
           maxVideoSeconds >
-          plan.maxVideoSeconds
+            plan.maxVideoSeconds
         ) {
           await removeFiles(uploadedFiles);
 
@@ -703,6 +754,22 @@ export async function createProjectRouter({
             code: "VIDEO_DURATION_NOT_ALLOWED",
             error:
               `Your ${plan.name} plan supports videos up to ${plan.maxVideoSeconds} seconds.`
+          });
+          return;
+        }
+
+        if (
+          durationMode === "auto" &&
+          validated.minimumDurationTierSeconds >
+            plan.maxVideoSeconds
+        ) {
+          await removeFiles(uploadedFiles);
+
+          response.status(403).json({
+            ok: false,
+            code: "VIDEO_DURATION_NOT_ALLOWED",
+            error:
+              `Your ${plan.name} plan supports videos up to ${plan.maxVideoSeconds} seconds and cannot use this many images.`
           });
           return;
         }
@@ -747,9 +814,16 @@ export async function createProjectRouter({
             (request.body.targetLanguage || request.body.language || "en").toString().slice(0,10),
           output: {
             aspectRatio: "9:16",
+            durationMode,
             durationSeconds:
-              `20-${maxVideoSeconds}`,
+              durationMode === "auto"
+                ? null
+                : `20-${maxVideoSeconds}`,
             maxDurationSeconds:
+              durationMode === "auto"
+                ? null
+                : maxVideoSeconds,
+            generationMaxDurationSeconds:
               maxVideoSeconds,
             format: "mp4"
           },
@@ -776,8 +850,28 @@ export async function createProjectRouter({
               project,
               projectDirectory,
               maxDurationSeconds:
-                maxVideoSeconds
+                maxVideoSeconds,
+              durationMode,
+              minimumDurationTierSeconds:
+                validated.minimumDurationTierSeconds
             });
+
+          const resolvedDurationTierSeconds =
+            result.durationTierSeconds;
+
+          project.output.durationMode =
+            durationMode;
+
+          project.output.maxDurationSeconds =
+            resolvedDurationTierSeconds;
+
+          project.output.durationSeconds =
+            `20-${resolvedDurationTierSeconds}`;
+
+          if (durationMode === "auto") {
+            project.output.aiSelectedDurationSeconds =
+              resolvedDurationTierSeconds;
+          }
 
           const storyboardRecord = {
             projectId:

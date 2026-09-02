@@ -18,27 +18,62 @@ const IMAGE_LIMITS_BY_DURATION = {
   60: 10
 };
 
-function getSelectedDurationSeconds() {
+function getSelectedDurationChoice() {
   const selected =
     document.querySelector(
       'input[name="maxDurationSeconds"]:checked'
     );
 
+  const value =
+    String(selected?.value || "auto");
+
+  if (value === "auto") {
+    return "auto";
+  }
+
   const duration =
-    Number(selected?.value);
+    Number(value);
 
   return [30, 45, 60].includes(duration)
     ? duration
-    : 30;
+    : "auto";
+}
+
+function getSelectedDurationSeconds() {
+  const choice =
+    getSelectedDurationChoice();
+
+  return choice === "auto"
+    ? null
+    : choice;
+}
+
+function getPlanImageLimit() {
+  if (currentPlanMaxVideoSeconds >= 60) {
+    return IMAGE_LIMITS_BY_DURATION[60];
+  }
+
+  if (currentPlanMaxVideoSeconds >= 45) {
+    return IMAGE_LIMITS_BY_DURATION[45];
+  }
+
+  return IMAGE_LIMITS_BY_DURATION[30];
 }
 
 function getSelectedImageLimit() {
+  const choice =
+    getSelectedDurationChoice();
+
+  if (choice === "auto") {
+    return getPlanImageLimit();
+  }
+
   return (
-    IMAGE_LIMITS_BY_DURATION[
-      getSelectedDurationSeconds()
-    ] ?? 5
+    IMAGE_LIMITS_BY_DURATION[choice] ??
+    getPlanImageLimit()
   );
 }
+
 let PROJECT_HISTORY_KEY =
   null;
 const MAX_RECENT_PROJECTS = 10;
@@ -85,6 +120,10 @@ const planReview = document.querySelector("#plan-review");
 const durationOptions = [...document.querySelectorAll(".duration-option")];
 const planScenes = document.querySelector("#plan-scenes");
 const planStatus = document.querySelector("#plan-status");
+const durationReviewSummary =
+  document.querySelector(
+    "#duration-review-summary"
+  );
 const callToActionSelect =
   document.querySelector(
     "#call-to-action"
@@ -120,6 +159,7 @@ const narratorOptions = [
 ];
 
 let selectedImages = [];
+let currentPlanMaxVideoSeconds = 30;
 let currentProjectId = "";
 let currentStoryboard = null;
 let reviewImageUrls = [];
@@ -141,6 +181,59 @@ function syncImageInput() {
   });
 
   imageInput.files = transfer.files;
+}
+
+function updateDurationAvailability() {
+  const imageCount = selectedImages.length;
+
+  durationOptions.forEach((option) => {
+    const radio =
+      option.querySelector('input[type="radio"]');
+
+    if (!radio) {
+      return;
+    }
+
+    const value = String(radio.value);
+
+    if (value === "auto") {
+      radio.disabled = false;
+      option.classList.remove("locked");
+      return;
+    }
+
+    const seconds = Number(value);
+    const imageLimit =
+      IMAGE_LIMITS_BY_DURATION[seconds] ?? MAX_IMAGES;
+
+    const lockedByPlan =
+      seconds > currentPlanMaxVideoSeconds;
+
+    const lockedByImages =
+      imageCount > imageLimit;
+
+    const locked =
+      lockedByPlan || lockedByImages;
+
+    radio.disabled = locked;
+    option.classList.toggle("locked", locked);
+    option.dataset.lockReason =
+      lockedByPlan
+        ? "plan"
+        : lockedByImages
+          ? "images"
+          : "";
+  });
+
+  durationOptions.forEach((option) => {
+    const radio =
+      option.querySelector('input[type="radio"]');
+
+    option.classList.toggle(
+      "selected",
+      Boolean(radio?.checked)
+    );
+  });
 }
 
 function renderImagePreviews() {
@@ -199,6 +292,7 @@ renderImagePreviews();
   } else {
     imageCount.style.color = "";
   }
+  updateDurationAvailability();
 }
 
 function addImages(files) {
@@ -234,7 +328,9 @@ function addImages(files) {
     selectedImageLimit
   ) {
     setUploadError(
-      `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove an image or choose a longer video to add more.`
+      selectedDurationSeconds === null
+        ? `Your current plan supports up to ${selectedImageLimit} images with AI Decide.`
+        : `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove an image or choose a longer video to add more.`
     );
     return;
   }
@@ -334,7 +430,9 @@ durationOptions.forEach((option) => {
         selectedImages.length - selectedImageLimit;
 
       setUploadError(
-        `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
+        selectedDurationSeconds === null
+          ? `AI Decide supports up to ${selectedImageLimit} images on your current plan. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"}.`
+          : `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
       );
     } else {
       setUploadError();
@@ -983,6 +1081,37 @@ function createSceneReviewCard(scene) {
   return card;
 }
 
+function renderDurationReviewSummary(project, storyboard) {
+  if (!durationReviewSummary) {
+    return;
+  }
+
+  const durationTierSeconds =
+    Number(
+      project?.output?.maxDurationSeconds
+    ) || 30;
+
+  const creditCost =
+    durationTierSeconds === 60
+      ? 20
+      : durationTierSeconds === 45
+        ? 15
+        : 10;
+
+  const actualDurationSeconds =
+    Number(
+      storyboard?.totalDurationSeconds
+    ) || durationTierSeconds;
+
+  const aiSelected =
+    project?.output?.durationMode === "auto";
+
+  durationReviewSummary.textContent =
+    aiSelected
+      ? `✨ AI selected: Up to ${durationTierSeconds} seconds · ${creditCost} credits · Actual plan: ${actualDurationSeconds} seconds`
+      : `Selected: Up to ${durationTierSeconds} seconds · ${creditCost} credits · Actual plan: ${actualDurationSeconds} seconds`;
+}
+
 function renderVideoPlanReview(
   project,
   storyboard,
@@ -1009,6 +1138,11 @@ function renderVideoPlanReview(
     JSON.parse(
       JSON.stringify(storyboard)
     );
+
+  renderDurationReviewSummary(
+    project,
+    currentStoryboard
+  );
 
   currentStoryboard.scenes.forEach(
     (scene) => {
@@ -1866,7 +2000,9 @@ form.addEventListener("submit", async (event) => {
       selectedImageLimit;
 
     setUploadError(
-      `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
+      selectedDurationSeconds === null
+        ? `AI Decide supports up to ${selectedImageLimit} images on your current plan. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"}.`
+        : `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
     );
 
     firstInvalidElement =
@@ -2322,68 +2458,19 @@ setTimeout(updateQuota, 1000);
 })();
 
 function updateDurationOptionsForPlan(usage) {
-  const planMaxSeconds =
+  currentPlanMaxVideoSeconds =
     Number(usage?.maxVideoSeconds) || 30;
 
-  durationOptions.forEach((option) => {
-    const radio =
-      option.querySelector('input[type="radio"]');
-
-    const seconds =
-      Number(radio?.value) || 30;
-
-    const locked =
-      seconds > planMaxSeconds;
-
-    if (radio) {
-      radio.disabled = locked;
-    }
-
-    option.classList.toggle("locked", locked);
-
-    if (locked && radio?.checked) {
-      radio.checked = false;
-    }
-  });
-
-  const selectedRadio =
-    durationOptions
-      .map((option) =>
-        option.querySelector('input[type="radio"]')
-      )
-      .find((radio) =>
-        radio?.checked && !radio.disabled
-      );
-
-  if (!selectedRadio) {
-    const defaultRadio =
-      durationOptions[0]?.querySelector(
-        'input[type="radio"]'
-      );
-
-    if (defaultRadio) {
-      defaultRadio.checked = true;
-    }
-  }
-
-  durationOptions.forEach((option) => {
-    const radio =
-      option.querySelector('input[type="radio"]');
-
-    option.classList.toggle(
-      "selected",
-      Boolean(radio?.checked)
-    );
-  });
+  updateDurationAvailability();
 
   const durationNote =
     document.querySelector("#duration-note");
 
   if (durationNote) {
     durationNote.textContent =
-      planMaxSeconds <= 30
-        ? "45- and 60-second videos are available with Starter or Pro."
-        : "Your plan supports all video length options.";
+      currentPlanMaxVideoSeconds <= 30
+        ? "AI Decide is available, but Free videos are limited to 30 seconds. Upgrade to Starter or Pro for 45- and 60-second videos."
+        : "AI Decide can choose the best 30-, 45-, or 60-second video length for your content.";
   }
 }
 

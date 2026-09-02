@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
+import { z } from "zod";
 import {
   zodTextFormat
 } from "openai/helpers/zod";
@@ -9,6 +10,17 @@ import {
   validateStoryboard,
   getNarrationWordLimit
 } from "./storyboardSchema.mjs";
+
+const AutoStoryboardResultSchema = z
+  .object({
+    durationTierSeconds: z.union([
+      z.literal(30),
+      z.literal(45),
+      z.literal(60)
+    ]),
+    storyboard: StoryboardSchema
+  })
+  .strict();
 
 function countWords(text) {
   return String(text)
@@ -34,7 +46,7 @@ function describeLanguage(language = "en") {
 
   return "English (en)";
 }
-function buildSystemInstructions(language = "en", maxDurationSeconds = 30) {
+function buildSystemInstructions(language = "en", maxDurationSeconds = 30, durationMode = "manual") {
   const languageDescription = describeLanguage(language);
   const maxNarrationWords =
     getNarrationWordLimit(
@@ -56,14 +68,23 @@ Rules:
 - Use exactly 5 scenes.
 - Scene 1 must be the hook.
 - Scene 5 must be the call to action.
-- Treat the customer's selected maximum duration as the desired ad-length tier, not merely as an upper bound.
+${durationMode === "manual"
+  ? `- Treat the customer's selected maximum duration as the desired ad-length tier, not merely as an upper bound.
 - If maxDurationSeconds is 30, choose 20-30 seconds and aim toward 30 seconds when useful content supports it.
 - If maxDurationSeconds is 45, normally choose 31-45 seconds and aim toward 45 seconds when useful content supports it.
 - If maxDurationSeconds is 60, normally choose 46-60 seconds and aim toward 60 seconds when useful content supports it.
 - Develop useful narration across the full selected duration using the customer's supplied facts, description, website, call to action, and the visible content of the uploaded images.
 - A small number of uploaded images does not require a short video. Reuse available images across scenes when necessary to support the selected duration.
 - Never invent unsupported product facts, certifications, reviews, discounts, guarantees, or features just to make the video longer.
-- Avoid repetitive filler. If the supplied factual content genuinely cannot support the selected duration tier naturally, a shorter useful video is allowed.
+- Avoid repetitive filler. If the supplied factual content genuinely cannot support the selected duration tier naturally, a shorter useful video is allowed.`
+  : `- maxDurationSeconds is only the plan ceiling while AI duration selection is being performed.
+- Do not treat maxDurationSeconds as the customer's desired video length.
+- Do not prefer the longest available duration.
+- The AI DURATION DECISION rules determine the actual duration tier.
+- Develop only enough useful narration to support the duration tier selected by the AI duration decision.
+- Reuse available images across scenes when useful, but never lengthen the video merely to use more time.
+- Never invent unsupported product facts, certifications, reviews, discounts, guarantees, or features to justify a longer video.
+- Avoid repetitive filler.`}
 - The total duration must be at least 20 seconds and no more than ${maxDurationSeconds} seconds.
 - Give every scene a continuous timeline with no gaps or overlaps.
 - Scene 1 must start at 0 seconds.
@@ -91,6 +112,39 @@ Rules:
 - Use the customer's exact call to action.
 - If no website is supplied, return an empty website string.
 - narrationWordCount must equal the actual narration word count.
+`.trim();
+}
+
+function buildAutoDurationInstructions({
+  minimumDurationTierSeconds,
+  maxDurationSeconds
+}) {
+  const eligibleTiers = [30, 45, 60]
+    .filter(
+      (seconds) =>
+        seconds >= minimumDurationTierSeconds &&
+        seconds <= maxDurationSeconds
+    );
+
+  return `
+AI DURATION DECISION:
+- The customer selected Let AI Decide.
+- Choose exactly one duration tier from: ${eligibleTiers.join(", ")} seconds.
+- Base the decision on the customer description, website, call to action, and visible useful content in the uploaded images.
+- Uploaded image count establishes which tiers are eligible, but image count alone must not determine the chosen tier.
+- Prefer the shortest eligible tier that gives the supplied content enough room for a strong, natural, useful advertisement.
+- Choose a longer eligible tier only when the supplied content genuinely benefits from the additional storytelling time.
+- Do not choose a longer tier merely because it is available.
+- Do not invent or repeat unsupported claims to justify a longer video.
+- durationTierSeconds must be the duration tier you choose.
+- Generate the storyboard to fit naturally within the chosen durationTierSeconds tier.
+- If durationTierSeconds is 30, totalDurationSeconds must be 20-30 seconds.
+- If durationTierSeconds is 45, totalDurationSeconds must be 31-45 seconds.
+- If durationTierSeconds is 60, totalDurationSeconds must be 46-60 seconds.
+- If durationTierSeconds is 30, total narration must contain 9-65 words.
+- If durationTierSeconds is 45, total narration must contain 9-95 words.
+- If durationTierSeconds is 60, total narration must contain 9-125 words.
+- The narration word limit for the chosen durationTierSeconds overrides any larger narration allowance stated by the plan ceiling.
 `.trim();
 }
 
@@ -226,11 +280,43 @@ export async function generateStoryboard({
   project,
   projectDirectory,
   maxDurationSeconds = 30,
+  durationMode = "manual",
+  minimumDurationTierSeconds = 30,
   apiKey = process.env.OPENAI_API_KEY,
   model =
     process.env.OPENAI_MODEL ||
     "gpt-5.6-luna"
 }) {
+  const allowedDurationTiers = [30, 45, 60];
+
+  if (!["manual", "auto"].includes(durationMode)) {
+    throw new Error(
+      "durationMode must be manual or auto."
+    );
+  }
+
+  if (
+    !allowedDurationTiers.includes(
+      maxDurationSeconds
+    )
+  ) {
+    throw new Error(
+      "maxDurationSeconds must be 30, 45, or 60."
+    );
+  }
+
+  if (
+    !allowedDurationTiers.includes(
+      minimumDurationTierSeconds
+    ) ||
+    minimumDurationTierSeconds >
+      maxDurationSeconds
+  ) {
+    throw new Error(
+      "minimumDurationTierSeconds must be an allowed tier at or below maxDurationSeconds."
+    );
+  }
+
   if (!apiKey) {
     const error = new Error(
       "OPENAI_API_KEY is not configured."
@@ -272,7 +358,22 @@ export async function generateStoryboard({
         {
           role: "system",
           content:
-            buildSystemInstructions(project.language || project.targetLanguage || "en", maxDurationSeconds)
+            durationMode === "auto"
+              ? buildSystemInstructions(
+                  project.language || project.targetLanguage || "en",
+                  maxDurationSeconds,
+                  durationMode
+                ) +
+                "\n\n" +
+                buildAutoDurationInstructions({
+                  minimumDurationTierSeconds,
+                  maxDurationSeconds
+                })
+              : buildSystemInstructions(
+                  project.language || project.targetLanguage || "en",
+                  maxDurationSeconds,
+                  durationMode
+                )
         },
         {
           role: "user",
@@ -292,8 +393,12 @@ export async function generateStoryboard({
       ],
       text: {
         format: zodTextFormat(
-          StoryboardSchema,
-          "quickad_storyboard"
+          durationMode === "auto"
+            ? AutoStoryboardResultSchema
+            : StoryboardSchema,
+          durationMode === "auto"
+            ? "quickad_auto_storyboard"
+            : "quickad_storyboard"
         )
       }
     });
@@ -309,9 +414,38 @@ export async function generateStoryboard({
     throw error;
   }
 
+  const parsedResult =
+    response.output_parsed;
+
+  const resolvedDurationTierSeconds =
+    durationMode === "auto"
+      ? parsedResult.durationTierSeconds
+      : maxDurationSeconds;
+
+  if (
+    !allowedDurationTiers.includes(
+      resolvedDurationTierSeconds
+    ) ||
+    resolvedDurationTierSeconds <
+      minimumDurationTierSeconds ||
+    resolvedDurationTierSeconds >
+      maxDurationSeconds
+  ) {
+    const error = new Error(
+      "AI selected an ineligible duration tier."
+    );
+
+    error.code =
+      "STORYBOARD_DURATION_TIER_INVALID";
+
+    throw error;
+  }
+
   const storyboard =
     normalizeWordCount(
-      response.output_parsed
+      durationMode === "auto"
+        ? parsedResult.storyboard
+        : parsedResult
     );
 
   const validation =
@@ -320,7 +454,8 @@ export async function generateStoryboard({
       {
         imageCount:
           project.assets.productImages.length,
-        maxDurationSeconds
+        maxDurationSeconds:
+          resolvedDurationTierSeconds
       }
     );
 
@@ -341,6 +476,7 @@ export async function generateStoryboard({
   return {
     storyboard:
       validation.storyboard,
+    durationTierSeconds: resolvedDurationTierSeconds,
     generation: {
       provider: "openai",
       model,
