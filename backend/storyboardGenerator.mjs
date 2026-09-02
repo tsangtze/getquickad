@@ -67,6 +67,7 @@ Rules:
 - Captions must be concise and contain no more than 60 characters.
 - Narration is the spoken voiceover and may be longer than the caption.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
+- Each scene narration must contain no more than floor(scene duration in seconds × 2.5) words. Examples: 4 seconds = 10 words, 6 seconds = 15 words, 10 seconds = 25 words.
 - Keep captions short and readable on screen; do not copy the full narration into the caption unless it is naturally brief.
 - Never invent certifications, reviews, discounts, guarantees, or product features.
 - Use only facts supplied by the customer.
@@ -343,4 +344,3 @@ export async function generateStoryboard({
     }
   };
 }
-
