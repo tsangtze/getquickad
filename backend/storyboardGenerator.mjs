@@ -70,7 +70,7 @@ LANGUAGE RULE - CRITICAL:
 - Use natural marketing language for the target locale.
 - Do not translate product names, brand names, URLs, or file names unless the customer supplied them translated.
 
-Return one complete storyboard for a 9:16 social-media advertisement lasting between 20 and ${maxDurationSeconds} seconds.
+Return one complete storyboard for a 9:16 social-media advertisement that follows the applicable duration-tier rules below and never exceeds ${maxDurationSeconds} seconds.
 
 Rules:
 - Use exactly 5 scenes.
@@ -94,7 +94,7 @@ ${durationMode === "manual"
 - Reuse available images across scenes when useful, but never lengthen the video merely to use more time.
 - Never invent unsupported product facts, certifications, reviews, discounts, guarantees, or features to justify a longer video.
 - Avoid repetitive filler.`}
-- The total duration must be at least 20 seconds and no more than ${maxDurationSeconds} seconds.
+- The total duration must stay within the applicable duration-tier range defined above and must never exceed ${maxDurationSeconds} seconds.
 - Give every scene a continuous timeline with no gaps or overlaps.
 - Scene 1 must start at 0 seconds.
 - Scene 5 must end exactly at totalDurationSeconds.
@@ -359,144 +359,206 @@ export async function generateStoryboard({
     apiKey
   });
 
-  const response =
-    await client.responses.parse({
-      model,
-      store: false,
-      input: [
-        {
-          role: "system",
-          content:
-            durationMode === "auto"
-              ? buildSystemInstructions(
-                  project.language || project.targetLanguage || "en",
-                  maxDurationSeconds,
-                  durationMode
-                ) +
-                "\n\n" +
-                buildAutoDurationInstructions({
-                  minimumDurationTierSeconds,
-                  maxDurationSeconds
-                })
-              : buildSystemInstructions(
-                  project.language || project.targetLanguage || "en",
-                  maxDurationSeconds,
-                  durationMode
-                )
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text:
-                buildProjectPrompt(project, project.language || project.targetLanguage || "en") +
-                "\n\nInspect every supplied image before writing the storyboard. " +
-                "Match each scene to visible image content. " +
-                "Do not claim that an object or feature is visible unless it actually appears. " +
-                "If the customer description and images conflict, avoid inventing details."
-            },
-            ...imageContent
-          ]
-        }
-      ],
-      text: {
-        format: zodTextFormat(
-          durationMode === "auto"
-            ? AutoStoryboardResultSchema
-            : StoryboardSchema,
-          durationMode === "auto"
-            ? "quickad_auto_storyboard"
-            : "quickad_storyboard"
-        )
-      }
-    });
-
-  if (!response.output_parsed) {
-    const error = new Error(
-      "OpenAI did not return a completed storyboard."
-    );
-
-    error.code =
-      "STORYBOARD_OUTPUT_MISSING";
-
-    throw error;
-  }
-
-  const parsedResult =
-    response.output_parsed;
-
-  const resolvedDurationTierSeconds =
+  const systemInstructions =
     durationMode === "auto"
-      ? parsedResult.durationTierSeconds
-      : maxDurationSeconds;
+      ? buildSystemInstructions(
+          project.language || project.targetLanguage || "en",
+          maxDurationSeconds,
+          durationMode
+        ) +
+        "\n\n" +
+        buildAutoDurationInstructions({
+          minimumDurationTierSeconds,
+          maxDurationSeconds
+        })
+      : buildSystemInstructions(
+          project.language || project.targetLanguage || "en",
+          maxDurationSeconds,
+          durationMode
+        );
 
-  if (
-    !allowedDurationTiers.includes(
-      resolvedDurationTierSeconds
-    ) ||
-    resolvedDurationTierSeconds <
-      minimumDurationTierSeconds ||
-    resolvedDurationTierSeconds >
-      maxDurationSeconds
+  const projectInstructions =
+    buildProjectPrompt(
+      project,
+      project.language ||
+        project.targetLanguage ||
+        "en"
+    ) +
+    "\n\nInspect every supplied image before writing the storyboard. " +
+    "Match each scene to visible image content. " +
+    "Do not claim that an object or feature is visible unless it actually appears. " +
+    "If the customer description and images conflict, avoid inventing details.";
+
+  let validationErrors = null;
+  let retryDurationTierSeconds = null;
+
+  for (
+    let attempt = 1;
+    attempt <= 2;
+    attempt += 1
   ) {
-    const error = new Error(
-      "AI selected an ineligible duration tier."
-    );
+    const correctionInstructions =
+      attempt === 2
+        ? "\n\nCORRECTION REQUIRED:\n" +
+          "The previous storyboard failed validation for these reasons:\n- " +
+          validationErrors.join("\n- ") +
+          "\nRegenerate the complete storyboard from scratch. " +
+          "Correct every listed validation problem while preserving the customer's supplied facts. " +
+          (
+            durationMode === "auto"
+              ? `You MUST keep durationTierSeconds exactly ${retryDurationTierSeconds}. `
+              : `You MUST keep the ${maxDurationSeconds}-second duration tier. `
+          ) +
+          "Do not mention the correction or validation process in the customer-facing storyboard."
+        : "";
 
-    error.code =
-      "STORYBOARD_DURATION_TIER_INVALID";
+    const response =
+      await client.responses.parse({
+        model,
+        store: false,
+        input: [
+          {
+            role: "system",
+            content:
+              systemInstructions +
+              correctionInstructions
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text:
+                  projectInstructions
+              },
+              ...imageContent
+            ]
+          }
+        ],
+        text: {
+          format: zodTextFormat(
+            durationMode === "auto"
+              ? AutoStoryboardResultSchema
+              : StoryboardSchema,
+            durationMode === "auto"
+              ? "quickad_auto_storyboard"
+              : "quickad_storyboard"
+          )
+        }
+      });
 
-    throw error;
-  }
+    if (!response.output_parsed) {
+      const error = new Error(
+        "OpenAI did not return a completed storyboard."
+      );
 
-  const storyboard =
-    normalizeWordCount(
+      error.code =
+        "STORYBOARD_OUTPUT_MISSING";
+
+      throw error;
+    }
+
+    const parsedResult =
+      response.output_parsed;
+
+    const resolvedDurationTierSeconds =
       durationMode === "auto"
-        ? parsedResult.storyboard
-        : parsedResult
-    );
+        ? parsedResult.durationTierSeconds
+        : maxDurationSeconds;
 
-  const validation =
-    validateStoryboard(
-      storyboard,
-      {
-        imageCount:
-          project.assets.productImages.length,
-        minDurationSeconds:
-          getTargetDurationFloor(
+    if (
+      !allowedDurationTiers.includes(
+        resolvedDurationTierSeconds
+      ) ||
+      resolvedDurationTierSeconds <
+        minimumDurationTierSeconds ||
+      resolvedDurationTierSeconds >
+        maxDurationSeconds
+    ) {
+      const error = new Error(
+        "AI selected an ineligible duration tier."
+      );
+
+      error.code =
+        "STORYBOARD_DURATION_TIER_INVALID";
+
+      throw error;
+    }
+
+    if (
+      attempt === 2 &&
+      durationMode === "auto" &&
+      resolvedDurationTierSeconds !==
+        retryDurationTierSeconds
+    ) {
+      const error = new Error(
+        "AI changed the selected duration tier during storyboard correction."
+      );
+
+      error.code =
+        "STORYBOARD_DURATION_TIER_CHANGED";
+
+      throw error;
+    }
+
+    const storyboard =
+      normalizeWordCount(
+        durationMode === "auto"
+          ? parsedResult.storyboard
+          : parsedResult
+      );
+
+    const validation =
+      validateStoryboard(
+        storyboard,
+        {
+          imageCount:
+            project.assets.productImages.length,
+          minDurationSeconds:
+            getTargetDurationFloor(
+              resolvedDurationTierSeconds
+            ),
+          maxDurationSeconds:
             resolvedDurationTierSeconds
-          ),
-        maxDurationSeconds:
-          resolvedDurationTierSeconds
-      }
-    );
+        }
+      );
 
-  if (!validation.ok) {
-    const error = new Error(
-      `Generated storyboard failed validation: ${validation.errors.join(" ")}`
-    );
+    if (validation.ok) {
+      return {
+        storyboard:
+          validation.storyboard,
+        durationTierSeconds:
+          resolvedDurationTierSeconds,
+        generation: {
+          provider: "openai",
+          model,
+          responseId: response.id,
+          generatedAt:
+            new Date().toISOString(),
+          usage: response.usage ?? null,
+          attempts: attempt
+        }
+      };
+    }
 
-    error.code =
-      "STORYBOARD_VALIDATION_FAILED";
-
-    error.validationErrors =
+    validationErrors =
       validation.errors;
 
-    throw error;
-  }
+    retryDurationTierSeconds =
+      resolvedDurationTierSeconds;
 
-  return {
-    storyboard:
-      validation.storyboard,
-    durationTierSeconds: resolvedDurationTierSeconds,
-    generation: {
-      provider: "openai",
-      model,
-      responseId: response.id,
-      generatedAt:
-        new Date().toISOString(),
-      usage: response.usage ?? null
+    if (attempt === 2) {
+      const error = new Error(
+        `Generated storyboard failed validation after retry: ${validation.errors.join(" ")}`
+      );
+
+      error.code =
+        "STORYBOARD_VALIDATION_FAILED";
+
+      error.validationErrors =
+        validation.errors;
+
+      throw error;
     }
-  };
+  }
 }
