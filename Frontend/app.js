@@ -91,6 +91,10 @@ const logoInput = document.querySelector("#product-logo");
 const uploadZone = document.querySelector("#upload-zone");
 const previewList = document.querySelector("#image-preview-list");
 const imageCount = document.querySelector("#image-count");
+const uploadDescription =
+  document.querySelector("#upload-description");
+const uploadFormats =
+  document.querySelector("#upload-formats");
 const logoName = document.querySelector("#logo-name");
 const description = document.querySelector("#productDesc");
 const characterCount = document.querySelector("#character-count");
@@ -277,6 +281,16 @@ renderImagePreviews();
 
   const selectedImageLimit =
     getSelectedImageLimit();
+
+  if (uploadDescription) {
+    uploadDescription.textContent =
+      `Add up to ${selectedImageLimit} clear product photos. You can also add your logo.`;
+  }
+
+  if (uploadFormats) {
+    uploadFormats.textContent =
+      `JPG, PNG or WebP · Maximum ${selectedImageLimit} images`;
+  }
 
   imageCount.textContent = uiText(
     "upload.count",
