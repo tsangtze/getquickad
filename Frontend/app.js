@@ -2750,6 +2750,7 @@ window.addEventListener("quickad:languagechange", () => {
     renderCurrentScenePlan();
     validateVideoPlan();
   }
+  clearProjectHistoryButton.textContent = `🔄 ${uiText("recent.refresh", "Refresh projects")}`;
   renderRecentProjects();
   updateQuota();
 });
