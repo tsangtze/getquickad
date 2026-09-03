@@ -107,15 +107,24 @@ function markCurrentPlan(planId, cancelAtPeriodEnd = false, currentPeriodEnd = n
         !Number.isNaN(freePlanDate.getTime());
 
       if (cancelAtPeriodEnd && hasValidFreePlanDate) {
-        button.textContent =
-          `Free Plan Starts ${freePlanDate.toLocaleDateString(
-            undefined,
+        const formattedFreePlanDate =
+          freePlanDate.toLocaleDateString(
+            window.QuickAdI18n?.currentLang || "en",
             {
               month: "short",
               day: "numeric",
               timeZone: "UTC"
             }
-          )}`;
+          );
+
+        button.textContent =
+          billingText(
+            "billing.free_plan_starts",
+            `Free Plan Starts ${formattedFreePlanDate}`,
+            {
+              date: formattedFreePlanDate
+            }
+          );
         button.disabled = true;
         button.dataset.action = "scheduled-free";
       } else {
@@ -159,16 +168,25 @@ function renderUsage(usage) {
       usage.cancelAtPeriodEnd &&
       hasValidCancellationDate
     ) {
-      planCancellation.textContent =
-        `Cancels ${cancellationDate.toLocaleDateString(
-          undefined,
+      const formattedCancellationDate =
+        cancellationDate.toLocaleDateString(
+          window.QuickAdI18n?.currentLang || "en",
           {
             year: "numeric",
             month: "long",
             day: "numeric",
             timeZone: "UTC"
           }
-        )}`;
+        );
+
+      planCancellation.textContent =
+        billingText(
+          "billing.cancels_on",
+          `Cancels ${formattedCancellationDate}`,
+          {
+            date: formattedCancellationDate
+          }
+        );
 
       planCancellation.hidden = false;
     } else {

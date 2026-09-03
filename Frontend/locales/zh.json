@@ -236,6 +236,8 @@
   "billing.opening": "正在打开...",
   "billing.current_plan": "当前方案",
   "billing.cancel_to_free": "改为免费方案",
+  "billing.free_plan_starts": "免费方案将于 {date} 开始",
+  "billing.cancels_on": "将于 {date} 取消",
   "billing.seconds_46_60": "46–60 秒",
   "billing.up_to_60": "最长 60 秒的视频",
   "billing.saved_projects": "已保存的项目",

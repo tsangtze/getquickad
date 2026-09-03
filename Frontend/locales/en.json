@@ -246,6 +246,8 @@
   "billing.opening": "Opening...",
   "billing.current_plan": "Current Plan",
   "billing.cancel_to_free": "Cancel to Free Plan",
+  "billing.free_plan_starts": "Free Plan Starts {date}",
+  "billing.cancels_on": "Cancels {date}",
   "billing.seconds_46_60": "46–60 seconds",
   "billing.up_to_60": "Videos up to 60 seconds",
   "billing.saved_projects": "Saved projects",

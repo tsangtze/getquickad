@@ -238,6 +238,8 @@
   "billing.opening": "Açılıyor...",
   "billing.current_plan": "Mevcut Plan",
   "billing.cancel_to_free": "Ücretsiz Plana Geç",
+  "billing.free_plan_starts": "Ücretsiz plan {date} tarihinde başlar",
+  "billing.cancels_on": "{date} tarihinde iptal edilir",
   "billing.seconds_46_60": "46–60 saniye",
   "billing.up_to_60": "60 saniyeye kadar videolar",
   "billing.saved_projects": "Kaydedilmiş projeler",
