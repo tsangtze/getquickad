@@ -1645,7 +1645,7 @@ async function deleteSavedProject(entry, button) {
   const warning = `Permanently delete "${entry.title}"? This removes its uploaded images, narration, video and render files. Download anything you want to keep first. This cannot be undone.`;
   if (!window.confirm(warning + (entry.id === currentProjectId ? " The current page will reload and unsaved edits will be discarded." : ""))) return;
   button.disabled = true;
-  button.textContent = "Deleting…";
+  button.textContent = "🗑️ Deleting…";
   try {
     const response = await quickAdProjectFetch(`/api/projects/${encodeURIComponent(entry.id)}`, {method: "DELETE"});
     const data = await response.json();
@@ -1660,7 +1660,7 @@ async function deleteSavedProject(entry, button) {
     recentProjectStatus.classList.add("error");
   } finally {
     button.disabled = false;
-    button.textContent = window.QuickAdI18n?.t("recent.delete") || "Delete";
+    button.textContent = `🗑️ ${window.QuickAdI18n?.t("recent.delete") || "Delete"}`;
   }
 }
 
@@ -1732,8 +1732,8 @@ function renderRecentProjects() {
 
     openButton.textContent =
       entry.status === "video_ready"
-        ? window.QuickAdI18n?.t("recent.open_video") || "Open Video"
-        : window.QuickAdI18n?.t("recent.continue") || "Continue";
+        ? `▶️ ${window.QuickAdI18n?.t("recent.open_video") || "Open Video"}`
+        : `↪️ ${window.QuickAdI18n?.t("recent.continue") || "Continue"}`;
 
     openButton.addEventListener(
       "click",
@@ -1748,7 +1748,7 @@ function renderRecentProjects() {
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "delete-recent-project";
-    deleteButton.textContent = window.QuickAdI18n?.t("recent.delete") || "Delete";
+    deleteButton.textContent = `🗑️ ${window.QuickAdI18n?.t("recent.delete") || "Delete"}`;
     deleteButton.setAttribute("aria-label", uiText("recent.delete_project_aria", `Delete project ${entry.title}`, { title: entry.title }));
     deleteButton.addEventListener("click", () => deleteSavedProject(entry, deleteButton));
     const actions = document.createElement("div");
@@ -1980,7 +1980,7 @@ async function openSavedProject(
   }
 }
 
-clearProjectHistoryButton.textContent = uiText("recent.refresh", "Refresh projects");
+clearProjectHistoryButton.textContent = `🔄 ${uiText("recent.refresh", "Refresh projects")}`;
 clearProjectHistoryButton.addEventListener("click", () => {
   loadAccountProjects();
 });
@@ -2527,6 +2527,56 @@ async function updateQuota(){
     (window.QuickAdI18n?.currentLang === 'es') ||
     (localStorage.getItem('quickad_lang') === 'es');
 
+  const renderQuotaBanner = ({
+    type = 'free',
+    planName = '',
+    remaining = 2,
+    total = 2,
+    projects = 0
+  } = {}) => {
+    const leftIcon =
+      type === 'paid'
+        ? '🎬'
+        : '🎁';
+
+    const leftText =
+      type === 'paid'
+        ? (
+            isEs
+              ? `${planName}: <b>${remaining}</b> de ${total} créditos disponibles`
+              : `${planName}: <b>${remaining}</b> of ${total} credits left`
+          )
+        : (
+            isEs
+              ? `Videos gratis: Te quedan <b>${remaining}</b> de ${total}`
+              : `Free videos: <b>${remaining}</b> of ${total} left`
+          );
+
+    const projectsText =
+      isEs
+        ? `Proyectos guardados: <b>${projects}</b>`
+        : `Saved projects: <b>${projects}</b>`;
+
+    banner.innerHTML = `
+      <div class="quota-status-item">
+        <span class="quota-status-icon" aria-hidden="true">${leftIcon}</span>
+        <span class="quota-status-text">${leftText}</span>
+      </div>
+
+      <span
+        class="quota-status-divider"
+        aria-hidden="true"
+      ></span>
+
+      <div class="quota-status-item">
+        <span class="quota-status-icon" aria-hidden="true">📁</span>
+        <span class="quota-status-text">${projectsText}</span>
+      </div>
+    `;
+
+    banner.style.display = 'flex';
+  };
+
   try{
     const res =
       await fetch('/api/projects/usage');
@@ -2578,46 +2628,25 @@ async function updateQuota(){
     updateDurationOptionsForPlan(usage);
 
     if(usage?.planId && usage.planId !== 'free'){
-      const planName =
-        usage.planName || usage.planId;
-
-      const creditsRemaining =
-        usage.monthlyCreditsRemaining ?? 0;
-
-      const creditsTotal =
-        usage.monthlyCreditsTotal ?? 0;
-
-      banner.innerHTML =
-        isEs
-          ? `🎬 ${planName}: <b>${creditsRemaining}</b> de ${creditsTotal} créditos disponibles • 📁 Proyectos guardados: <b>${projects}</b>`
-          : `🎬 ${planName}: <b>${creditsRemaining}</b> of ${creditsTotal} credits left • 📁 Saved projects: <b>${projects}</b>`;
+      renderQuotaBanner({
+        type: 'paid',
+        planName:
+          usage.planName || usage.planId,
+        remaining:
+          usage.monthlyCreditsRemaining ?? 0,
+        total:
+          usage.monthlyCreditsTotal ?? 0,
+        projects
+      });
     } else {
-      const remaining =
-        usage?.freeVideosRemaining ?? 2;
-
-      banner.innerHTML =
-        isEs
-          ? `🎬 Videos gratis: Te quedan <b>${remaining}</b> de 2 • 📁 Proyectos guardados: <b>${projects}</b>`
-          : uiText(
-              "quota.banner_html",
-              "🎬 Free videos: <b>{remaining}</b> of 2 left • 📁 Saved projects: <b>{projects}</b>",
-              {
-                remaining,
-                projects
-              }
-            );
+      renderQuotaBanner({
+        type: 'free',
+        remaining:
+          usage?.freeVideosRemaining ?? 2,
+        total: 2,
+        projects
+      });
     }
-
-    banner.style.display='block';
-    banner.style.background=
-      'linear-gradient(90deg,#EEF2FF,#F5F3FF)';
-    banner.style.borderBottom=
-      '1px solid #DDD6FE';
-    banner.style.padding='10px';
-    banner.style.textAlign='center';
-    banner.style.fontSize='13px';
-    banner.style.fontWeight='600';
-    banner.style.color='#4338CA';
   }catch(e){
     console.warn(
       'quota error',
@@ -2630,12 +2659,12 @@ async function updateQuota(){
           '#recentProjects > div'
         ).length || 0;
 
-    banner.innerHTML =
-      isEs
-        ? `🎬 Videos gratis: Te quedan <b>2</b> de 2 • 📁 Proyectos guardados: <b>${fallbackProjects}</b>`
-        : `🎬 Free videos: <b>2</b> of 2 left • 📁 Saved projects: <b>${fallbackProjects}</b>`;
-
-    banner.style.display='block';
+    renderQuotaBanner({
+      type: 'free',
+      remaining: 2,
+      total: 2,
+      projects: fallbackProjects
+    });
   }
 }
 // Run on load + after projects load
