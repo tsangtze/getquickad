@@ -1,10 +1,10 @@
 :root {
-  --background: #f5f7fb;
-  --surface: #ffffff;
-  --surface-soft: #f8faff;
+  --background: #d9ddea;
+  --surface: #fbfbfe;
+  --surface-soft: #f3f4fa;
   --text: #172033;
   --muted: #677086;
-  --border: #dfe4ee;
+  --border: #d5d9e7;
   --primary: #635bff;
   --primary-dark: #4d45e6;
   --primary-soft: #eeecff;
@@ -71,7 +71,7 @@ a {
   justify-content: space-between;
   padding: 0 5vw;
   border-bottom: 1px solid rgba(223, 228, 238, 0.85);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(248, 248, 253, 0.94);
   backdrop-filter: blur(18px);
 }
 
@@ -181,11 +181,15 @@ h1 {
 .video-summary {
   display: flex;
   flex-shrink: 0;
-  gap: 7px;
+  gap: 9px;
   padding-bottom: 6px;
 }
 
-.video-summary span {
+.video-summary .video-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
   padding: 7px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -195,6 +199,84 @@ h1 {
   font-weight: 750;
 }
 
+.video-summary .video-summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+#quotaBanner {
+  display: none;
+  width: fit-content;
+  max-width: 100%;
+  margin: 18px 0 28px;
+  padding: 14px 22px;
+  border: 1px solid #d6d2ff;
+  border-radius: 15px;
+  background: linear-gradient(90deg, #f8f7ff, #f1efff);
+  color: #4b3fe4;
+  box-shadow: 0 10px 24px rgba(55, 48, 163, 0.13);
+  align-items: center;
+  gap: 30px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.quota-status-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.quota-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.quota-status-text {
+  display: inline-block;
+}
+
+.quota-status-divider {
+  width: 1px;
+  height: 38px;
+  flex: 0 0 1px;
+  background: #c9c3ff;
+}
+
+#quotaBanner b {
+  color: #3529d8;
+  font-size: 1.18em;
+  font-weight: 900;
+}
+
+@media (max-width: 720px) {
+  #quotaBanner {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+  }
+
+  .quota-status-item {
+    white-space: normal;
+  }
+
+  .quota-status-divider {
+    display: none;
+  }
+}
 .creation-form {
   display: grid;
   gap: 20px;
@@ -1777,3 +1859,41 @@ input::placeholder {
 #lang-switcher{margin-left:16px}
 #lang-current{font-weight:600 !important; padding:8px 14px !important; box-shadow:0 1px 3px rgba(0,0,0,0.08)}
 .site-nav{display:flex; align-items:center; gap:12px}
+
+/* Version 1.0.3 create-page icon polish */
+.step-heading h2,
+#create-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.heading-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.field-icon {
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 1.05em;
+  line-height: 1;
+  vertical-align: -0.08em;
+}
+
+.promise-bar > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.promise-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}

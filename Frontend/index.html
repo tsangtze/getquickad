@@ -36,13 +36,13 @@
         <p class="eyebrow" data-i18n="intro.eyebrow">Photos in. Ad out.</p>
         <h1 data-i18n="intro.h1">Turn product photos into ready-to-post vertical videos</h1>
         <p class="intro-copy" data-i18n="intro.copy">Upload your photos, describe what you are promoting, and receive a ready-to-post vertical video.</p>
-<div id="quotaBanner" style="margin:16px auto;max-width:800px;padding:14px 18px;border-radius:12px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.04);font-size:14px;line-height:1.5;"></div>
+<div id="quotaBanner"></div>
       </div>
 
       <div class="video-summary" aria-label="Video output">
-        <span>9:16</span>
-        <span data-i18n="video.seconds">Up to 60 seconds</span>
-        <span>MP4</span>
+        <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">📱</span><span>9:16</span></span>
+        <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">⏱️</span><span data-i18n="video.seconds">Up to 60 seconds</span></span>
+        <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">🎬</span><span>MP4</span></span>
       </div>
     </section>
 
@@ -66,7 +66,7 @@
           class="clear-project-history"
           type="button"
         >
-          <span data-i18n="recent.refresh">Refresh projects</span>
+          <span>🔄 <span data-i18n="recent.refresh">Refresh projects</span></span>
         </button>
       </div>
 
@@ -90,7 +90,7 @@
         <div class="step-content">
           <div class="step-heading">
             <div>
-              <h2 id="upload-heading"><span data-i18n="upload.title">Upload your images</span></h2>
+              <h2 id="upload-heading"><span class="heading-icon" aria-hidden="true">🖼️</span><span data-i18n="upload.title">Upload your images</span></h2>
               <p><span id="upload-description" data-i18n="upload.desc">Add 1–10 clear product photos. You can also add your logo.</span></p>
             </div>
 
@@ -150,7 +150,7 @@
         <div class="step-content">
           <div class="step-heading">
             <div>
-              <h2 id="description-heading" data-i18n="step2.title">Tell us what you are promoting</h2>
+              <h2 id="description-heading"><span class="heading-icon" aria-hidden="true">✍️</span><span data-i18n="step2.title">Tell us what you are promoting</span></h2>
               <p><span data-i18n="step2.desc">A few useful details are enough. QuickAd AI writes the script.</span></p>
             </div>
           </div>
@@ -170,7 +170,7 @@
           <div class="field-grid">
             <div>
               <label class="field-label" for="website">
-                <span data-i18n="website">Website</span> <span><span data-i18n="logo.optional">Optional</span></span>
+                <span class="field-icon" aria-hidden="true">🌐</span><span data-i18n="website">Website</span> <span><span data-i18n="logo.optional">Optional</span></span>
               </label>
               <input
                 id="website"
@@ -182,7 +182,7 @@
 
             <div>
               <label class="field-label" for="call-to-action">
-                <span data-i18n="cta">Call to action</span>
+                <span class="field-icon" aria-hidden="true">📣</span><span data-i18n="cta">Call to action</span>
               </label>
               <select id="call-to-action" name="callToAction">
                 <option value="Shop Now" data-i18n="cta.shop">Shop Now</option>
@@ -224,7 +224,7 @@
           </div>
 
           <fieldset class="duration-options" id="duration-options">
-            <legend class="field-label">Video length</legend>
+            <legend class="field-label"><span class="field-icon" aria-hidden="true">⏱️</span><span>Video length</span></legend>
 
             <p class="duration-help">
               Let AI choose the best length, or select a maximum length yourself.
@@ -286,7 +286,7 @@
         <div class="step-content">
           <div class="step-heading">
             <div>
-              <h2 id="style-heading"><span data-i18n="step3.title">Choose a style</span></h2>
+              <h2 id="style-heading"><span class="heading-icon" aria-hidden="true">🎨</span><span data-i18n="step3.title">Choose a style</span></h2>
               <p><span data-i18n="step3.desc">One choice controls the pacing, text, transitions, and music.</span></p>
             </div>
           </div>
@@ -334,7 +334,7 @@
         <div>
           <span class="final-step">4</span>
           <div>
-            <h2 id="create-heading"><span data-i18n="step4.title">Ready to create your video?</span></h2>
+            <h2 id="create-heading"><span class="heading-icon" aria-hidden="true">🎬</span><span data-i18n="step4.title">Ready to create your video?</span></h2>
             <p><span data-i18n="step4.desc">QuickAd AI will prepare one complete vertical promotional video.</span></p>
           </div>
         </div>
@@ -502,9 +502,9 @@
     </section>
 
     <section class="promise-bar" aria-label="QuickAd AI benefits">
-      <span data-i18n="promise.timeline">No timeline editor</span>
-      <span data-i18n="promise.prompts">No complicated prompts</span>
-      <span data-i18n="promise.mp4">Ready-to-post MP4</span>
+      <span><span class="promise-icon" aria-hidden="true">✂️</span><span data-i18n="promise.timeline">No timeline editor</span></span>
+      <span><span class="promise-icon" aria-hidden="true">✨</span><span data-i18n="promise.prompts">No complicated prompts</span></span>
+      <span><span class="promise-icon" aria-hidden="true">🎬</span><span data-i18n="promise.mp4">Ready-to-post MP4</span></span>
     </section>
   </main>
 
