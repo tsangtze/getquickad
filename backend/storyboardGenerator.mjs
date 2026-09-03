@@ -73,6 +73,11 @@ LANGUAGE RULE - CRITICAL:
 Return one complete storyboard for a 9:16 social-media advertisement that follows the applicable duration-tier rules below and never exceeds ${maxDurationSeconds} seconds.
 
 Rules:
+- Treat every new project as a fresh creative generation.
+- Create a fresh creative treatment for this request rather than relying on a fixed wording pattern or template.
+- When the same or similar product information could support multiple good advertisements, vary the hook, scene emphasis, caption wording, narration phrasing, and the lead-in to the call to action where naturally appropriate.
+- Keep all supplied product facts, brand names, URLs, and required customer details accurate. Creative variation must never come from inventing unsupported claims, features, reviews, discounts, guarantees, or certifications.
+- Repetition of unavoidable product names, supplied facts, URLs, and the customer's exact call to action is acceptable and should not be changed merely for variety.
 - Use exactly 5 scenes.
 - Scene 1 must be the hook.
 - Scene 5 must be the call to action.
