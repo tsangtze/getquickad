@@ -83,6 +83,7 @@ export function validateStoryboard(
   storyboard,
   {
     imageCount,
+    minDurationSeconds = 20,
     maxDurationSeconds = 30
   }
 ) {
@@ -103,11 +104,11 @@ export function validateStoryboard(
   const errors = [];
 
   if (
-    value.totalDurationSeconds < 20 ||
+    value.totalDurationSeconds < minDurationSeconds ||
     value.totalDurationSeconds > maxDurationSeconds
   ) {
     errors.push(
-      `Video duration must be between 20 and ${maxDurationSeconds} seconds.`
+      `Video duration must be between ${minDurationSeconds} and ${maxDurationSeconds} seconds.`
     );
   }
 
