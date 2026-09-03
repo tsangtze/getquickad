@@ -2104,6 +2104,7 @@ async function openSavedProject(
       recovery.storyboard,
       savedImageUrls
     );
+    showPlanReviewMode();
 
     rememberProject(
       recovery.project,
@@ -2128,7 +2129,6 @@ async function openSavedProject(
       recentProjectStatus.textContent =
         uiText("saved.video_opened", "Saved video opened successfully.");
     } else {
-      showPlanReviewMode();
       planStatus.textContent = uiText("saved.plan_opened", `Saved plan opened. Review and confirm all ${currentStoryboard.scenes.length} scenes.`, { count: currentStoryboard.scenes.length });
 
       recentProjectStatus.textContent =

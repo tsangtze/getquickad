@@ -282,6 +282,10 @@ h1 {
   gap: 20px;
 }
 
+.creation-form[hidden] {
+  display: none;
+}
+
 .form-card {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
