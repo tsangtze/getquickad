@@ -21,8 +21,8 @@ import {
   renderVideo,
   uploadToR2
 } from "./videoRenderer.mjs";
-import { r2Client } from "./r2Client.mjs";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { r2Client, R2_BUCKET } from "./r2Client.mjs";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 
 const MAX_IMAGE_COUNT = 10;
@@ -1343,16 +1343,58 @@ export async function createProjectRouter({
         return;
       }
 
-      // --- R2: if project.json has r2Url, redirect to Cloudflare ---
+      // R2 videos stay redirect-based for playback, but downloads are
+      // proxied through QuickAd so browsers receive attachment headers.
       try {
         const projJsonPath = path.join(projectsDirectory, projectId, "project.json");
         const projRaw = await fs.readFile(projJsonPath, "utf8");
         const proj = JSON.parse(projRaw);
-        if (proj?.video?.r2Url || proj?.video?.url?.includes("r2.dev")) {
-          const r2Url = proj.video.r2Url || proj.video.url;
+        const r2Url = proj?.video?.r2Url ||
+          (proj?.video?.url?.includes("r2.dev") ? proj.video.url : "");
+        const r2Key = String(proj?.video?.r2Key ?? "");
+        const wantsDownload = String(request.query.download ?? "") === "1";
+
+        if (wantsDownload && r2Key) {
+          const object = await r2Client.send(
+            new GetObjectCommand({
+              Bucket: R2_BUCKET,
+              Key: r2Key
+            })
+          );
+
+          if (!object.Body) {
+            throw new Error("R2 video body is missing.");
+          }
+
+          response.set("Content-Type", object.ContentType || "video/mp4");
+          response.set("Content-Disposition", 'attachment; filename="quickad-video.mp4"');
+
+          if (Number.isFinite(Number(object.ContentLength))) {
+            response.set("Content-Length", String(object.ContentLength));
+          }
+
+          object.Body.on(
+            "error",
+            (error) => {
+              console.error("R2 video download stream failed:", error);
+              if (!response.headersSent) {
+                response.status(502).end();
+              } else {
+                response.destroy(error);
+              }
+            }
+          );
+
+          object.Body.pipe(response);
+          return;
+        }
+
+        if (r2Url) {
           return response.redirect(302, r2Url);
         }
-      } catch {}
+      } catch (error) {
+        console.error("R2 video delivery failed, trying local video:", error);
+      }
 
       const videoPath = path.join(
         projectsDirectory,
@@ -1362,6 +1404,11 @@ export async function createProjectRouter({
 
       try {
         await fs.access(videoPath);
+        if (String(request.query.download ?? "") === "1") {
+          response.download(videoPath, "quickad-video.mp4");
+          return;
+        }
+
         response.sendFile(videoPath);
       } catch {
         response.status(404).json({
