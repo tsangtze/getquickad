@@ -1355,7 +1355,7 @@ finalVideoButton.addEventListener(
         document.createElement("a");
 
       downloadLink.href =
-        result.videoUrl;
+        result.videoUrl + "?download=1";
 
       downloadLink.download =
         "quickad-video.mp4";
@@ -1866,7 +1866,7 @@ function renderRecoveredVideoResult(
     document.createElement("a");
 
   downloadLink.href =
-    recovery.videoUrl;
+    recovery.videoUrl + "?download=1";
 
   downloadLink.download =
     "quickad-video.mp4";
