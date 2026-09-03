@@ -703,8 +703,8 @@ input::placeholder {
 }
 
 .style-swatch.simple {
-  border: 1px solid #dfe4ee;
-  background: linear-gradient(135deg, #ffffff, #e7ebf3);
+  border: 1px solid #cfd4e3;
+  background: linear-gradient(135deg, #d9ddea, #eef0f6);
 }
 
 .create-card {
