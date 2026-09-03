@@ -99,6 +99,12 @@ async function findVideoFont(language = "en") {
     "C:\\Windows";
 
   const normalizedLanguage = String(language || "en").toLowerCase();
+  const needsTraditionalChineseFont =
+    normalizedLanguage === "zh-tw" ||
+    normalizedLanguage === "zh-hant" ||
+    normalizedLanguage.startsWith("zh-hant-") ||
+    normalizedLanguage === "zh-hk" ||
+    normalizedLanguage === "zh-mo";
   const needsCjkFont =
     normalizedLanguage.startsWith("zh") ||
     normalizedLanguage.startsWith("ja") ||
@@ -116,6 +122,11 @@ async function findVideoFont(language = "en") {
     "backend/fonts/NotoSansCJKsc-Bold.otf"
   );
 
+  const bundledTraditionalChineseFont = path.join(
+    process.cwd(),
+    "backend/fonts/NotoSansCJKtc-Bold.otf"
+  );
+
   const bundledHindiFont = path.join(
     process.cwd(),
     "backend/fonts/NotoSerifDevanagari-Bold.ttf"
@@ -123,6 +134,7 @@ async function findVideoFont(language = "en") {
 
   const candidates = [
     ...(needsHindiFont ? [bundledHindiFont] : []),
+    ...(needsTraditionalChineseFont ? [bundledTraditionalChineseFont] : []),
     ...(needsCjkFont ? [bundledCjkFont] : []),
     bundledFont,
     path.join(

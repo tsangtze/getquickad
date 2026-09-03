@@ -66,6 +66,29 @@ function applicationUrl(pathname) {
   return new URL(pathname, origin).toString();
 }
 
+function stripeLocaleForLanguage(language) {
+  if (language === "zh-TW") {
+    return "zh-Hant-TW";
+  }
+
+  const supported = new Set([
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ja",
+    "ko",
+    "zh",
+    "tr"
+  ]);
+
+  return supported.has(language)
+    ? language
+    : "auto";
+}
+
 export function createBillingRouter({
   projectRoot
 }) {
@@ -88,12 +111,19 @@ export function createBillingRouter({
             .trim()
             .toLowerCase();
 
+        const stripeLocale =
+          stripeLocaleForLanguage(
+            String(request.body?.language || "")
+              .trim()
+          );
+
         if (
           planId !== "starter" &&
           planId !== "pro"
         ) {
           return response.status(400).json({
             ok: false,
+            code: "BILLING_PLAN_INVALID",
             error: "Choose Starter or Pro."
           });
         }
@@ -104,6 +134,7 @@ export function createBillingRouter({
         if (!priceId) {
           return response.status(503).json({
             ok: false,
+            code: "BILLING_PLAN_UNAVAILABLE",
             error:
               "This QuickAd AI plan is not configured for checkout."
           });
@@ -135,7 +166,7 @@ export function createBillingRouter({
         ) {
           return response.status(409).json({
             ok: false,
-            code: "ACTIVE_SUBSCRIPTION_EXISTS",
+            code: "BILLING_ACTIVE_SUBSCRIPTION_EXISTS",
             error:
               "You already have an active subscription. Use Manage Subscription to change or cancel your plan."
           });
@@ -144,6 +175,7 @@ export function createBillingRouter({
         const session =
           await stripe.checkout.sessions.create({
             mode: "subscription",
+            locale: stripeLocale,
 
             line_items: [
               {
@@ -199,6 +231,7 @@ export function createBillingRouter({
 
         response.status(503).json({
           ok: false,
+          code: "BILLING_CHECKOUT_UNAVAILABLE",
           error:
             "Checkout is temporarily unavailable. Please try again."
         });
@@ -214,6 +247,12 @@ export function createBillingRouter({
         const userId =
           String(request.authUser.id);
 
+        const stripeLocale =
+          stripeLocaleForLanguage(
+            String(request.body?.language || "")
+              .trim()
+          );
+
         const billingState =
           await getStripeBillingState(
             projectRoot,
@@ -222,6 +261,7 @@ export function createBillingRouter({
         if (!billingState.stripeCustomerId) {
           return response.status(400).json({
             ok: false,
+            code: "BILLING_NO_PAID_SUBSCRIPTION",
             error:
               "No paid subscription was found for this account."
           });
@@ -233,6 +273,7 @@ export function createBillingRouter({
         const session =
           await stripe.billingPortal.sessions.create({
             customer: billingState.stripeCustomerId,
+            locale: stripeLocale,
             return_url:
               applicationUrl("/billing.html")
           });
@@ -255,6 +296,7 @@ export function createBillingRouter({
 
         response.status(503).json({
           ok: false,
+          code: "BILLING_PORTAL_UNAVAILABLE",
           error:
             "Subscription management is temporarily unavailable. Please try again."
         });

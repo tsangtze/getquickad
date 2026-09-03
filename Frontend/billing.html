@@ -13,31 +13,31 @@
 
 <body>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="QuickAd AI home">
+    <a class="brand" href="/" aria-label="QuickAd AI home" data-i18n-aria-label="nav.home_aria">
       <span class="brand-mark">Q</span>
       <span>QuickAd <strong>AI</strong></span>
     </a>
 
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="/">Create Video</a>
-      <a class="active" href="/billing.html">Billing</a>
-      <button class="account-button" type="button">Account</button>
+    <nav class="site-nav" aria-label="Main navigation" data-i18n-aria-label="nav.main">
+      <a href="/" data-i18n="nav.create">Create Video</a>
+      <a class="active" href="/billing.html" data-i18n="nav.billing">Billing</a>
+      <button class="account-button" type="button" data-i18n="nav.account">Account</button>
     </nav>
   </header>
 
   <main class="billing-shell">
     <section class="billing-intro">
-      <p class="eyebrow">Simple pricing</p>
-      <h1>Billing & Plans</h1>
-      <p>Start free. Upgrade when you need more videos.</p>
+      <p class="eyebrow" data-i18n="billing.eyebrow">Simple pricing</p>
+      <h1 data-i18n="billing.title">Billing & Plans</h1>
+      <p data-i18n="billing.subtitle">Start free. Upgrade when you need more videos.</p>
     </section>
 
     <section id="current-plan" class="current-plan-card" aria-live="polite">
       <div>
-        <p class="billing-label">Your Plan</p>
-        <h2 id="current-plan-name">Checking your plan...</h2>
+        <p class="billing-label" data-i18n="billing.your_plan">Your Plan</p>
+        <h2 id="current-plan-name" data-i18n="billing.checking_plan">Checking your plan...</h2>
         <p id="current-plan-cancellation" hidden></p>
-        <p id="current-plan-usage">Loading usage...</p>
+        <p id="current-plan-usage" data-i18n="billing.loading_usage">Loading usage...</p>
       </div>
 
       <button
@@ -46,7 +46,7 @@
         type="button"
         hidden
       >
-        Manage Subscription
+        <span data-i18n="billing.manage_subscription">Manage Subscription</span>
       </button>
 
       <div class="usage-meter">
@@ -54,83 +54,83 @@
       </div>
     </section>
 
-    <section class="plan-grid" aria-label="QuickAd AI plans">
+    <section class="plan-grid" aria-label="QuickAd AI plans" data-i18n-aria-label="billing.plans_aria">
       <article class="plan-card" data-plan="free">
-        <p class="plan-name">Free</p>
+        <p class="plan-name" data-i18n="billing.free">Free</p>
         <p class="plan-price"><strong>$0</strong></p>
 
         <ul>
-          <li>2 lifetime final videos</li>
-          <li>Videos up to 30 seconds</li>
-          <li>Saved projects</li>
+          <li data-i18n="billing.free_videos">2 lifetime final videos</li>
+          <li data-i18n="billing.up_to_30">Videos up to 30 seconds</li>
+          <li data-i18n="billing.saved_projects">Saved projects</li>
         </ul>
 
         <button class="plan-button" type="button" data-plan-button="free" disabled>
-          Free Plan
+          <span data-i18n="billing.free_plan">Free Plan</span>
         </button>
       </article>
 
       <article class="plan-card featured" data-plan="starter">
-        <p class="plan-badge">Great for getting started</p>
-        <p class="plan-name">Starter</p>
+        <p class="plan-badge" data-i18n="billing.starter_badge">Great for getting started</p>
+        <p class="plan-name" data-i18n="billing.starter">Starter</p>
 
         <p class="plan-price">
           <strong>$9</strong>
-          <span>/month</span>
+          <span data-i18n="billing.per_month">/month</span>
         </p>
 
         <ul>
-          <li>100 credits each month</li>
-          <li>Videos up to 60 seconds</li>
-          <li>About 10 standard short videos</li>
+          <li data-i18n="billing.starter_credits">100 credits each month</li>
+          <li data-i18n="billing.up_to_60">Videos up to 60 seconds</li>
+          <li data-i18n="billing.about_10">About 10 standard short videos</li>
         </ul>
 
         <button class="plan-button primary" type="button" data-plan-button="starter">
-          Choose Starter
+          <span data-i18n="billing.choose_starter">Choose Starter</span>
         </button>
       </article>
 
       <article class="plan-card" data-plan="pro">
-        <p class="plan-name">Pro</p>
+        <p class="plan-name" data-i18n="billing.pro">Pro</p>
 
         <p class="plan-price">
           <strong>$29</strong>
-          <span>/month</span>
+          <span data-i18n="billing.per_month">/month</span>
         </p>
 
         <ul>
-          <li>400 credits each month</li>
-          <li>Videos up to 60 seconds</li>
-          <li>About 40 standard short videos</li>
+          <li data-i18n="billing.pro_credits">400 credits each month</li>
+          <li data-i18n="billing.up_to_60">Videos up to 60 seconds</li>
+          <li data-i18n="billing.about_40">About 40 standard short videos</li>
         </ul>
 
         <button class="plan-button primary" type="button" data-plan-button="pro">
-          Choose Pro
+          <span data-i18n="billing.choose_pro">Choose Pro</span>
         </button>
       </article>
     </section>
 
     <section class="credit-guide">
-      <h2>How credits work</h2>
+      <h2 data-i18n="billing.credits_title">How credits work</h2>
 
       <div class="credit-grid">
         <div>
-          <strong>10 credits</strong>
-          <span>Up to 30 seconds</span>
+          <strong data-i18n="billing.credits_10">10 credits</strong>
+          <span data-i18n="billing.seconds_up_to_30">Up to 30 seconds</span>
         </div>
 
         <div>
-          <strong>15 credits</strong>
-          <span>31–45 seconds</span>
+          <strong data-i18n="billing.credits_15">15 credits</strong>
+          <span data-i18n="billing.seconds_31_45">31–45 seconds</span>
         </div>
 
         <div>
-          <strong>20 credits</strong>
-          <span>46–60 seconds</span>
+          <strong data-i18n="billing.credits_20">20 credits</strong>
+          <span data-i18n="billing.seconds_46_60">46–60 seconds</span>
         </div>
       </div>
 
-      <p>Credits are used only when a final video is successfully created.</p>
+      <p data-i18n="billing.credits_note">Credits are used only when a final video is successfully created.</p>
     </section>
 
     <p id="billing-message" class="billing-message" role="status" aria-live="polite"></p>

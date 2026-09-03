@@ -14,6 +14,7 @@ export async function prepareMusic(choice = "none") {
   if (typeof choice !== "string" || !Object.hasOwn(MUSIC_TRACKS, choice)) {
     const error = new Error("Select a valid background music track.");
     error.status = 400;
+    error.code = "MUSIC_TRACK_INVALID";
     throw error;
   }
   const metadata = MUSIC_TRACKS[choice];
@@ -25,6 +26,7 @@ export async function prepareMusic(choice = "none") {
   } catch {
     const error = new Error("The selected music is unavailable. Choose No music or repair the music files before retrying.");
     error.status = 503;
+    error.code = "MUSIC_UNAVAILABLE";
     throw error;
   }
   return {metadata, path};
@@ -34,6 +36,7 @@ export function validateMusicVolume(value = 10) {
   if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 100) {
     const error = new Error("Choose a music volume from 0 to 100 percent.");
     error.status = 400;
+    error.code = "MUSIC_VOLUME_INVALID";
     throw error;
   }
   return value;

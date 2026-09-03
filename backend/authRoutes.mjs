@@ -46,6 +46,7 @@ export async function requireUser(request, response, next) {
   if (typeof token !== "string" || !token) {
     return response.status(401).json({
       ok: false,
+      code: "AUTH_SIGN_IN_REQUIRED",
       error: "Please sign in."
     });
   }
@@ -60,12 +61,14 @@ export async function requireUser(request, response, next) {
         clearLogin(response);
         return response.status(401).json({
           ok: false,
+          code: "AUTH_SESSION_EXPIRED",
           error: "Your session has expired. Please sign in again."
         });
       }
 
       return response.status(503).json({
         ok: false,
+        code: "AUTH_UNAVAILABLE",
         error: "Authentication is temporarily unavailable."
       });
     }
@@ -74,6 +77,7 @@ export async function requireUser(request, response, next) {
       clearLogin(response);
       return response.status(401).json({
         ok: false,
+        code: "AUTH_SIGN_IN_REQUIRED",
         error: "Please sign in again."
       });
     }
@@ -83,6 +87,7 @@ export async function requireUser(request, response, next) {
   } catch {
     response.status(503).json({
       ok: false,
+      code: "AUTH_UNAVAILABLE",
       error: "Authentication is temporarily unavailable."
     });
   }
@@ -109,6 +114,7 @@ export function createAuthRouter() {
     if (request.get("origin") !== expectedOrigin) {
       return response.status(403).json({
         ok: false,
+        code: "AUTH_ORIGIN_REQUIRED",
         error: "This request must come from QuickAd AI."
       });
     }
@@ -116,6 +122,7 @@ export function createAuthRouter() {
     if (!request.is("application/json")) {
       return response.status(415).json({
         ok: false,
+        code: "AUTH_JSON_REQUIRED",
         error: "Use an application/json request."
       });
     }
@@ -127,12 +134,12 @@ export function createAuthRouter() {
   const recoveryLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, limit: 5,
     standardHeaders: "draft-8", legacyHeaders: false,
-    message: { ok: false, error: "Too many password email requests. Please wait and check your inbox before retrying." }
+    message: { ok: false, code: "PASSWORD_EMAIL_RATE_LIMIT", error: "Too many password email requests. Please wait and check your inbox before retrying." }
   });
   const passwordLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, limit: 15,
     standardHeaders: "draft-8", legacyHeaders: false,
-    message: { ok: false, error: "Too many password attempts. Please try again later." }
+    message: { ok: false, code: "PASSWORD_RATE_LIMIT", error: "Too many password attempts. Please try again later." }
   });
   router.post("/recover", recoveryLimiter, passwordHandlers.recover);
   router.post("/password-link", passwordLimiter, passwordHandlers.link);
@@ -145,6 +152,7 @@ export function createAuthRouter() {
     legacyHeaders: false,
     message: {
       ok: false,
+      code: "AUTH_LOGIN_RATE_LIMIT",
       error: "Too many sign-in attempts. Please try again later."
     }
   });
@@ -156,6 +164,7 @@ export function createAuthRouter() {
     legacyHeaders: false,
     message: {
       ok: false,
+      code: "AUTH_SIGNUP_RATE_LIMIT",
       error: "Too many signup attempts. Please try again later."
     }
   });
@@ -174,6 +183,7 @@ export function createAuthRouter() {
     ) {
       return response.status(400).json({
         ok: false,
+        code: "AUTH_SIGNUP_INVALID",
         error: "Enter a valid email and a password of 12–1024 characters."
       });
     }
@@ -209,6 +219,7 @@ export function createAuthRouter() {
         ) {
           return response.status(202).json({
             ok: true,
+            code: "AUTH_CONFIRMATION_SENT",
             message: acceptedMessage
           });
         }
@@ -216,6 +227,7 @@ export function createAuthRouter() {
         if (error.status === 429) {
           return response.status(429).json({
             ok: false,
+            code: "AUTH_CONFIRMATION_RATE_LIMIT",
             error: "Please wait before requesting another confirmation email. A previous request may already have sent one: check your inbox and spam folder. If you have confirmed your email, sign in instead."
           });
         }
@@ -223,12 +235,14 @@ export function createAuthRouter() {
         if (error.code === "weak_password") {
           return response.status(400).json({
             ok: false,
+            code: "AUTH_WEAK_PASSWORD",
             error: "Choose a stronger, unique password of at least 12 characters."
           });
         }
 
         return response.status(503).json({
           ok: false,
+          code: "AUTH_SIGNUP_FAILED",
           error: "Signup could not be completed. Please try again later."
         });
       }
@@ -238,17 +252,20 @@ export function createAuthRouter() {
       if (data.session) {
         return response.status(503).json({
           ok: false,
+          code: "AUTH_CONFIRMATION_CONFIG",
           error: "Email-confirmation configuration needs administrator attention."
         });
       }
 
       response.status(202).json({
         ok: true,
+        code: "AUTH_CONFIRMATION_SENT",
         message: acceptedMessage
       });
     } catch {
       response.status(503).json({
         ok: false,
+        code: "AUTH_SIGNUP_UNAVAILABLE",
         error: "Signup is temporarily unavailable. Please try again later."
       });
     }
@@ -268,6 +285,7 @@ export function createAuthRouter() {
     ) {
       return response.status(400).json({
         ok: false,
+        code: "AUTH_LOGIN_INVALID",
         error: "Enter your email and password."
       });
     }
@@ -284,6 +302,7 @@ export function createAuthRouter() {
 
         return response.status(unavailable ? 503 : 401).json({
           ok: false,
+          code: unavailable ? "AUTH_UNAVAILABLE" : "AUTH_LOGIN_FAILED",
           error: unavailable
             ? "Authentication is temporarily unavailable."
             : "Sign-in failed. Check your details and email confirmation."
@@ -293,6 +312,7 @@ export function createAuthRouter() {
       if (!data.session || !data.user) {
         return response.status(401).json({
           ok: false,
+          code: "AUTH_LOGIN_FAILED",
           error: "Sign-in could not be completed."
         });
       }
@@ -316,6 +336,7 @@ export function createAuthRouter() {
     } catch {
       response.status(503).json({
         ok: false,
+        code: "AUTH_UNAVAILABLE",
         error: "Authentication is temporarily unavailable."
       });
     }

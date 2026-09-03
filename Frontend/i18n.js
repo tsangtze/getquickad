@@ -7,12 +7,14 @@ const SUPPORTED_LANGS = {
   it: { name: "Italiano", flag: "🇮🇹" },
   ja: { name: "日本語", flag: "JP" },
   ko: { name: "한국어", flag: "KR" },
-  zh: { name: "中文", flag: "CN" },
+  zh: { name: "简体中文", flag: "CN" },
+  "zh-TW": { name: "繁體中文", flag: "TW" },
   tr: { name: "Türkçe", flag: "TR" },
   hi: { name: "हिन्दी", flag: "IN" }
 };
 let currentLang = localStorage.getItem('quickad_lang');
 let translations = {};
+let englishTranslations = {};
 
 function detectBrowserLang(){
   const browserLangs = Array.isArray(navigator.languages) && navigator.languages.length
@@ -20,7 +22,20 @@ function detectBrowserLang(){
     : [navigator.language || 'en'];
 
   for (const browserLang of browserLangs) {
-    const baseLang = String(browserLang || 'en').toLowerCase().split('-')[0];
+    const normalized = String(browserLang || 'en').trim().toLowerCase();
+
+    if (
+      normalized === 'zh-tw' ||
+      normalized === 'zh-hant' ||
+      normalized.startsWith('zh-hant-') ||
+      normalized === 'zh-hk' ||
+      normalized === 'zh-mo'
+    ) {
+      return 'zh-TW';
+    }
+
+    const baseLang = normalized.split('-')[0];
+
     if (SUPPORTED_LANGS[baseLang]) {
       return baseLang;
     }
@@ -35,15 +50,32 @@ if(!currentLang || currentLang === 'null'){
 }
 async function loadTranslations(lang){
   try{
-    const res=await fetch(`/locales/${lang}.json?v=${Date.now()}`);
-    if(!res.ok) throw new Error('no locale');
-    translations=await res.json();
+    if(!Object.keys(englishTranslations).length){
+      const englishRes=await fetch(`/locales/en.json?v=${Date.now()}`);
+      if(!englishRes.ok) throw new Error('no english locale');
+      englishTranslations=await englishRes.json();
+    }
+
+    if(lang==='en'){
+      translations=englishTranslations;
+    }else{
+      const res=await fetch(`/locales/${lang}.json?v=${Date.now()}`);
+      if(!res.ok) throw new Error('no locale');
+      translations=await res.json();
+    }
+
     document.documentElement.lang=lang;
     applyTranslations();
-  }catch(e){ if(lang!=='en'){ currentLang='en'; loadTranslations('en'); } }
+  }catch(e){
+    if(lang!=='en'){
+      currentLang='en';
+      localStorage.setItem('quickad_lang','en');
+      loadTranslations('en');
+    }
+  }
 }
 function t(key, params = {}){
-  let value = translations[key] || key;
+  let value = translations[key] || englishTranslations[key] || key;
   for (const [name, replacement] of Object.entries(params)) {
     value = value.replaceAll(`{${name}}`, String(replacement));
   }
@@ -52,22 +84,22 @@ function t(key, params = {}){
 function applyTranslations(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key=el.getAttribute('data-i18n');
-    const val=translations[key];
+    const val=t(key);
     if(val) el.textContent=val;
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
     const key=el.getAttribute('data-i18n-placeholder');
-    const val=translations[key];
+    const val=t(key);
     if(val) el.placeholder=val;
   });
   document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>{
     const key=el.getAttribute('data-i18n-aria-label');
-    const val=translations[key];
+    const val=t(key);
     if(val) el.setAttribute('aria-label', val);
   });
   document.querySelectorAll('[data-i18n-title]').forEach(el=>{
     const key=el.getAttribute('data-i18n-title');
-    const val=translations[key];
+    const val=t(key);
     if(val) el.title=val;
   });
   if(translations['page.title']) document.title=translations['page.title'];
@@ -108,5 +140,5 @@ function initLang(){
   loadTranslations(currentLang);
 }
 document.addEventListener('DOMContentLoaded', initLang);
-window.QuickAdI18n={t,setLanguage,get currentLang(){return currentLang}};
+window.QuickAdI18n={t,setLanguage,applyTranslations,get currentLang(){return currentLang}};
 

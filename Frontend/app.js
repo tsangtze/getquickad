@@ -344,8 +344,8 @@ function addImages(files) {
   ) {
     setUploadError(
       selectedDurationSeconds === null
-        ? `Your current plan supports up to ${selectedImageLimit} images with AI Decide.`
-        : `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove an image or choose a longer video to add more.`
+        ? uiText("upload.plan_image_limit", "Your current plan supports up to {max} images with AI Decide.", { max: selectedImageLimit })
+        : uiText("upload.duration_image_limit", "{seconds}-second videos support up to {max} images. Remove an image or choose a longer video to add more.", { seconds: selectedDurationSeconds, max: selectedImageLimit })
     );
     return;
   }
@@ -390,7 +390,7 @@ logoInput.addEventListener("change", () => {
     logoInput.value = "";
     logoName.textContent = "";
     setUploadError(
-      "Please use a JPG, PNG, or WebP logo."
+      uiText("upload.logo_type_error", "Please use a JPG, PNG, or WebP logo.")
     );
     return;
   }
@@ -446,8 +446,8 @@ durationOptions.forEach((option) => {
 
       setUploadError(
         selectedDurationSeconds === null
-          ? `AI Decide supports up to ${selectedImageLimit} images on your current plan. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"}.`
-          : `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
+          ? uiText("upload.ai_excess_images", "AI Decide supports up to {max} images on your current plan. Remove {count} {images}.", { max: selectedImageLimit, count: excessImageCount, images: excessImageCount === 1 ? uiText("upload.image_singular", "image") : uiText("upload.image_plural", "images") })
+          : uiText("upload.duration_excess_images", "{seconds}-second videos support up to {max} images. Remove {count} {images} or choose a longer video.", { seconds: selectedDurationSeconds, max: selectedImageLimit, count: excessImageCount, images: excessImageCount === 1 ? uiText("upload.image_singular", "image") : uiText("upload.image_plural", "images") })
       );
     } else {
       setUploadError();
@@ -774,7 +774,7 @@ function createSceneReviewCard(scene) {
     "scene-approval-badge";
 
   approvalBadge.textContent =
-    window.QuickAdI18n?.t("scene.ai_suggested") || "AI suggested";
+    uiText("scene.ai_suggested", "AI suggested");
 
   const sceneHeaderActions =
     document.createElement("div");
@@ -790,7 +790,7 @@ function createSceneReviewCard(scene) {
     "delete-scene-button";
 
   deleteSceneButton.textContent =
-    window.QuickAdI18n?.t("scene.delete") || "Delete Scene";
+    uiText("scene.delete", "Delete Scene");
 
   deleteSceneButton.disabled =
     currentStoryboard.scenes.length <= 3;
@@ -833,7 +833,7 @@ function createSceneReviewCard(scene) {
   pictureFrame.append(picture);
 
   const pictureLabel = document.createElement("label");
-  pictureLabel.textContent = window.QuickAdI18n?.t("scene.picture") || "Picture";
+  pictureLabel.textContent = uiText("scene.picture", "Picture");
 
   const pictureSelect =
     document.createElement("select");
@@ -898,7 +898,7 @@ function createSceneReviewCard(scene) {
   captionColumn.className = "scene-caption-column";
 
   const captionLabel = document.createElement("label");
-  captionLabel.textContent = window.QuickAdI18n?.t("scene.ai_caption") || "AI caption";
+  captionLabel.textContent = uiText("scene.ai_caption", "AI caption");
 
   const captionInput =
     document.createElement("textarea");
@@ -968,7 +968,7 @@ function createSceneReviewCard(scene) {
     "scene-narration-label";
 
   narrationLabel.textContent =
-    window.QuickAdI18n?.t("scene.narration_preview") || "Narration preview";
+    uiText("scene.narration_preview", "Narration preview");
 
   const narrationText =
     document.createElement("p");
@@ -1011,7 +1011,7 @@ function createSceneReviewCard(scene) {
   function updateSceneApprovalState() {
     if (scene.approved === true) {
       approvalBadge.textContent =
-        window.QuickAdI18n?.t("scene.approved") || "Scene approved";
+        uiText("scene.approved", "Scene approved");
 
       approvalBadge.classList.add(
         "approved"
@@ -1025,14 +1025,14 @@ function createSceneReviewCard(scene) {
       );
     } else {
       approvalBadge.textContent =
-        window.QuickAdI18n?.t("scene.needs_approval") || "Needs approval";
+        uiText("scene.needs_approval", "Needs approval");
 
       approvalBadge.classList.remove(
         "approved"
       );
 
       confirmSceneButton.textContent =
-        window.QuickAdI18n?.t("scene.confirm") || "Confirm Scene";
+        uiText("scene.confirm", "Confirm Scene");
 
       confirmSceneButton.classList.remove(
         "approved"
@@ -1123,13 +1123,13 @@ function renderDurationReviewSummary(project, storyboard) {
 
   const costLabel =
     currentPlanId === "free"
-      ? "Free video"
-      : `${creditCost} credits`;
+      ? uiText("duration.free_video", "Free video")
+      : uiText("duration.credit_cost", "{count} credits", { count: creditCost });
 
   durationReviewSummary.textContent =
     aiSelected
-      ? `✨ AI selected: Up to ${durationTierSeconds} seconds · ${costLabel} · Actual plan: ${actualDurationSeconds} seconds`
-      : `Selected: Up to ${durationTierSeconds} seconds · ${costLabel} · Actual plan: ${actualDurationSeconds} seconds`;
+      ? uiText("duration.ai_selected_summary", "✨ AI selected: Up to {max} seconds · {cost} · Actual plan: {actual} seconds", { max: durationTierSeconds, cost: costLabel, actual: actualDurationSeconds })
+      : uiText("duration.selected_summary", "Selected: Up to {max} seconds · {cost} · Actual plan: {actual} seconds", { max: durationTierSeconds, cost: costLabel, actual: actualDurationSeconds });
 }
 
 function renderVideoPlanReview(
@@ -1286,7 +1286,10 @@ finalVideoButton.addEventListener(
       if (!response.ok || !result.ok) {
         throw new Error(
           localizedApiError(result) ||
-          "The final video could not be created."
+          uiText(
+            "api.final_video_generation_failed",
+            "The final video could not be created. Please try again."
+          )
         );
       }
 
@@ -1346,7 +1349,7 @@ finalVideoButton.addEventListener(
         "video-result-link primary";
 
       watchLink.textContent =
-        window.QuickAdI18n?.t("result.watch") || "Watch Video";
+        uiText("result.watch", "Watch Video");
 
       const downloadLink =
         document.createElement("a");
@@ -1361,7 +1364,7 @@ finalVideoButton.addEventListener(
         "video-result-link";
 
       downloadLink.textContent =
-        window.QuickAdI18n?.t("result.download") || "Download MP4";
+        uiText("result.download", "Download MP4");
 
       resultActions.append(
         watchLink,
@@ -1406,7 +1409,10 @@ finalVideoButton.addEventListener(
         document.createElement("small");
 
       successNext.textContent =
-        "Your approved video was rendered successfully. Watch or download it below.";
+        uiText(
+          "result.rendered_success",
+          "Your approved video was rendered successfully. Watch or download it below."
+        );
 
       successContent.append(
         successTitle,
@@ -1450,8 +1456,10 @@ finalVideoButton.addEventListener(
       );
 
       planStatus.textContent =
-        error.message ||
-        "The final video could not be created.";
+        uiText(
+          "api.final_video_generation_failed",
+          "The final video could not be created. Please try again."
+        );
     }
 
     planStatus.scrollIntoView({
@@ -1604,15 +1612,15 @@ function rememberProject(
 function projectStatusLabel(status) {
   switch (status) {
     case "video_ready":
-      return window.QuickAdI18n?.t("status.video_ready") || "Video ready";
+      return uiText("status.video_ready", "Video ready");
 
     case "storyboard_ready":
-      return window.QuickAdI18n?.t("status.plan_ready") || "Plan ready";
+      return uiText("status.plan_ready", "Plan ready");
 
     case "narration_failed":
     case "video_failed":
     case "storyboard_failed":
-      return "Needs attention";
+      return uiText("status.needs_attention", "Needs attention");
 
     default:
       return uiText("status.saved_project", "Saved project");
@@ -1642,10 +1650,32 @@ function formatProjectDate(value) {
 }
 
 async function deleteSavedProject(entry, button) {
-  const warning = `Permanently delete "${entry.title}"? This removes its uploaded images, narration, video and render files. Download anything you want to keep first. This cannot be undone.`;
-  if (!window.confirm(warning + (entry.id === currentProjectId ? " The current page will reload and unsaved edits will be discarded." : ""))) return;
+  const warning =
+    uiText(
+      "recent.delete_confirm",
+      'Permanently delete "{title}"? This removes its uploaded images, narration, video and render files. Download anything you want to keep first. This cannot be undone.',
+      { title: entry.title }
+    );
+
+  const currentProjectWarning =
+    entry.id === currentProjectId
+      ? " " +
+        uiText(
+          "recent.delete_current_warning",
+          "The current page will reload and unsaved edits will be discarded."
+        )
+      : "";
+
+  if (
+    !window.confirm(
+      warning + currentProjectWarning
+    )
+  ) {
+    return;
+  }
   button.disabled = true;
-  button.textContent = "🗑️ Deleting…";
+  button.textContent =
+    `🗑️ ${uiText("recent.deleting", "Deleting…")}`;
   try {
     const response = await quickAdProjectFetch(`/api/projects/${encodeURIComponent(entry.id)}`, {method: "DELETE"});
     const data = await response.json();
@@ -1656,11 +1686,16 @@ async function deleteSavedProject(entry, button) {
     }
     await loadAccountProjects();
   } catch (error) {
-    recentProjectStatus.textContent = localizedApiError(error) || error.message || uiText("recent.delete_failed", "Project deletion failed. Please refresh before retrying.");
+    recentProjectStatus.textContent =
+      localizedApiError(error) ||
+      uiText(
+        "recent.delete_failed",
+        "Project deletion failed. Please refresh before retrying."
+      );
     recentProjectStatus.classList.add("error");
   } finally {
     button.disabled = false;
-    button.textContent = `🗑️ ${window.QuickAdI18n?.t("recent.delete") || "Delete"}`;
+    button.textContent = `🗑️ ${uiText("recent.delete", "Delete")}`;
   }
 }
 
@@ -1732,8 +1767,8 @@ function renderRecentProjects() {
 
     openButton.textContent =
       entry.status === "video_ready"
-        ? `▶️ ${window.QuickAdI18n?.t("recent.open_video") || "Open Video"}`
-        : `↪️ ${window.QuickAdI18n?.t("recent.continue") || "Continue"}`;
+        ? `▶️ ${uiText("recent.open_video", "Open Video")}`
+        : `↪️ ${uiText("recent.continue", "Continue")}`;
 
     openButton.addEventListener(
       "click",
@@ -1748,7 +1783,7 @@ function renderRecentProjects() {
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "delete-recent-project";
-    deleteButton.textContent = `🗑️ ${window.QuickAdI18n?.t("recent.delete") || "Delete"}`;
+    deleteButton.textContent = `🗑️ ${uiText("recent.delete", "Delete")}`;
     deleteButton.setAttribute("aria-label", uiText("recent.delete_project_aria", `Delete project ${entry.title}`, { title: entry.title }));
     deleteButton.addEventListener("click", () => deleteSavedProject(entry, deleteButton));
     const actions = document.createElement("div");
@@ -1787,7 +1822,7 @@ function renderRecoveredVideoResult(
     "video-result-heading";
 
   resultHeading.textContent =
-    window.QuickAdI18n?.t("result.saved_ready") || "Your saved video is ready";
+    uiText("result.saved_ready", "Your saved video is ready");
 
   const resultSummary =
     document.createElement("span");
@@ -1796,9 +1831,16 @@ function renderRecoveredVideoResult(
     "video-result-summary";
 
   resultSummary.textContent =
-    uiText("result.scenes_prefix", `${currentStoryboard.scenes.length} scenes · `, { count: currentStoryboard.scenes.length }) +
-    uiText("video.mp4_duration", `${currentStoryboard.totalDurationSeconds || 30}-second MP4 · `, { seconds: currentStoryboard.totalDurationSeconds || 30 }) +
-    "AI narration complete";
+    uiText(
+      "result.summary_complete",
+      `${currentStoryboard.scenes.length} scenes · ${currentStoryboard.totalDurationSeconds || 30}-second MP4 · AI narration complete`,
+      {
+        count: currentStoryboard.scenes.length,
+        seconds:
+          currentStoryboard.totalDurationSeconds ||
+          30
+      }
+    );
 
   const resultActions =
     document.createElement("span");
@@ -1818,7 +1860,7 @@ function renderRecoveredVideoResult(
     "video-result-link primary";
 
   watchLink.textContent =
-    window.QuickAdI18n?.t("result.watch") || "Watch Video";
+    uiText("result.watch", "Watch Video");
 
   const downloadLink =
     document.createElement("a");
@@ -1833,7 +1875,7 @@ function renderRecoveredVideoResult(
     "video-result-link";
 
   downloadLink.textContent =
-    window.QuickAdI18n?.t("result.download") || "Download MP4";
+    uiText("result.download", "Download MP4");
 
   resultActions.append(
     watchLink,
@@ -1856,7 +1898,10 @@ async function openSavedProject(
 
   openButton.disabled = true;
   openButton.textContent =
-    "Opening...";
+    uiText(
+      "saved.opening_button",
+      "Opening..."
+    );
 
   recentProjectStatus.textContent =
     uiText("saved.opening", "Opening your saved project...");
@@ -1885,8 +1930,10 @@ async function openSavedProject(
       }
 
       throw new Error(
-        recovery.error ||
-        uiText("saved.open_error", "The saved project could not be opened.")
+        uiText(
+          "saved.open_error",
+          "The saved project could not be opened."
+        )
       );
     }
 
@@ -1965,8 +2012,10 @@ async function openSavedProject(
     });
   } catch (error) {
     recentProjectStatus.textContent =
-      error.message ||
-      uiText("saved.open_error", "The saved project could not be opened.");
+      uiText(
+        "saved.open_error",
+        "The saved project could not be opened."
+      );
 
     recentProjectStatus.classList.add(
       "error"
@@ -2021,8 +2070,8 @@ form.addEventListener("submit", async (event) => {
 
     setUploadError(
       selectedDurationSeconds === null
-        ? `AI Decide supports up to ${selectedImageLimit} images on your current plan. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"}.`
-        : `${selectedDurationSeconds}-second videos support up to ${selectedImageLimit} images. Remove ${excessImageCount} ${excessImageCount === 1 ? "image" : "images"} or choose a longer video.`
+        ? uiText("upload.ai_excess_images", "AI Decide supports up to {max} images on your current plan. Remove {count} {images}.", { max: selectedImageLimit, count: excessImageCount, images: excessImageCount === 1 ? uiText("upload.image_singular", "image") : uiText("upload.image_plural", "images") })
+        : uiText("upload.duration_excess_images", "{seconds}-second videos support up to {max} images. Remove {count} {images} or choose a longer video.", { seconds: selectedDurationSeconds, max: selectedImageLimit, count: excessImageCount, images: excessImageCount === 1 ? uiText("upload.image_singular", "image") : uiText("upload.image_plural", "images") })
     );
 
     firstInvalidElement =
@@ -2050,7 +2099,10 @@ form.addEventListener("submit", async (event) => {
 
   createButton.disabled = true;
   createButton.innerHTML =
-    "<span>Creating your video plan...</span><span>•••</span>";
+    `<span>${uiText(
+      "status.creating_plan",
+      "Creating your video plan..."
+    )}</span><span>•••</span>`;
 
   try {
     syncImageInput();
@@ -2073,6 +2125,12 @@ form.addEventListener("submit", async (event) => {
                 ? "ja"
                 : normalizedLang.startsWith("ko")
                   ? "ko"
+                  : normalizedLang === "zh-tw" ||
+                    normalizedLang === "zh-hant" ||
+                    normalizedLang.startsWith("zh-hant-") ||
+                    normalizedLang === "zh-hk" ||
+                    normalizedLang === "zh-mo"
+                    ? "zh-TW"
                   : normalizedLang.startsWith("zh")
                     ? "zh"
                     : normalizedLang.startsWith("tr")
@@ -2121,7 +2179,10 @@ form.addEventListener("submit", async (event) => {
     if (!response.ok || !result.ok) {
       throw new Error(
         localizedApiError(result) ||
-        "QuickAd AI could not create the project."
+        uiText(
+          "api.project_input_invalid",
+          "Please check your project details and try again."
+        )
       );
     }
 
@@ -2220,8 +2281,10 @@ form.addEventListener("submit", async (event) => {
     }, 3000);
   } catch (error) {
     formMessage.textContent =
-      error.message ||
-      "QuickAd AI could not create the project.";
+      uiText(
+        "api.project_input_invalid",
+        "Please check your project details and try again."
+      );
 
     formMessage.classList.add(
       "visible",
@@ -2397,13 +2460,13 @@ async function loadAccountProjects() {
 
   if (!historyKey) {
     recentProjects.hidden = false;
-    recentProjectStatus.textContent = window.QuickAdI18n?.t("recent.sign_in") || "Sign in to see your saved projects.";
+    recentProjectStatus.textContent = uiText("recent.sign_in", "Sign in to see your saved projects.");
     return;
   }
 
   clearProjectHistoryButton.disabled = true;
   recentProjects.hidden = false;
-  recentProjectStatus.textContent = window.QuickAdI18n?.t("recent.loading") || "Loading your saved projects...";
+  recentProjectStatus.textContent = uiText("recent.loading", "Loading your saved projects...");
 
   try {
     const response = await quickAdProjectFetch("/api/projects");
@@ -2432,13 +2495,16 @@ async function loadAccountProjects() {
     if (projects.length === 0) {
       recentProjects.hidden = false;
       recentProjectStatus.textContent =
-        window.QuickAdI18n?.t("recent.empty") || "No saved projects in this account yet.";
+        uiText("recent.empty", "No saved projects in this account yet.");
     }
   } catch (error) {
     if (!quickAdPageLeaving && historyKey === PROJECT_HISTORY_KEY) {
       recentProjects.hidden = false;
       recentProjectStatus.textContent =
-        error.message || window.QuickAdI18n?.t("recent.error") || "Project list unavailable. Click Refresh projects to retry.";
+        uiText(
+          "recent.error",
+          "Project list unavailable. Click Refresh projects to retry."
+        );
     }
   } finally {
     if (!quickAdPageLeaving && requestNumber === accountListRequest) {
@@ -2452,7 +2518,7 @@ for (const paragraph of recentProjects.querySelectorAll("p")) {
   if (paragraph.textContent.trim() ===
       "Projects created in this browser appear here.") {
     paragraph.textContent =
-      window.QuickAdI18n?.t("recent.desc") || "Your 10 most recent saved projects in this account appear here.";
+      uiText("recent.desc", "Your 10 most recent saved projects in this account appear here.");
   }
 }
 
@@ -2500,8 +2566,8 @@ function updateDurationOptionsForPlan(usage) {
   if (thirtySecondCost) {
     thirtySecondCost.textContent =
       currentPlanId === "free"
-        ? "Free video"
-        : "10 credits";
+        ? uiText("duration.free_video", "Free video")
+        : uiText("duration.credit_cost", "{count} credits", { count: 10 });
   }
 
   updateDurationAvailability();
@@ -2512,8 +2578,8 @@ function updateDurationOptionsForPlan(usage) {
   if (durationNote) {
     durationNote.textContent =
       currentPlanMaxVideoSeconds <= 30
-        ? "AI Decide is available, but Free videos are limited to 30 seconds. Upgrade to Starter or Pro for 45- and 60-second videos."
-        : "AI Decide can choose the best 30-, 45-, or 60-second video length for your content.";
+        ? uiText("duration.free_ai_note", "AI Decide is available, but Free videos are limited to 30 seconds. Upgrade to Starter or Pro for 45- and 60-second videos.")
+        : uiText("duration.paid_ai_note", "AI Decide can choose the best 30-, 45-, or 60-second video length for your content.");
   }
 }
 
@@ -2522,11 +2588,6 @@ async function updateQuota(){
     document.getElementById('quotaBanner');
 
   if(!banner) return;
-
-  const isEs =
-    (window.QuickAdI18n?.currentLang === 'es') ||
-    (localStorage.getItem('quickad_lang') === 'es');
-
   const renderQuotaBanner = ({
     type = 'free',
     planName = '',
@@ -2541,22 +2602,29 @@ async function updateQuota(){
 
     const leftText =
       type === 'paid'
-        ? (
-            isEs
-              ? `${planName}: <b>${remaining}</b> de ${total} créditos disponibles`
-              : `${planName}: <b>${remaining}</b> of ${total} credits left`
+        ? uiText(
+            "quota.paid_html",
+            "{plan}: <b>{remaining}</b> of {total} credits left",
+            {
+              plan: planName,
+              remaining,
+              total
+            }
           )
-        : (
-            isEs
-              ? `Videos gratis: Te quedan <b>${remaining}</b> de ${total}`
-              : `Free videos: <b>${remaining}</b> of ${total} left`
+        : uiText(
+            "quota.free_html",
+            "Free videos: <b>{remaining}</b> of {total} left",
+            {
+              remaining,
+              total
+            }
           );
 
-    const projectsText =
-      isEs
-        ? `Proyectos guardados: <b>${projects}</b>`
-        : `Saved projects: <b>${projects}</b>`;
-
+    const projectsText = uiText(
+      "quota.saved_projects_html",
+      "Saved projects: <b>{projects}</b>",
+      { projects }
+    );
     banner.innerHTML = `
       <div class="quota-status-item">
         <span class="quota-status-icon" aria-hidden="true">${leftIcon}</span>
@@ -2676,16 +2744,6 @@ if(typeof window.refreshProjects === 'function'){
 }
 
 
-function translatePageToSpanish(){
-  const dict = {
-    "Upload your photos, describe what you are promoting, and receive a ready-to-post vertical video.": "Sube tus fotos, describe lo que promocionas y recibe un video vertical listo para publicar.",
-    "Your 10 most recent saved projects in this account appear here.": "Tus 10 proyectos guardados más recientes aparecerán aquí.",
-    "Tell us what you're promoting": "Cuéntanos qué promocionas"
-  };
-  document.body.innerHTML = Object.keys(dict).reduce((html,key)=> html.replace(key, dict[key]), document.body.innerHTML);
-}
-
-
 window.addEventListener("quickad:languagechange", () => {
   renderImagePreviews();
   if (currentStoryboard) {
@@ -2716,13 +2774,251 @@ function roleText(role) {
   return uiText(`scene.role.${normalized}`, role || "");
 }
 function localizedApiError(result) {
-  if (result?.code === "PROJECT_DELETE_BLOCKED") {
-    return uiText("recent.delete_blocked", "This project is still processing or needs review. It cannot be deleted yet.");
+  const codeToMessage = {
+    PROJECT_BUSY: {
+      key: "api.project_busy",
+      fallback:
+        "This project is busy. Please wait until processing finishes."
+    },
+
+    APP_ORIGIN_MISCONFIGURED: {
+      key: "api.app_origin_misconfigured",
+      fallback:
+        "QuickAd AI is not configured correctly for this request."
+    },
+
+    REQUEST_ORIGIN_INVALID: {
+      key: "account.api_origin_required",
+      fallback:
+        "This request must come from QuickAd AI."
+    },
+
+    PROJECT_ID_INVALID: {
+      key: "api.project_id_invalid",
+      fallback:
+        "The project address is invalid."
+    },
+
+    PROJECT_NOT_FOUND: {
+      key: "api.project_not_found",
+      fallback:
+        "The project was not found."
+    },
+
+    PROJECT_ACCESS_FAILED: {
+      key: "api.project_access_failed",
+      fallback:
+        "Project access could not be verified. Please try again."
+    },
+
+    PROJECT_DELETE_FAILED: {
+      key: "recent.delete_failed",
+      fallback:
+        "Project deletion failed. Please refresh before retrying."
+    },
+
+    USAGE_LOAD_FAILED: {
+      key: "billing.usage_load_error",
+      fallback:
+        "Usage could not be loaded."
+    },
+
+    PROJECT_LIST_LOAD_FAILED: {
+      key: "recent.load_failed",
+      fallback:
+        "Your project list could not be loaded."
+    },
+
+    PROJECT_DELETE_BLOCKED: {
+      key: "recent.delete_blocked",
+      fallback:
+        "This project is still processing or needs review. It cannot be deleted yet."
+    },
+
+    PROJECT_LIMIT_REACHED: {
+      key: "quota.project_limit_reached",
+      fallback:
+        "You have reached your limit of 10 saved projects. Delete an old project to free up space and create a new one."
+    },
+
+    VIDEO_DURATION_LIMIT_EXCEEDED: {
+      key: "quota.duration_limit_exceeded",
+      fallback:
+        "Your current plan does not support the requested video duration."
+    },
+
+    VIDEO_DURATION_NOT_ALLOWED: {
+      key: "quota.duration_not_allowed",
+      fallback:
+        "Your current plan does not support this video duration or number of images."
+    },
+
+    FREE_VIDEO_LIMIT_REACHED: {
+      key: "quota.free_limit_reached",
+      fallback:
+        "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available."
+    },
+
+    CREDIT_LIMIT_REACHED: {
+      key: "quota.credit_limit_reached",
+      fallback:
+        "You do not have enough video credits remaining for another video."
+    },
+
+    STORYBOARD_GENERATION_FAILED: {
+      key: "api.storyboard_generation_failed",
+      fallback:
+        "Your video plan could not be generated. Please try again."
+    },
+
+    PROJECT_DURATION_INVALID: {
+      key: "duration.invalid_choice",
+      fallback:
+        "Please choose AI Decide or a video length of 30, 45, or 60 seconds."
+    },
+
+    PROJECT_IMAGE_REQUIRED: {
+      key: "upload.required",
+      fallback:
+        "Please upload at least one product image."
+    },
+
+    PROJECT_IMAGE_LIMIT: {
+      key: "upload.plan_image_limit",
+      fallback:
+        "QuickAd AI supports up to 10 product images."
+    },
+
+    PROJECT_DURATION_IMAGE_LIMIT: {
+      key: "upload.duration_image_limit",
+      fallback:
+        "This video duration supports fewer product images."
+    },
+
+    PROJECT_WEBSITE_INVALID: {
+      key: "website.invalid",
+      fallback:
+        "Enter a valid website address."
+    },
+
+    PROJECT_STYLE_INVALID: {
+      key: "style.invalid",
+      fallback:
+        "Please choose a valid video style."
+    },
+
+    PROJECT_INPUT_INVALID: {
+      key: "api.project_input_invalid",
+      fallback:
+        "Please check your project details and try again."
+    },
+
+    SAVED_PROJECT_NOT_FOUND: {
+      key: "saved.not_found",
+      fallback:
+        "The saved project was not found."
+    },
+
+    SAVED_PROJECT_OPEN_FAILED: {
+      key: "saved.open_error",
+      fallback:
+        "The saved project could not be opened."
+    },
+
+    PROJECT_ASSET_NAME_INVALID: {
+      key: "saved.asset_name_invalid",
+      fallback:
+        "The project asset name is invalid."
+    },
+
+    PROJECT_ASSET_NOT_FOUND: {
+      key: "saved.asset_not_found",
+      fallback:
+        "The project asset was not found."
+    },
+
+    PROJECT_ASSET_OPEN_FAILED: {
+      key: "saved.asset_open_failed",
+      fallback:
+        "The project asset could not be opened."
+    },
+
+    FINISHED_VIDEO_NOT_FOUND: {
+      key: "saved.video_missing",
+      fallback:
+        "The saved video file is unavailable."
+    },
+
+    MUSIC_TRACK_INVALID: {
+      key: "api.music_track_invalid",
+      fallback:
+        "Please choose a valid background music track."
+    },
+
+    MUSIC_UNAVAILABLE: {
+      key: "api.music_unavailable",
+      fallback:
+        "The selected background music is unavailable. Please choose another track or no music."
+    },
+
+    MUSIC_VOLUME_INVALID: {
+      key: "api.music_volume_invalid",
+      fallback:
+        "Please choose a music volume from 0 to 100 percent."
+    },
+
+    VIDEO_ALREADY_COMPLETE: {
+      key: "api.video_already_complete",
+      fallback:
+        "This video is already complete. Create a new project to choose different music."
+    },
+
+    MUSIC_PREPARATION_FAILED: {
+      key: "api.music_preparation_failed",
+      fallback:
+        "Background music could not be prepared. Please try again."
+    },
+
+    NARRATOR_INVALID: {
+      key: "api.narrator_invalid",
+      fallback:
+        "Please choose a valid narrator."
+    },
+
+    SCENE_CAPTION_INVALID: {
+      key: "review.caption_rule",
+      fallback:
+        "Captions must contain 1–60 characters."
+    },
+
+    STORYBOARD_INVALID: {
+      key: "api.storyboard_invalid",
+      fallback:
+        "Your video plan contains invalid scene information. Please review it and try again."
+    },
+
+    FINAL_VIDEO_GENERATION_FAILED: {
+      key: "api.final_video_generation_failed",
+      fallback:
+        "The final video could not be created. Please try again."
+    }
+  };
+
+  const mapped =
+    typeof result?.code === "string"
+      ? codeToMessage[result.code]
+      : null;
+
+  if (!mapped) {
+    return "";
   }
 
-  if (result?.code === "FREE_VIDEO_LIMIT_REACHED") {
-    return uiText("quota.free_limit_reached", "You have used your 2 free videos. Upgrade to create more videos. Your existing videos and previews remain available.");
-  }
-
-  return result?.error || "";
+  return uiText(
+    mapped.key,
+    mapped.fallback,
+    result?.params &&
+    typeof result.params === "object"
+      ? result.params
+      : {}
+  );
 }
