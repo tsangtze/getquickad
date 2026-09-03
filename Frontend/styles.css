@@ -1897,3 +1897,43 @@ input::placeholder {
   justify-content: center;
   line-height: 1;
 }
+/* Version 1.1.6: focused plan-review mode. */
+.plan-review-heading-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-project-setup {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #d7dcef;
+  border-radius: 10px;
+  color: #4d3ed0;
+  background: #ffffff;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.edit-project-setup:hover {
+  border-color: #7668ff;
+  background: #f4f2ff;
+}
+
+.edit-project-setup:focus-visible {
+  outline: 3px solid rgba(101, 84, 255, 0.2);
+  outline-offset: 2px;
+}
+
+@media (max-width: 580px) {
+  .plan-review-heading-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

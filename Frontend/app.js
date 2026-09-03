@@ -223,6 +223,10 @@ const clearProjectHistoryButton =
 
 const styleOptions = [...document.querySelectorAll(".style-option")];
 const planReview = document.querySelector("#plan-review");
+const editProjectSetupButton =
+  document.querySelector(
+    "#edit-project-setup"
+  );
 const durationOptions = [...document.querySelectorAll(".duration-option")];
 const planScenes = document.querySelector("#plan-scenes");
 const planStatus = document.querySelector("#plan-status");
@@ -1234,6 +1238,26 @@ function renderDurationReviewSummary(project, storyboard) {
       : uiText("duration.selected_summary", "Selected: Up to {max} seconds · {cost} · Actual plan: {actual} seconds", { max: durationTierSeconds, cost: costLabel, actual: actualDurationSeconds });
 }
 
+function showPlanReviewMode() {
+  recentProjects.hidden = true;
+  form.hidden = true;
+  planReview.hidden = false;
+
+  planReview.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function showProjectSetupMode() {
+  form.hidden = false;
+
+  form.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
 function renderVideoPlanReview(
   project,
   storyboard,
@@ -2104,6 +2128,7 @@ async function openSavedProject(
       recentProjectStatus.textContent =
         uiText("saved.video_opened", "Saved video opened successfully.");
     } else {
+      showPlanReviewMode();
       planStatus.textContent = uiText("saved.plan_opened", `Saved plan opened. Review and confirm all ${currentStoryboard.scenes.length} scenes.`, { count: currentStoryboard.scenes.length });
 
       recentProjectStatus.textContent =
@@ -2137,6 +2162,13 @@ clearProjectHistoryButton.textContent = `🔄 ${uiText("recent.refresh", "Refres
 clearProjectHistoryButton.addEventListener("click", () => {
   loadAccountProjects();
 });
+
+editProjectSetupButton.addEventListener(
+  "click",
+  () => {
+    showProjectSetupMode();
+  }
+);
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -2307,6 +2339,7 @@ form.addEventListener("submit", async (event) => {
       result.project,
       result.storyboard
     );
+    showPlanReviewMode();
 
     const successMark =
       document.createElement("span");
