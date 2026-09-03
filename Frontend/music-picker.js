@@ -2,7 +2,8 @@
   "use strict";
 
   function musicText(key, fallback, params = {}) {
-    return window.QuickAdI18n?.t(key, params) || fallback;
+    const translated = window.QuickAdI18n?.t?.(key, params);
+    return translated && translated !== key ? translated : fallback;
   }
   const field = document.getElementById("music-options");
   const note = document.getElementById("music-note");
@@ -12,7 +13,7 @@
   function setVolume(value) {
     const level = Number.isInteger(value) && value >= 0 && value <= 100 ? value : 10;
     slider.value = String(level);
-    volumeOutput.textContent = level === 0 ? "0% (muted)" : `${level}%`;
+    volumeOutput.textContent = level === 0 ? musicText("music.muted", "0% (muted)") : `${level}%`;
     player.volume = level / 100;
   }
   setVolume(10);

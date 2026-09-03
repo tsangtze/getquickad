@@ -17,16 +17,16 @@
 
 <body>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="QuickAd AI home">
+    <a class="brand" href="/" aria-label="QuickAd AI home" data-i18n-aria-label="nav.home_aria">
       <span class="brand-mark">Q</span>
       <span>QuickAd <strong>AI</strong></span>
     </a>
 
-    <nav class="site-nav" aria-label="Main navigation">
+    <nav class="site-nav" aria-label="Main navigation" data-i18n-aria-label="nav.main">
       <a class="active" href="/" data-i18n="nav.create">Create Video</a>
       <a href="#" aria-disabled="true" data-i18n="nav.videos">My Videos</a>
-      <a href="/billing.html">Billing</a>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div id="lang-switcher" style="position:relative;display:inline-block"><button id="lang-current" type="button" style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:14px">🌐 English</button><div id="lang-dropdown" style="display:none;position:absolute;right:0;top:36px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:9999"><button data-lang="en" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇺🇸 English</button><button data-lang="es" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇲🇽 Español</button><button data-lang="pt" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇧🇷 Português</button><button data-lang="fr" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇫🇷 Français</button><button data-lang="de" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇩🇪 Deutsch</button><button data-lang="it" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇮🇹 Italiano</button><button data-lang="ja" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">JP 日本語</button><button data-lang="ko" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">KR 한국어</button><button data-lang="zh" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">CN 中文</button><button data-lang="tr" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">TR Türkçe</button><button data-lang="hi" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">IN हिन्दी</button></div></div><div data-i18n="language.renderingNote" style="max-width:360px;font-size:11px;line-height:1.35;color:#64748b;text-align:right"></div></div><button class="account-button" type="button" data-i18n="nav.account">Account</button>
+      <a href="/billing.html" data-i18n="nav.billing">Billing</a>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div id="lang-switcher" style="position:relative;display:inline-block"><button id="lang-current" type="button" style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:14px">🌐 English</button><div id="lang-dropdown" style="display:none;position:absolute;right:0;top:36px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:9999"><button data-lang="en" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇺🇸 English</button><button data-lang="es" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇲🇽 Español</button><button data-lang="pt" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇧🇷 Português</button><button data-lang="fr" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇫🇷 Français</button><button data-lang="de" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇩🇪 Deutsch</button><button data-lang="it" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇮🇹 Italiano</button><button data-lang="ja" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">JP 日本語</button><button data-lang="ko" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">KR 한국어</button><button data-lang="zh" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">CN 简体中文</button><button data-lang="zh-TW" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">TW 繁體中文</button><button data-lang="tr" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">TR Türkçe</button><button data-lang="hi" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">IN हिन्दी</button></div></div><div data-i18n="language.renderingNote" style="max-width:360px;font-size:11px;line-height:1.35;color:#64748b;text-align:right"></div></div><button class="account-button" type="button" data-i18n="nav.account">Account</button>
     </nav>
   </header>
 
@@ -39,7 +39,7 @@
 <div id="quotaBanner"></div>
       </div>
 
-      <div class="video-summary" aria-label="Video output">
+      <div class="video-summary" aria-label="Video output" data-i18n-aria-label="hero.output_aria">
         <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">📱</span><span>9:16</span></span>
         <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">⏱️</span><span data-i18n="video.seconds">Up to 60 seconds</span></span>
         <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">🎬</span><span>MP4</span></span>
@@ -206,7 +206,7 @@
                   id="custom-call-to-action"
                   type="text"
                   maxlength="40"
-                  placeholder="Example: Start Your Free Trial"
+                  placeholder="Example: Start Your Free Trial" data-i18n-placeholder="cta.custom_placeholder"
                 >
 
                 <div class="text-meta">
@@ -224,7 +224,7 @@
           </div>
 
           <fieldset class="duration-options" id="duration-options">
-            <legend class="field-label"><span class="field-icon" aria-hidden="true">⏱️</span><span>Video length</span></legend>
+            <legend class="field-label"><span class="field-icon" aria-hidden="true">⏱️</span><span data-i18n="duration.label">Video length</span></legend>
 
             <p class="duration-help">
               Let AI choose the best length, or select a maximum length yourself.
@@ -238,8 +238,8 @@
                   value="auto"
                   checked
                 >
-                <strong>✨ Let AI Decide</strong>
-                <small>AI chooses the best length</small>
+                <strong data-i18n="duration.ai_decide">✨ Let AI Decide</strong>
+                <small data-i18n="duration.ai_decide_desc">AI chooses the best length</small>
               </label>
 
               <label class="duration-option">
@@ -248,8 +248,8 @@
                   name="maxDurationSeconds"
                   value="30"
                 >
-                <strong>Up to 30 sec</strong>
-                <small>10 credits</small>
+                <strong data-i18n="duration.up_to_30">Up to 30 sec</strong>
+                <small data-i18n="duration.credits_10">10 credits</small>
               </label>
 
               <label class="duration-option">
@@ -258,8 +258,8 @@
                   name="maxDurationSeconds"
                   value="45"
                 >
-                <strong>Up to 45 sec</strong>
-                <small>15 credits</small>
+                <strong data-i18n="duration.up_to_45">Up to 45 sec</strong>
+                <small data-i18n="duration.credits_15">15 credits</small>
               </label>
 
               <label class="duration-option">
@@ -268,8 +268,8 @@
                   name="maxDurationSeconds"
                   value="60"
                 >
-                <strong>Up to 60 sec</strong>
-                <small>20 credits</small>
+                <strong data-i18n="duration.up_to_60">Up to 60 sec</strong>
+                <small data-i18n="duration.credits_20">20 credits</small>
               </label>
             </div>
 
@@ -292,7 +292,7 @@
           </div>
 
           <fieldset class="style-options">
-            <legend class="visually-hidden">Video style</legend>
+            <legend class="visually-hidden" data-i18n="style.aria">Video style</legend>
 
             <label class="style-option selected">
               <input
@@ -464,7 +464,7 @@
       <section class="music-section" aria-labelledby="music-heading">
         <h3 id="music-heading" data-i18n="music.title">Choose background music</h3>
         <p data-i18n="music.desc">Optional music plays quietly beneath your narration. Previews use no API credits.</p>
-        <fieldset id="music-options"><legend class="music-sr-only">Music track</legend><div class="music-options">
+        <fieldset id="music-options"><legend class="music-sr-only" data-i18n="music.track_label">Music track</legend><div class="music-options">
 <div class="music-card"><label><input type="radio" name="musicChoice" value="none" checked> <strong data-i18n="music.none">No music</strong><small data-i18n="music.none_desc">Narration only</small></label></div>
 <div class="music-card"><label><input type="radio" name="musicChoice" value="upbeat" > <strong data-i18n="music.upbeat">Upbeat</strong><small data-i18n="music.upbeat_desc">Funky rhythm</small></label><button type="button" data-music-preview="upbeat" aria-label="Preview Upbeat music" data-i18n-aria-label="music.preview_upbeat_aria" data-i18n="music.preview">Preview</button></div>
 <div class="music-card"><label><input type="radio" name="musicChoice" value="calm" > <strong data-i18n="music.calm">Calm</strong><small data-i18n="music.calm_desc">Piano and soft pads</small></label><button type="button" data-music-preview="calm" aria-label="Preview Calm music" data-i18n-aria-label="music.preview_calm_aria" data-i18n="music.preview">Preview</button></div>
@@ -501,7 +501,7 @@
       </div>
     </section>
 
-    <section class="promise-bar" aria-label="QuickAd AI benefits">
+    <section class="promise-bar" aria-label="QuickAd AI benefits" data-i18n-aria-label="benefits.aria">
       <span><span class="promise-icon" aria-hidden="true">✂️</span><span data-i18n="promise.timeline">No timeline editor</span></span>
       <span><span class="promise-icon" aria-hidden="true">✨</span><span data-i18n="promise.prompts">No complicated prompts</span></span>
       <span><span class="promise-icon" aria-hidden="true">🎬</span><span data-i18n="promise.mp4">Ready-to-post MP4</span></span>

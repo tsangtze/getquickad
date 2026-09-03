@@ -18,6 +18,52 @@ const message =
 const manageSubscriptionButton =
   document.getElementById("manage-subscription-button");
 
+function billingText(key, fallback, params = {}) {
+  const translated = window.QuickAdI18n?.t?.(key, params);
+
+  return translated && translated !== key
+    ? translated
+    : fallback;
+}
+
+function billingApiText(data, fallbackKey, fallbackText) {
+  const codeToMessage = {
+    BILLING_PLAN_INVALID: {
+      key: "billing.api_plan_invalid",
+      fallback: "Choose Starter or Pro."
+    },
+    BILLING_PLAN_UNAVAILABLE: {
+      key: "billing.api_plan_unavailable",
+      fallback: "This QuickAd AI plan is not configured for checkout."
+    },
+    BILLING_ACTIVE_SUBSCRIPTION_EXISTS: {
+      key: "billing.api_active_subscription_exists",
+      fallback: "You already have an active subscription. Use Manage Subscription to change or cancel your plan."
+    },
+    BILLING_CHECKOUT_UNAVAILABLE: {
+      key: "billing.api_checkout_unavailable",
+      fallback: "Checkout is temporarily unavailable. Please try again."
+    },
+    BILLING_NO_PAID_SUBSCRIPTION: {
+      key: "billing.api_no_paid_subscription",
+      fallback: "No paid subscription was found for this account."
+    },
+    BILLING_PORTAL_UNAVAILABLE: {
+      key: "billing.api_portal_unavailable",
+      fallback: "Subscription management is temporarily unavailable. Please try again."
+    }
+  };
+
+  const mapped =
+    typeof data?.code === "string"
+      ? codeToMessage[data.code]
+      : null;
+
+  return mapped
+    ? billingText(mapped.key, mapped.fallback)
+    : billingText(fallbackKey, fallbackText);
+}
+
 function setMessage(text) {
   if (message) {
     message.textContent = text;
@@ -47,7 +93,7 @@ function markCurrentPlan(planId, cancelAtPeriodEnd = false, currentPeriodEnd = n
     button.onclick = null;
 
     if (isCurrent) {
-      button.textContent = "Current Plan";
+      button.textContent = billingText("billing.current_plan", "Current Plan");
       button.disabled = true;
       button.dataset.action = "current";
     } else if (hasPaidPlan && cardPlanId === "free") {
@@ -73,19 +119,19 @@ function markCurrentPlan(planId, cancelAtPeriodEnd = false, currentPeriodEnd = n
         button.disabled = true;
         button.dataset.action = "scheduled-free";
       } else {
-        button.textContent = "Cancel to Free Plan";
+        button.textContent = billingText("billing.cancel_to_free", "Cancel to Free Plan");
         button.disabled = false;
         button.dataset.action = "portal";
       }
     } else if (hasPaidPlan) {
-      button.textContent = "Change Plan";
+      button.textContent = billingText("billing.change_plan", "Change Plan");
       button.disabled = false;
       button.dataset.action = "portal";
     } else {
       button.textContent =
         cardPlanId === "starter"
-          ? "Choose Starter"
-          : "Choose Pro";
+          ? billingText("billing.choose_starter", "Choose Starter")
+          : billingText("billing.choose_pro", "Choose Pro");
       button.disabled = false;
       button.dataset.action = "checkout";
     }
@@ -97,7 +143,7 @@ function renderUsage(usage) {
     usage.planId || "free";
 
   planName.textContent =
-    usage.planName || "Free";
+    usage.planName || billingText("billing.free", "Free");
 
   if (planCancellation) {
     const cancellationDate =
@@ -139,7 +185,7 @@ function renderUsage(usage) {
       Math.max(0, 2 - remaining);
 
     planUsage.textContent =
-      `${remaining} of 2 free videos remaining`;
+      billingText("billing.free_remaining", "{remaining} of 2 free videos remaining", { remaining });
 
     usageBar.style.width =
       `${Math.min(100, used / 2 * 100)}%`;
@@ -154,7 +200,7 @@ function renderUsage(usage) {
       Number(usage.monthlyCreditsRemaining) || 0;
 
     planUsage.textContent =
-      `${remaining} of ${total} credits remaining`;
+      billingText("billing.credits_remaining", "{remaining} of {total} credits remaining", { remaining, total });
 
     usageBar.style.width =
       total > 0
@@ -178,10 +224,10 @@ async function loadBilling() {
 
     if (response.status === 401) {
       planName.textContent =
-        "Sign in to see your plan";
+        billingText("billing.sign_in_plan", "Sign in to see your plan");
 
       planUsage.textContent =
-        "Your usage appears here after you sign in.";
+        billingText("billing.sign_in_usage", "Your usage appears here after you sign in.");
 
       usageBar.style.width =
         "0%";
@@ -193,16 +239,16 @@ async function loadBilling() {
       await response.json();
 
     if (!response.ok || !data.ok || !data.usage) {
-      throw new Error("Usage could not be loaded.");
+      throw new Error(billingText("billing.usage_load_error", "Usage could not be loaded."));
     }
 
     renderUsage(data.usage);
   } catch {
     planName.textContent =
-      "Plan unavailable";
+      billingText("billing.plan_unavailable", "Plan unavailable");
 
     planUsage.textContent =
-      "Please try again shortly.";
+      billingText("billing.try_again", "Please try again shortly.");
 
     usageBar.style.width =
       "0%";
@@ -217,7 +263,7 @@ async function openSubscriptionPortal() {
 
   manageSubscriptionButton.disabled = true;
   manageSubscriptionButton.textContent =
-    "Opening...";
+    billingText("billing.opening", "Opening...");
 
   setMessage("");
 
@@ -230,7 +276,11 @@ async function openSubscriptionPortal() {
           credentials: "same-origin",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          body: JSON.stringify({
+            language:
+              window.QuickAdI18n?.currentLang || "en"
+          })
         }
       );
 
@@ -239,16 +289,21 @@ async function openSubscriptionPortal() {
 
     if (!response.ok || !data.url) {
       throw new Error(
-        data.error ||
-        "Unable to open subscription management."
+        billingApiText(
+          data,
+          "billing.portal_error",
+          "Unable to open subscription management."
+        )
       );
     }
 
     window.location.assign(data.url);
   } catch (error) {
     setMessage(
-      error.message ||
-      "Unable to open subscription management.",
+      billingText(
+        "billing.portal_error",
+        "Unable to open subscription management."
+      ),
       true
     );
 
@@ -275,7 +330,7 @@ async function startCheckout(button) {
     button.textContent;
 
   button.disabled = true;
-  button.textContent = "Opening checkout...";
+  button.textContent = billingText("billing.opening_checkout", "Opening checkout...");
 
   setMessage("");
 
@@ -290,7 +345,9 @@ async function startCheckout(button) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            planId
+            planId,
+            language:
+              window.QuickAdI18n?.currentLang || "en"
           })
         }
       );
@@ -300,7 +357,7 @@ async function startCheckout(button) {
 
     if (response.status === 401) {
       setMessage(
-        "Please sign in before choosing a plan."
+        billingText("billing.sign_in_choose", "Please sign in before choosing a plan.")
       );
       return;
     }
@@ -311,16 +368,21 @@ async function startCheckout(button) {
       !data.url
     ) {
       throw new Error(
-        data.error ||
-        "Checkout could not be opened."
+        billingApiText(
+          data,
+          "billing.checkout_error",
+          "Checkout could not be opened."
+        )
       );
     }
 
     window.location.assign(data.url);
   } catch (error) {
     setMessage(
-      error.message ||
-      "Checkout could not be opened. Please try again."
+      billingText(
+        "billing.checkout_retry",
+        "Checkout could not be opened. Please try again."
+      )
     );
   } finally {
     button.disabled = false;

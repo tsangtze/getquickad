@@ -23,12 +23,44 @@
     );
   }
 
-  const emailLinkMessage = emailLinkFailed
-    ? accountText("account.email_link_failed", "The email link could not be completed. It may have expired. Request a fresh confirmation email.")
-    : accountText("account.email_link_returned", "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.");
+  function emailLinkMessage() {
+    return emailLinkFailed
+      ? accountText("account.email_link_failed", "The email link could not be completed. It may have expired. Request a fresh confirmation email.")
+      : accountText("account.email_link_returned", "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.");
+  }
 
   function accountText(key, fallback, params = {}) {
-    return window.QuickAdI18n?.t(key, params) || fallback;
+    const translated = window.QuickAdI18n?.t?.(key, params);
+    return translated && translated !== key ? translated : fallback;
+  }
+
+  function accountApiText(data, fallbackKey, fallbackText) {
+    const codeToKey = {
+      AUTH_SIGN_IN_REQUIRED: "account.api_sign_in_required",
+      AUTH_SESSION_EXPIRED: "account.api_session_expired",
+      AUTH_UNAVAILABLE: "account.api_unavailable",
+      AUTH_ORIGIN_REQUIRED: "account.api_origin_required",
+      AUTH_JSON_REQUIRED: "account.api_json_required",
+      AUTH_LOGIN_RATE_LIMIT: "account.api_login_rate_limit",
+      AUTH_SIGNUP_RATE_LIMIT: "account.api_signup_rate_limit",
+      AUTH_SIGNUP_INVALID: "account.api_signup_invalid",
+      AUTH_CONFIRMATION_SENT: "account.api_confirmation_sent",
+      AUTH_CONFIRMATION_RATE_LIMIT: "account.api_confirmation_rate_limit",
+      AUTH_WEAK_PASSWORD: "account.api_weak_password",
+      AUTH_SIGNUP_FAILED: "account.api_signup_failed",
+      AUTH_CONFIRMATION_CONFIG: "account.api_confirmation_config",
+      AUTH_SIGNUP_UNAVAILABLE: "account.api_signup_unavailable",
+      AUTH_LOGIN_INVALID: "account.api_login_invalid",
+      AUTH_LOGIN_FAILED: "account.api_login_failed"
+    };
+
+    const key = codeToKey[data?.code];
+
+    if (key) {
+      return accountText(key, fallbackText);
+    }
+
+    return accountText(fallbackKey, fallbackText);
   }
 
   const button = document.querySelector(".account-button");
@@ -166,7 +198,7 @@
         showUser(null);
         setMode(false);
         status.textContent = returnedFromEmail
-          ? emailLinkMessage
+          ? emailLinkMessage()
           : accountText("account.sign_in_status", "Sign in to QuickAd AI.");
       } else if (response.ok && data.ok && data.user?.id) {
         showUser(data.user);
@@ -214,17 +246,21 @@
 
       if (signupMode && response.status === 202 && data.ok) {
         setMode(false);
-        status.textContent = typeof data.message === "string"
-          ? data.message
-          : accountText("account.check_email", "Check your email for a confirmation link, then sign in.");
+        status.textContent = accountApiText(
+          data,
+          "account.check_email",
+          "Check your email for a confirmation link, then sign in."
+        );
       } else if (!signupMode && response.ok && data.ok && data.user?.id) {
         window.quickAdNotifyAccountChange?.();
         showUser(data.user);
         status.textContent = accountText("account.signed_in", "You are signed in.");
       } else {
-        status.textContent = typeof data.error === "string"
-          ? data.error
-          : accountText("account.request_failed", "The request failed. Please try again.");
+        status.textContent = accountApiText(
+          data,
+          "account.request_failed",
+          "The request failed. Please try again."
+        );
       }
     } catch {
       status.textContent =

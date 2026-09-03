@@ -92,18 +92,23 @@ test("finalize rejects invalid music before paid work and persists valid selecti
     const routes={};const router={use(){},param(){},get(){},delete(){},post(route,...handlers){routes[route]=handlers.at(-1);}};
     const multer=()=>({fields(){return ()=>{};}});multer.diskStorage=()=>({});
     const source=(await fs.readFile(new URL("../projectRoutes.mjs",import.meta.url),"utf8"))
-      .replace(/^import[\s\S]*?;\s*\n/gm,"").replace(/export async function /g,"async function ");
+      .replace(/^import[\s\S]*?;\s*\n/gm,"").replace(/export async function /g,"async function ").replace(/export function /g,"function ");
     const create=vm.runInNewContext(source+"\n;createProjectRouter",{
       fs,path,console,crypto:{},cookieParser:()=>()=>{},requireUser(){},authConfiguration(){return {};},
       express:{Router:()=>router},multer,prepareMusic,validateMusicVolume,
       validateStoryboard:storyboard=>({ok:true,storyboard}),generateStoryboard(){throw new Error("Unexpected");},
+      getUserUsage:async()=>({finalVideoCount:0,planId:"free",monthlyCreditsUsed:0}),
+      canGenerateFinalVideo:()=>({ok:true,freeRerender:false}),
+      recordSuccessfulFinalVideo:async()=>({planId:"free",creditCost:0}),
+      LIMITS:{FREE_FINAL_VIDEOS:2,MAX_PROJECTS:10,FREE_MAX_VIDEO_SECONDS:30,PAID_MAX_VIDEO_SECONDS:60},
+      uploadToR2:async()=>{throw new Error("R2 disabled in background music test");},
       generateNarration:async()=>{narrationCalls++;return {};},
       renderVideo:async({musicChoice,musicVolume})=>{renderChoice=musicChoice;renderVolume=musicVolume;return {music:{id:musicChoice}};}
     });
     await create({projectRoot:root});
     async function invoke(musicChoice,musicVolume) {
       const response={code:200,status(n){this.code=n;return this;},json(data){this.data=data;return this;}};
-      await routes["/:projectId/finalize"]({params:{projectId:id},body:{musicChoice,musicVolume,storyboard:{scenes:[{caption:"Hello",imageIndex:1}],totalDurationSeconds:25}}},response);
+      await routes["/:projectId/finalize"]({params:{projectId:id},authUser:{id:"owner"},body:{musicChoice,musicVolume,storyboard:{scenes:[{caption:"Hello",imageIndex:1}],totalDurationSeconds:25}}},response);
       return response;
     }
     assert.equal((await invoke("../../secret")).code,400);

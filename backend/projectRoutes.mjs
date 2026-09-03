@@ -59,6 +59,7 @@ function normalizeWebsite(value) {
 
   if (/\s/.test(suppliedWebsite)) {
     return {
+      code: "PROJECT_WEBSITE_INVALID",
       error:
         "Enter only the website address, without additional words."
     };
@@ -82,6 +83,7 @@ function normalizeWebsite(value) {
       !parsedWebsite.hostname
     ) {
       return {
+        code: "PROJECT_WEBSITE_INVALID",
         error:
           "Enter a valid website address."
       };
@@ -93,6 +95,7 @@ function normalizeWebsite(value) {
     };
   } catch {
     return {
+      code: "PROJECT_WEBSITE_INVALID",
       error:
         "Enter a valid website address."
     };
@@ -229,6 +232,7 @@ function validateProject(request) {
     )
   ) {
     return {
+      code: "PROJECT_DURATION_INVALID",
       error:
         "Please choose AI Decide or a video length of 30, 45, or 60 seconds."
     };
@@ -241,12 +245,17 @@ function validateProject(request) {
 
   if (productImages.length < 1) {
     return {
+      code: "PROJECT_IMAGE_REQUIRED",
       error: "Please upload at least one product image."
     };
   }
 
   if (productImages.length > 10) {
     return {
+      code: "PROJECT_IMAGE_LIMIT",
+      params: {
+        max: 10
+      },
       error:
         "QuickAd AI supports up to 10 product images."
     };
@@ -270,6 +279,13 @@ function validateProject(request) {
       maxImagesForDuration
     ) {
       return {
+        code: "PROJECT_DURATION_IMAGE_LIMIT",
+        params: {
+          seconds:
+            requestedMaxDurationSeconds,
+          max:
+            maxImagesForDuration
+        },
         error:
           `${requestedMaxDurationSeconds}-second videos support up to ${maxImagesForDuration} product images.`
       };
@@ -279,6 +295,9 @@ function validateProject(request) {
 
   if (websiteResult.error) {
     return {
+      code:
+        websiteResult.code ||
+        "PROJECT_WEBSITE_INVALID",
       error:
         websiteResult.error
     };
@@ -286,6 +305,7 @@ function validateProject(request) {
 
   if (!ALLOWED_STYLES.has(style)) {
     return {
+      code: "PROJECT_STYLE_INVALID",
       error: "Please choose a valid video style."
     };
   }
@@ -369,7 +389,7 @@ export async function createProjectRouter({
   const withProjectLock = (handler) => async (request, response, next) => {
     const id = request.params.projectId.toLowerCase();
     if (activeProjects.has(id)) {
-      return response.status(409).json({ok: false, error: "This project is busy. Please wait until processing finishes."});
+      return response.status(409).json({ok: false, code: "PROJECT_BUSY", error: "This project is busy. Please wait until processing finishes."});
     }
     activeProjects.add(id);
     try { return await handler(request, response, next); }
@@ -399,6 +419,8 @@ export async function createProjectRouter({
     } catch {
       return response.status(503).json({
         ok: false,
+        code: "APP_ORIGIN_MISCONFIGURED",
+
         error: "Application origin is not configured correctly."
       });
     }
@@ -406,6 +428,8 @@ export async function createProjectRouter({
     if (request.get("origin") !== expectedOrigin) {
       return response.status(403).json({
         ok: false,
+        code: "REQUEST_ORIGIN_INVALID",
+
         error: "This request must come from QuickAd AI."
       });
     }
@@ -421,6 +445,8 @@ export async function createProjectRouter({
     ) {
       return response.status(400).json({
         ok: false,
+        code: "PROJECT_ID_INVALID",
+
         error: "Invalid project ID."
       });
     }
@@ -441,6 +467,8 @@ export async function createProjectRouter({
       ) {
         return response.status(404).json({
           ok: false,
+          code: "PROJECT_NOT_FOUND",
+
           error: "Project not found."
         });
       }
@@ -450,12 +478,16 @@ export async function createProjectRouter({
       if (error?.code === "ENOENT") {
         return response.status(404).json({
           ok: false,
+          code: "PROJECT_NOT_FOUND",
+
           error: "Project not found."
         });
       }
 
       response.status(503).json({
         ok: false,
+        code: "PROJECT_ACCESS_FAILED",
+
         error: "Project access could not be verified. Please try again."
       });
     }
@@ -482,21 +514,21 @@ export async function createProjectRouter({
       // Recheck ownership inside the lock; never trust a submitted owner ID.
       const stat = await fs.lstat(directory);
       if (!stat.isDirectory() || stat.isSymbolicLink()) {
-        return response.status(404).json({ok: false, error: "Project not found."});
+        return response.status(404).json({ok: false, code: "PROJECT_NOT_FOUND", error: "Project not found."});
       }
       const project = JSON.parse(await fs.readFile(path.join(directory, "project.json"), "utf8"));
       if (project.id !== id || project.ownerId !== request.authUser.id) {
-        return response.status(404).json({ok: false, error: "Project not found."});
+        return response.status(404).json({ok: false, code: "PROJECT_NOT_FOUND", error: "Project not found."});
       }
-      const processingStatuses = new Set(["storyboard_generating", "narration_generating", "video_generating"]);
-      if (processingStatuses.has(project.status)) {
-        return response.status(409).json({ok: false, code: "PROJECT_DELETE_BLOCKED", error: "This project is still processing. Please try deleting it again after processing finishes."});
+      const idleStatuses = new Set(["storyboard_ready", "video_ready", "storyboard_failed", "narration_failed", "video_failed", "approval_failed"]);
+      if (!idleStatuses.has(project.status)) {
+        return response.status(409).json({ok: false, code: "PROJECT_DELETE_BLOCKED", error: "This project is still processing or needs review. It cannot be deleted yet."});
       }
       await fs.rm(directory, {recursive: true, force: false});
       return response.json({ok: true, deletedProjectId: id});
     } catch (error) {
-      if (error?.code === "ENOENT") return response.status(404).json({ok: false, error: "Project not found."});
-      return response.status(503).json({ok: false, error: "Project deletion could not be completed. Refresh the project list before retrying."});
+      if (error?.code === "ENOENT") return response.status(404).json({ok: false, code: "PROJECT_NOT_FOUND", error: "Project not found."});
+      return response.status(503).json({ok: false, code: "PROJECT_DELETE_FAILED", error: "Project deletion could not be completed. Refresh the project list before retrying."});
     }
   }));
 
@@ -593,7 +625,7 @@ export async function createProjectRouter({
           )
       });
     } catch {
-      response.status(503).json({ ok: false, error: "Usage could not be loaded." });
+      response.status(503).json({ ok: false, code: "USAGE_LOAD_FAILED", error: "Usage could not be loaded." });
     }
   });
 
@@ -682,6 +714,8 @@ export async function createProjectRouter({
     } catch {
       response.status(503).json({
         ok: false,
+        code: "PROJECT_LIST_LOAD_FAILED",
+
         error: "Your project list could not be loaded. Please try again."
       });
     }
@@ -720,6 +754,12 @@ export async function createProjectRouter({
 
           response.status(400).json({
             ok: false,
+            code:
+              validated.code ||
+              "PROJECT_INPUT_INVALID",
+            ...(validated.params
+              ? { params: validated.params }
+              : {}),
             error: validated.error
           });
           return;
@@ -971,6 +1011,7 @@ export async function createProjectRouter({
             )
             .json({
               ok: false,
+              code: "STORYBOARD_GENERATION_FAILED",
               error:
                 missingConfiguration
                   ? "AI storyboard generation is not configured."
@@ -1008,6 +1049,8 @@ export async function createProjectRouter({
       ) {
         response.status(400).json({
           ok: false,
+          code: "PROJECT_ID_INVALID",
+
           error: "Invalid project ID."
         });
         return;
@@ -1148,6 +1191,7 @@ export async function createProjectRouter({
         if (error?.code === "ENOENT") {
           response.status(404).json({
             ok: false,
+            code: "SAVED_PROJECT_NOT_FOUND",
             error: "The saved project was not found."
           });
           return;
@@ -1160,6 +1204,7 @@ export async function createProjectRouter({
 
         response.status(500).json({
           ok: false,
+          code: "SAVED_PROJECT_OPEN_FAILED",
           error: "The saved project could not be opened."
         });
       }
@@ -1180,6 +1225,8 @@ export async function createProjectRouter({
       ) {
         response.status(400).json({
           ok: false,
+          code: "PROJECT_ID_INVALID",
+
           error: "Invalid project ID."
         });
         return;
@@ -1192,6 +1239,7 @@ export async function createProjectRouter({
       ) {
         response.status(400).json({
           ok: false,
+          code: "PROJECT_ASSET_NAME_INVALID",
           error: "Invalid asset name."
         });
         return;
@@ -1239,6 +1287,7 @@ export async function createProjectRouter({
         ) {
           response.status(404).json({
             ok: false,
+            code: "PROJECT_ASSET_NOT_FOUND",
             error: "The project asset was not found."
           });
           return;
@@ -1256,6 +1305,7 @@ export async function createProjectRouter({
         if (error?.code === "ENOENT") {
           response.status(404).json({
             ok: false,
+            code: "PROJECT_ASSET_NOT_FOUND",
             error: "The project asset was not found."
           });
           return;
@@ -1268,6 +1318,7 @@ export async function createProjectRouter({
 
         response.status(500).json({
           ok: false,
+          code: "PROJECT_ASSET_OPEN_FAILED",
           error: "The project asset could not be opened."
         });
       }
@@ -1285,6 +1336,8 @@ export async function createProjectRouter({
       ) {
         response.status(400).json({
           ok: false,
+          code: "PROJECT_ID_INVALID",
+
           error: "Invalid project ID."
         });
         return;
@@ -1313,6 +1366,7 @@ export async function createProjectRouter({
       } catch {
         response.status(404).json({
           ok: false,
+          code: "FINISHED_VIDEO_NOT_FOUND",
           error: "The finished video was not found."
         });
       }
@@ -1330,6 +1384,8 @@ export async function createProjectRouter({
       ) {
         response.status(400).json({
           ok: false,
+          code: "PROJECT_ID_INVALID",
+
           error: "Invalid project ID."
         });
         return;
@@ -1371,6 +1427,8 @@ export async function createProjectRouter({
 
         if (project.status === "video_ready") {
           return response.status(409).json({ok: false,
+            code: "VIDEO_ALREADY_COMPLETE",
+
             error: "This video is already complete. Create a new project to choose different music."});
         }
         let selectedMusic;
@@ -1379,7 +1437,17 @@ export async function createProjectRouter({
           musicVolume = validateMusicVolume(request.body?.musicVolume);
           selectedMusic = await prepareMusic(request.body?.musicChoice ?? "none");
         } catch (error) {
-          return response.status(error.status || 503).json({ok: false, error: error.message});
+          return response.status(
+            error.status || 503
+          ).json({
+            ok: false,
+            code:
+              error.code ||
+              "MUSIC_PREPARATION_FAILED",
+            error:
+              error.message ||
+              "Background music could not be prepared."
+          });
         }
         const musicChoice = selectedMusic.metadata.id;
 
@@ -1451,6 +1519,8 @@ export async function createProjectRouter({
         if (!allowedNarrators.has(narratorChoice)) {
           response.status(400).json({
             ok: false,
+            code: "NARRATOR_INVALID",
+
             error: "Select a valid narrator."
           });
           return;
@@ -1476,6 +1546,8 @@ export async function createProjectRouter({
         ) {
           response.status(400).json({
             ok: false,
+            code: "SCENE_CAPTION_INVALID",
+
             error:
               "Every scene needs a caption containing 1–60 characters."
           });
@@ -1510,6 +1582,8 @@ export async function createProjectRouter({
         if (!validation.ok) {
           response.status(400).json({
             ok: false,
+            code: "STORYBOARD_INVALID",
+
             error:
               validation.errors.join(" ")
           });
@@ -1763,6 +1837,8 @@ export async function createProjectRouter({
 
         response.status(502).json({
           ok: false,
+          code:
+            "FINAL_VIDEO_GENERATION_FAILED",
           error:
             generationStage === "narration"
               ? "Narration could not be generated. Please try again."

@@ -40,7 +40,19 @@ function describeLanguage(language = "en") {
   if (normalized.startsWith("it")) return "Italian (it)";
   if (normalized.startsWith("ja")) return "Japanese (ja)";
   if (normalized.startsWith("ko")) return "Korean (ko)";
-  if (normalized.startsWith("zh")) return "Chinese (Simplified Chinese, zh)";
+  if (
+    normalized === "zh-tw" ||
+    normalized === "zh-hant" ||
+    normalized.startsWith("zh-hant-") ||
+    normalized === "zh-hk" ||
+    normalized === "zh-mo"
+  ) {
+    return "Chinese (Traditional Chinese, Taiwan, zh-TW)";
+  }
+
+  if (normalized.startsWith("zh")) {
+    return "Chinese (Simplified Chinese, zh)";
+  }
   if (normalized.startsWith("tr")) return "Turkish (tr)";
   if (normalized.startsWith("hi")) return "Hindi (hi)";
 

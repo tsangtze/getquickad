@@ -200,11 +200,11 @@ test("expired token at submit returns to requesting a fresh link", async () => {
   assert.equal(b.element("request-panel").hidden, false);
 });
 test("request form submits only the account email", async () => {
-  const b = browserFixture("", [{ status: 202, body: { ok: true, message: "Check your inbox." } }]);
+  const b = browserFixture("", [{ status: 202, body: { ok: true, code: "PASSWORD_EMAIL_ACCEPTED", message: "Check your inbox." } }]);
   await b.ready(); b.element("email").value = " owner@example.com ";
   await b.submit("request-form");
   assert.deepEqual(b.calls.find(c => c[0] === "fetch")[2], { email: "owner@example.com" });
-  assert.equal(b.element("status").textContent, "Check your inbox.");
+  assert.equal(b.element("status").textContent, "The request could not be confirmed. Check your inbox before requesting another email.");
 });
 test("root page redirects invite/recovery fragments before existing login code", () => {
   const source = fs.readFileSync(new URL("../../Frontend/account.js", import.meta.url), "utf8");
