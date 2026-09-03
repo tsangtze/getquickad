@@ -6,6 +6,108 @@ function uiText(key, fallback, params = {}) {
   return translated;
 }
 
+let quickAdAudioContext = null;
+
+function quickAdAudio() {
+  if (!quickAdAudioContext) {
+    const AudioContextClass =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+      return null;
+    }
+
+    quickAdAudioContext =
+      new AudioContextClass();
+  }
+
+  if (quickAdAudioContext.state === "suspended") {
+    quickAdAudioContext.resume().catch(() => {});
+  }
+
+  return quickAdAudioContext;
+}
+
+function playQuickAdTone(
+  frequency,
+  duration,
+  volume,
+  delay = 0
+) {
+  const audio = quickAdAudio();
+
+  if (!audio) {
+    return;
+  }
+
+  const start = audio.currentTime + delay;
+  const oscillator = audio.createOscillator();
+  const gain = audio.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(
+    frequency,
+    start
+  );
+
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(
+    volume,
+    start + 0.01
+  );
+  gain.gain.exponentialRampToValueAtTime(
+    0.0001,
+    start + duration
+  );
+
+  oscillator.connect(gain);
+  gain.connect(audio.destination);
+
+  oscillator.start(start);
+  oscillator.stop(start + duration + 0.02);
+}
+
+function playQuickAdSound(type) {
+  try {
+    if (type === "click") {
+      playQuickAdTone(520, 0.045, 0.025);
+      return;
+    }
+
+    if (type === "plan-ready") {
+      playQuickAdTone(660, 0.12, 0.055);
+      playQuickAdTone(880, 0.18, 0.05, 0.11);
+      return;
+    }
+
+    if (type === "video-ready") {
+      playQuickAdTone(523.25, 0.12, 0.055);
+      playQuickAdTone(659.25, 0.14, 0.055, 0.10);
+      playQuickAdTone(783.99, 0.22, 0.06, 0.21);
+    }
+  } catch {}
+}
+
+document.addEventListener("click", (event) => {
+  const interactive = event.target.closest(
+    'button, a, input[type="radio"], input[type="checkbox"], select, label'
+  );
+
+  if (!interactive) {
+    return;
+  }
+
+  if (
+    interactive.matches(":disabled") ||
+    interactive.getAttribute("aria-disabled") === "true"
+  ) {
+    return;
+  }
+
+  playQuickAdSound("click");
+});
+
 let accountProjectHistory = [];
 let accountHistoryRevision = 0;
 let accountListRequest = 0;
@@ -1313,6 +1415,8 @@ finalVideoButton.addEventListener(
         "video-result-card"
       );
 
+      playQuickAdSound("video-ready");
+
       const resultHeading =
         document.createElement("strong");
 
@@ -2263,6 +2367,8 @@ form.addEventListener("submit", async (event) => {
       successMark,
       successContent
     );
+
+    playQuickAdSound("plan-ready");
     formMessage.classList.remove("error");
     formMessage.classList.add(
       "visible",
