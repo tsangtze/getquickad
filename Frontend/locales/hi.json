@@ -238,6 +238,8 @@
   "billing.opening": "खोला जा रहा है...",
   "billing.current_plan": "वर्तमान प्लान",
   "billing.cancel_to_free": "मुफ़्त प्लान पर जाएँ",
+  "billing.free_plan_starts": "मुफ़्त प्लान {date} से शुरू होगा",
+  "billing.cancels_on": "{date} को रद्द होगा",
   "billing.seconds_46_60": "46–60 सेकंड",
   "billing.up_to_60": "60 सेकंड तक के वीडियो",
   "billing.saved_projects": "सहेजे गए प्रोजेक्ट",

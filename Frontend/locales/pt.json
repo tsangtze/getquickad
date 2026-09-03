@@ -240,6 +240,8 @@
   "billing.opening": "Abrindo...",
   "billing.current_plan": "Plano atual",
   "billing.cancel_to_free": "Mudar para o plano Grátis",
+  "billing.free_plan_starts": "O plano Grátis começa em {date}",
+  "billing.cancels_on": "Cancela em {date}",
   "billing.seconds_46_60": "46–60 segundos",
   "billing.up_to_60": "Vídeos de até 60 segundos",
   "billing.saved_projects": "Projetos salvos",

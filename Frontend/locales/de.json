@@ -247,6 +247,8 @@
   "billing.opening": "Wird geöffnet...",
   "billing.current_plan": "Aktueller Tarif",
   "billing.cancel_to_free": "Zum kostenlosen Tarif wechseln",
+  "billing.free_plan_starts": "Der kostenlose Tarif beginnt am {date}",
+  "billing.cancels_on": "Kündigung am {date}",
   "billing.seconds_46_60": "46–60 Sekunden",
   "billing.up_to_60": "Videos bis zu 60 Sekunden",
   "billing.saved_projects": "Gespeicherte Projekte",

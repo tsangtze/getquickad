@@ -236,6 +236,8 @@
   "billing.opening": "正在開啟...",
   "billing.current_plan": "目前方案",
   "billing.cancel_to_free": "改為免費方案",
+  "billing.free_plan_starts": "免費方案將於 {date} 開始",
+  "billing.cancels_on": "將於 {date} 取消",
   "billing.seconds_46_60": "46–60 秒",
   "billing.up_to_60": "最長 60 秒的影片",
   "billing.saved_projects": "已儲存的專案",

@@ -238,6 +238,8 @@
   "billing.opening": "여는 중...",
   "billing.current_plan": "현재 플랜",
   "billing.cancel_to_free": "무료 플랜으로 변경",
+  "billing.free_plan_starts": "{date}부터 무료 플랜이 시작됩니다",
+  "billing.cancels_on": "{date}에 취소됩니다",
   "billing.seconds_46_60": "46~60초",
   "billing.up_to_60": "최대 60초 동영상",
   "billing.saved_projects": "저장된 프로젝트",

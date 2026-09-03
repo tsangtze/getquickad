@@ -238,6 +238,8 @@
   "billing.opening": "開いています...",
   "billing.current_plan": "現在のプラン",
   "billing.cancel_to_free": "無料プランに変更",
+  "billing.free_plan_starts": "{date}から無料プランが開始されます",
+  "billing.cancels_on": "{date}に解約されます",
   "billing.seconds_46_60": "46～60秒",
   "billing.up_to_60": "最大60秒の動画",
   "billing.saved_projects": "保存済みプロジェクト",
