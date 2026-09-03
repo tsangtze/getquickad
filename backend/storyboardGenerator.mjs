@@ -87,7 +87,7 @@ Return one complete storyboard for a 9:16 social-media advertisement that follow
 Rules:
 - Treat every new project as a fresh creative generation.
 - Create a fresh creative treatment for this request rather than relying on a fixed wording pattern or template.
-- When the same or similar product information could support multiple good advertisements, vary the hook, scene emphasis, caption wording, narration phrasing, and the lead-in to the call to action where naturally appropriate.
+- When the same or similar product information could support multiple good advertisements, vary the hook, scene emphasis, caption wording, and the lead-in to the call to action where naturally appropriate.
 - Keep all supplied product facts, brand names, URLs, and required customer details accurate. Creative variation must never come from inventing unsupported claims, features, reviews, discounts, guarantees, or certifications.
 - Repetition of unavoidable product names, supplied facts, URLs, and the customer's exact call to action is acceptable and should not be changed merely for variety.
 - Use exactly 5 scenes.
@@ -118,10 +118,10 @@ ${durationMode === "manual"
 - Set totalDurationSeconds to the actual chosen duration.
 - Narration across all scenes must contain 9-${maxNarrationWords} words.
 - Captions must be concise and contain no more than 60 characters.
-- Narration is the spoken voiceover and may be longer than the caption.
+- CAPTION-FIRST RULE: For every scene, narration must be exactly identical to caption. The caption is both the visible on-screen message and the complete spoken voiceover text.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
 - Each scene narration must contain no more than floor(scene duration in seconds × 2.5) words. Examples: 4 seconds = 10 words, 6 seconds = 15 words, 10 seconds = 25 words.
-- Keep captions short and readable on screen; do not copy the full narration into the caption unless it is naturally brief.
+- Keep each caption concise, natural to read on screen, and natural to speak aloud. Do not add any narration words that are absent from the caption.
 - Never invent certifications, reviews, discounts, guarantees, or product features.
 - Use only facts supplied by the customer.
 - imageIndex must reference an available uploaded image.

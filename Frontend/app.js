@@ -1037,6 +1037,8 @@ function createSceneReviewCard(scene) {
     () => {
       scene.caption =
         captionInput.value;
+      scene.narration =
+        captionInput.value;
 
 
       narrationText.textContent =

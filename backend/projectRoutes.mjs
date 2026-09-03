@@ -1516,7 +1516,7 @@ export async function createProjectRouter({
                     ...scene,
                     caption,
                     narration:
-                      String(scene.narration ?? "").trim()
+                      caption
                   };
                 }
               )
