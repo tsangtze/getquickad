@@ -66,7 +66,14 @@ function getTargetDurationFloor(durationTierSeconds) {
   return 55;
 }
 
-function buildSystemInstructions(language = "en", maxDurationSeconds = 30, durationMode = "manual") {
+function buildSystemInstructions(
+  language = "en",
+  maxDurationSeconds = 30,
+  durationMode = "manual",
+  imageCount = 1
+) {
+  const requiredSceneCount =
+    Math.max(5, imageCount);
   const languageDescription = describeLanguage(language);
   const maxNarrationWords =
     getNarrationWordLimit(
@@ -90,9 +97,9 @@ Rules:
 - When the same or similar product information could support multiple good advertisements, vary the hook, scene emphasis, caption wording, and the lead-in to the call to action where naturally appropriate.
 - Keep all supplied product facts, brand names, URLs, and required customer details accurate. Creative variation must never come from inventing unsupported claims, features, reviews, discounts, guarantees, or certifications.
 - Repetition of unavoidable product names, supplied facts, URLs, and the customer's exact call to action is acceptable and should not be changed merely for variety.
-- Use exactly 5 scenes.
+- Use exactly ${requiredSceneCount} scenes.
 - Scene 1 must be the hook.
-- Scene 5 must be the call to action.
+- Scene ${requiredSceneCount} must be the call to action.
 ${durationMode === "manual"
   ? `- Treat the customer's selected maximum duration as the desired ad-length tier, not merely as an upper bound.
 - If maxDurationSeconds is 30, totalDurationSeconds must be 27-30 seconds.
@@ -114,7 +121,7 @@ ${durationMode === "manual"
 - The total duration must stay within the applicable duration-tier range defined above and must never exceed ${maxDurationSeconds} seconds.
 - Give every scene a continuous timeline with no gaps or overlaps.
 - Scene 1 must start at 0 seconds.
-- Scene 5 must end exactly at totalDurationSeconds.
+- Scene ${requiredSceneCount} must end exactly at totalDurationSeconds.
 - Set totalDurationSeconds to the actual chosen duration.
 - Narration across all scenes must contain no more than ${maxNarrationWords} words.
 - Captions must be concise and contain no more than 60 characters.
@@ -129,9 +136,10 @@ ${durationMode === "manual"
 - Scene 1 must use imageIndex 1.
 - Scene 2 must use imageIndex 2 when at least 2 images are available.
 - Continue matching scene numbers to image indexes in upload order while unused images are available.
-- Uploaded images are an available creative pool; it is not required to use every uploaded image when more images are supplied than the storyboard needs.
+- When there are 6 through 10 uploaded images, create one scene per image and use image indexes 1 through ${imageCount} exactly once in upload order.
+- Every uploaded image must be used by at least one scene.
 - When there are fewer uploaded images than scenes, reuse images as needed, restarting from imageIndex 1 and continuing in upload order.
-- One uploaded image may be reused across all 5 scenes when it is the only image available.
+- When there are 1 through 5 uploaded images, create 5 scenes and reuse images in upload order as needed.
 - Write each scene caption and narration specifically for the visible content of its assigned image.
 - Motion must remain controlled and subtle.
 - Avoid rapid or excessive zooming.
@@ -366,6 +374,9 @@ export async function generateStoryboard({
     );
   }
 
+  const imageCount =
+    project.assets.productImages.length;
+
   const imageContent =
     await buildImageContent({
       project,
@@ -381,7 +392,8 @@ export async function generateStoryboard({
       ? buildSystemInstructions(
           project.language || project.targetLanguage || "en",
           maxDurationSeconds,
-          durationMode
+          durationMode,
+          imageCount
         ) +
         "\n\n" +
         buildAutoDurationInstructions({
@@ -391,7 +403,8 @@ export async function generateStoryboard({
       : buildSystemInstructions(
           project.language || project.targetLanguage || "en",
           maxDurationSeconds,
-          durationMode
+          durationMode,
+          imageCount
         );
 
   const projectInstructions =
