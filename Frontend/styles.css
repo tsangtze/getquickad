@@ -600,7 +600,7 @@ input::placeholder {
   border-color: var(--border);
 }
 
-.duration-option.locked::after {
+.duration-option.locked[data-lock-reason="plan"]::after {
   content: "Paid";
   position: absolute;
   top: 9px;
