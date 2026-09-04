@@ -1355,8 +1355,14 @@ function moveDurationToPlanReview() {
 }
 
 function moveStyleToSetup() {
-  if (styleSection && styleSetupHome) {
-    styleSetupHome.append(styleSection);
+  const setupFinalPanel =
+    styleSetupHome?.querySelector(".setup-final-panel");
+
+  if (styleSection && styleSetupHome && setupFinalPanel) {
+    styleSetupHome.insertBefore(
+      styleSection,
+      setupFinalPanel
+    );
   }
 }
 
