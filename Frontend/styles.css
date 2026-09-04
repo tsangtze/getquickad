@@ -1941,3 +1941,16 @@ input::placeholder {
     justify-content: space-between;
   }
 }
+
+/* Version 1.1.8.3: compact create-page narrator and music layout. */
+.setup-audio-host {
+  display: grid;
+  gap: 22px;
+}
+
+.setup-audio-host .narrator-section,
+.setup-audio-host .music-section {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
