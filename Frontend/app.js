@@ -223,6 +223,12 @@ const clearProjectHistoryButton =
   );
 
 const styleOptions = [...document.querySelectorAll(".style-option")];
+const styleSection =
+  document.querySelector("#style-section");
+const styleSetupHome =
+  styleSection?.parentElement ?? null;
+const planStyleHost =
+  document.querySelector("#plan-style-host");
 const planReview = document.querySelector("#plan-review");
 const durationFieldset =
   document.querySelector("#duration-options");
@@ -1343,6 +1349,18 @@ function moveDurationToPlanReview() {
   }
 }
 
+function moveStyleToSetup() {
+  if (styleSection && styleSetupHome) {
+    styleSetupHome.append(styleSection);
+  }
+}
+
+function moveStyleToPlanReview() {
+  if (styleSection && planStyleHost) {
+    planStyleHost.append(styleSection);
+  }
+}
+
 function moveAudioToSetup() {
   if (setupAudioHost && narratorSection && musicSection) {
     setupAudioHost.append(narratorSection);
@@ -1360,6 +1378,7 @@ moveAudioToSetup();
 
 function showPlanReviewMode() {
   moveDurationToPlanReview();
+  moveStyleToPlanReview();
   moveAudioToPlanReview();
   recentProjects.hidden = true;
   form.hidden = true;
@@ -1503,6 +1522,7 @@ function restoreSavedProjectSetup(
 
 function showProjectSetupMode() {
   moveDurationToSetup();
+  moveStyleToSetup();
   moveAudioToSetup();
   planReview.hidden = true;
   form.hidden = false;
