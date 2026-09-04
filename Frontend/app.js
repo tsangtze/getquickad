@@ -686,7 +686,12 @@ const deletedSceneHistory = [];
 const SCENE_TIMELINE_WEIGHTS = {
   3: [7, 10, 8],
   4: [5, 7, 7, 6],
-  5: [4, 5, 6, 5, 5]
+  5: [4, 5, 6, 5, 5],
+  6: [4, 4, 5, 4, 4, 4],
+  7: [3, 4, 4, 4, 4, 3, 3],
+  8: [3, 3, 3, 4, 3, 3, 3, 3],
+  9: [3, 3, 3, 3, 3, 3, 3, 3, 3],
+  10: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
 };
 
 function countNarrationWords(scenes) {
@@ -723,7 +728,7 @@ function normalizeSceneTimeline({
 
   if (!timelineWeights) {
     throw new Error(
-      "A video plan must contain between 3 and 5 scenes."
+      "A video plan must contain between 3 and 10 scenes."
     );
   }
 

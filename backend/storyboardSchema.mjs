@@ -112,12 +112,14 @@ export function validateStoryboard(
     );
   }
 
+  const requiredSceneCount =
+    Math.max(5, imageCount);
+
   if (
-    value.scenes.length < 3 ||
-    value.scenes.length > 5
+    value.scenes.length !== requiredSceneCount
   ) {
     errors.push(
-      "Storyboard must contain between 3 and 5 scenes."
+      `Storyboard must contain exactly ${requiredSceneCount} scenes for ${imageCount} uploaded image${imageCount === 1 ? "" : "s"}.`
     );
   }
 
@@ -182,6 +184,24 @@ export function validateStoryboard(
     }
     expectedStart = scene.endSeconds;
   });
+
+  for (
+    let imageIndex = 1;
+    imageIndex <= imageCount;
+    imageIndex += 1
+  ) {
+    const imageIsUsed =
+      value.scenes.some(
+        (scene) =>
+          scene.imageIndex === imageIndex
+      );
+
+    if (!imageIsUsed) {
+      errors.push(
+        `Uploaded image ${imageIndex} is not used by any scene.`
+      );
+    }
+  }
 
   if (expectedStart !== value.totalDurationSeconds) {
     errors.push(
