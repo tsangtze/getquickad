@@ -204,6 +204,8 @@ const characterCount = document.querySelector("#character-count");
 const uploadError = document.querySelector("#upload-error");
 const descriptionError = document.querySelector("#description-error");
 const formMessage = document.querySelector("#form-message");
+const formMessageSetupHome =
+  formMessage?.parentElement ?? null;
 const createButton = document.querySelector("#create-button");
 const recentProjects =
   document.querySelector(
@@ -1376,10 +1378,23 @@ function moveAudioToPlanReview() {
 
 moveAudioToSetup();
 
+function moveFormMessageToSetup() {
+  if (formMessage && formMessageSetupHome) {
+    formMessageSetupHome.append(formMessage);
+  }
+}
+
+function moveFormMessageToPlanReview() {
+  if (formMessage && planReview) {
+    planReview.append(formMessage);
+  }
+}
+
 function showPlanReviewMode() {
   moveDurationToPlanReview();
   moveStyleToPlanReview();
   moveAudioToPlanReview();
+  moveFormMessageToPlanReview();
   recentProjects.hidden = true;
   form.hidden = true;
   planReview.hidden = false;
@@ -1524,6 +1539,7 @@ function showProjectSetupMode() {
   moveDurationToSetup();
   moveStyleToSetup();
   moveAudioToSetup();
+  moveFormMessageToSetup();
   planReview.hidden = true;
   form.hidden = false;
 
