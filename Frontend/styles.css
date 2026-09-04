@@ -1954,3 +1954,32 @@ input::placeholder {
   margin: 0;
   box-sizing: border-box;
 }
+/* Version 1.1.8.4: shared create-page audio/final panel. */
+.setup-final-panel {
+  display: grid;
+  gap: 22px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.setup-final-panel .setup-audio-host {
+  display: grid;
+  gap: 22px;
+}
+
+.setup-final-panel .setup-audio-host .narrator-section,
+.setup-final-panel .setup-audio-host .music-section {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 580px) {
+  .setup-final-panel {
+    padding: 18px;
+    border-radius: 19px;
+  }
+}
