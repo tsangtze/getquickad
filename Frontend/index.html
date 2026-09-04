@@ -372,7 +372,6 @@
         </div>
 
         <div class="plan-review-heading-actions">
-          <button id="edit-project-setup" class="edit-project-setup" type="button" aria-label="Edit project setup" data-i18n-aria-label="review.edit_setup" title="Edit project setup" data-i18n-title="review.edit_setup">←</button>
           <span class="plan-badge" data-i18n="review.badge">AI plan ready</span>
         </div>
       </div>
@@ -393,6 +392,17 @@
       </div>
 
       <div id="plan-scenes" class="plan-scenes"></div>
+
+      <div id="plan-duration-host" class="plan-duration-host"></div>
+
+      <button
+        id="regenerate-plan-button"
+        class="create-button"
+        type="button"
+      >
+        <span data-i18n="review.new_plan">Generate New Video Plan</span>
+        <span aria-hidden="true">→</span>
+      </button>
 
       <fieldset class="narrator-section">
         <legend data-i18n="narrator.title">Choose a narrator</legend>

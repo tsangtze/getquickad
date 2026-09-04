@@ -224,10 +224,14 @@ const clearProjectHistoryButton =
 
 const styleOptions = [...document.querySelectorAll(".style-option")];
 const planReview = document.querySelector("#plan-review");
-const editProjectSetupButton =
-  document.querySelector(
-    "#edit-project-setup"
-  );
+const durationFieldset =
+  document.querySelector("#duration-options");
+const durationSetupHome =
+  durationFieldset?.parentElement ?? null;
+const planDurationHost =
+  document.querySelector("#plan-duration-host");
+const regeneratePlanButton =
+  document.querySelector("#regenerate-plan-button");
 const durationOptions = [...document.querySelectorAll(".duration-option")];
 const planScenes = document.querySelector("#plan-scenes");
 const planStatus = document.querySelector("#plan-status");
@@ -344,6 +348,22 @@ function updateDurationAvailability() {
           ? "images"
           : "";
   });
+
+  const checkedDurationRadio =
+    document.querySelector(
+      'input[name="maxDurationSeconds"]:checked'
+    );
+
+  if (checkedDurationRadio?.disabled) {
+    const autoDurationRadio =
+      document.querySelector(
+        'input[name="maxDurationSeconds"][value="auto"]'
+      );
+
+    if (autoDurationRadio) {
+      autoDurationRadio.checked = true;
+    }
+  }
 
   durationOptions.forEach((option) => {
     const radio =
@@ -1304,7 +1324,21 @@ function renderDurationReviewSummary(project, storyboard) {
       : uiText("duration.selected_summary", "Selected: Up to {max} seconds · {cost} · Actual plan: {actual} seconds", { max: durationTierSeconds, cost: costLabel, actual: actualDurationSeconds });
 }
 
+function moveDurationToSetup() {
+  if (durationFieldset && durationSetupHome) {
+    durationSetupHome.append(durationFieldset);
+  }
+}
+
+function moveDurationToPlanReview() {
+  if (durationFieldset && planDurationHost) {
+    planDurationHost.append(durationFieldset);
+    updateDurationAvailability();
+  }
+}
+
 function showPlanReviewMode() {
+  moveDurationToPlanReview();
   recentProjects.hidden = true;
   form.hidden = true;
   planReview.hidden = false;
@@ -1446,6 +1480,7 @@ function restoreSavedProjectSetup(
 }
 
 function showProjectSetupMode() {
+  moveDurationToSetup();
   planReview.hidden = true;
   form.hidden = false;
 
@@ -2365,12 +2400,10 @@ clearProjectHistoryButton.addEventListener("click", () => {
   loadAccountProjects();
 });
 
-editProjectSetupButton.addEventListener(
-  "click",
-  () => {
-    showProjectSetupMode();
-  }
-);
+
+regeneratePlanButton.addEventListener("click", () => {
+  form.requestSubmit();
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -2435,6 +2468,9 @@ form.addEventListener("submit", async (event) => {
   const originalButtonContent =
     createButton.innerHTML;
 
+  const originalRegenerateButtonContent =
+    regeneratePlanButton.innerHTML;
+
   createButton.disabled = true;
   createButton.innerHTML =
     `<span>${uiText(
@@ -2442,10 +2478,19 @@ form.addEventListener("submit", async (event) => {
       "Creating your video plan..."
     )}</span><span>•••</span>`;
 
+  regeneratePlanButton.disabled = true;
+  regeneratePlanButton.innerHTML =
+    createButton.innerHTML;
+
   try {
     syncImageInput();
 
     const projectData = new FormData(form);
+
+    projectData.set(
+      "maxDurationSeconds",
+      String(getSelectedDurationChoice())
+    );
     projectData.set(
       "description",
       description.value.trim()
@@ -2678,6 +2723,10 @@ form.addEventListener("submit", async (event) => {
     createButton.disabled = false;
     createButton.innerHTML =
       originalButtonContent;
+
+    regeneratePlanButton.disabled = false;
+    regeneratePlanButton.innerHTML =
+      originalRegenerateButtonContent;
   }
 
   if (
