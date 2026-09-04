@@ -199,6 +199,7 @@ const uploadFormats =
   document.querySelector("#upload-formats");
 const logoName = document.querySelector("#logo-name");
 const description = document.querySelector("#productDesc");
+const websiteInput = document.querySelector("#website");
 const characterCount = document.querySelector("#character-count");
 const uploadError = document.querySelector("#upload-error");
 const descriptionError = document.querySelector("#description-error");
@@ -269,6 +270,8 @@ const narratorOptions = [
 ];
 
 let selectedImages = [];
+let sourceProjectId = "";
+let reusableSavedImageUrls = [];
 let currentPlanMaxVideoSeconds = 30;
 let currentPlanId = "free";
 let currentProjectId = "";
@@ -294,8 +297,14 @@ function syncImageInput() {
   imageInput.files = transfer.files;
 }
 
+function getEffectiveImageCount() {
+  return selectedImages.length > 0
+    ? selectedImages.length
+    : reusableSavedImageUrls.length;
+}
+
 function updateDurationAvailability() {
-  const imageCount = selectedImages.length;
+  const imageCount = getEffectiveImageCount();
 
   durationOptions.forEach((option) => {
     const radio =
@@ -349,6 +358,61 @@ function updateDurationAvailability() {
 
 function renderImagePreviews() {
   previewList.replaceChildren();
+
+  if (
+    selectedImages.length === 0 &&
+    reusableSavedImageUrls.length > 0
+  ) {
+    reusableSavedImageUrls.forEach(
+      (imageUrl, index) => {
+        const preview =
+          document.createElement("div");
+
+        preview.className = "image-preview";
+
+        const image =
+          document.createElement("img");
+
+        image.alt = uiText(
+          "upload.preview_alt",
+          `Saved product image ${index + 1}`,
+          { number: index + 1 }
+        );
+
+        image.src = imageUrl;
+        preview.append(image);
+        previewList.append(preview);
+      }
+    );
+
+    const selectedImageLimit =
+      getSelectedImageLimit();
+
+    if (uploadDescription) {
+      uploadDescription.textContent =
+        `Add up to ${selectedImageLimit} clear product photos. You can also add your logo.`;
+    }
+
+    if (uploadFormats) {
+      uploadFormats.textContent =
+        `JPG, PNG or WebP · Maximum ${selectedImageLimit} images`;
+    }
+
+    imageCount.textContent = uiText(
+      "upload.count",
+      `${reusableSavedImageUrls.length} of ${selectedImageLimit}`,
+      {
+        count: reusableSavedImageUrls.length,
+        max: selectedImageLimit
+      }
+    );
+
+    imageCount.style.color =
+      "var(--success)";
+
+    updateDurationAvailability();
+    return;
+  }
 
   selectedImages.forEach((file, index) => {
     const preview = document.createElement("div");
@@ -546,9 +610,9 @@ durationOptions.forEach((option) => {
     const selectedImageLimit =
       getSelectedImageLimit();
 
-    if (selectedImages.length > selectedImageLimit) {
+    if (getEffectiveImageCount() > selectedImageLimit) {
       const excessImageCount =
-        selectedImages.length - selectedImageLimit;
+        getEffectiveImageCount() - selectedImageLimit;
 
       setUploadError(
         selectedDurationSeconds === null
@@ -1251,7 +1315,138 @@ function showPlanReviewMode() {
   });
 }
 
+function restoreSavedCallToAction(project) {
+  const savedCallToAction =
+    String(project?.callToAction ?? "").trim();
+
+  const ctaKeys = {
+    "Shop Now": "cta.shop",
+    "Learn More": "cta.learn",
+    "Order Today": "cta.order",
+    "Visit Our Website": "cta.visit",
+    "Book Now": "cta.book"
+  };
+
+  const standardValue =
+    Object.keys(ctaKeys).find(
+      (value) =>
+        savedCallToAction === value ||
+        savedCallToAction ===
+          uiText(ctaKeys[value], value)
+    );
+
+  if (standardValue) {
+    callToActionSelect.value =
+      standardValue;
+
+    customCtaInput.value = "";
+  } else if (savedCallToAction) {
+    callToActionSelect.value =
+      "custom";
+
+    customCtaInput.value =
+      savedCallToAction;
+  } else {
+    callToActionSelect.value =
+      "Shop Now";
+
+    customCtaInput.value = "";
+  }
+
+  customCtaCount.textContent =
+    uiText(
+      "cta.count",
+      `${customCtaInput.value.length} / 40 characters`,
+      {
+        count: customCtaInput.value.length,
+        max: 40
+      }
+    );
+
+  updateCustomCtaField();
+}
+
+function restoreSavedProjectSetup(
+  project,
+  savedImageUrls
+) {
+  sourceProjectId = String(project?.id ?? "");
+
+  reusableSavedImageUrls =
+    Array.isArray(savedImageUrls)
+      ? [...savedImageUrls]
+      : [];
+
+  selectedImages = [];
+  syncImageInput();
+
+  description.value =
+    String(project?.description ?? "");
+
+  characterCount.textContent =
+    `${description.value.length} / 500`;
+
+  if (websiteInput) {
+    websiteInput.value =
+      String(project?.website ?? "");
+  }
+
+  restoreSavedCallToAction(project);
+
+  const savedStyle =
+    String(project?.style ?? "");
+
+  const styleRadio =
+    [...document.querySelectorAll(
+      'input[name="style"]'
+    )].find(
+      (radio) =>
+        radio.value === savedStyle
+    );
+
+  if (styleRadio) {
+    styleRadio.checked = true;
+
+    styleOptions.forEach((option) => {
+      const radio =
+        option.querySelector(
+          'input[type="radio"]'
+        );
+
+      option.classList.toggle(
+        "selected",
+        radio === styleRadio
+      );
+    });
+  }
+
+  const savedDurationChoice =
+    project?.output?.durationMode === "auto"
+      ? "auto"
+      : String(
+          project?.output?.maxDurationSeconds ??
+          project?.output?.durationSeconds ??
+          ""
+        );
+
+  const durationRadio =
+    [...document.querySelectorAll(
+      'input[name="maxDurationSeconds"]'
+    )].find(
+      (radio) =>
+        radio.value === savedDurationChoice
+    );
+
+  if (durationRadio) {
+    durationRadio.checked = true;
+  }
+
+  renderImagePreviews();
+  updateDurationAvailability();
+}
+
 function showProjectSetupMode() {
+  planReview.hidden = true;
   form.hidden = false;
 
   form.scrollIntoView({
@@ -2106,6 +2301,11 @@ async function openSavedProject(
       recovery.storyboard,
       savedImageUrls
     );
+
+    restoreSavedProjectSetup(
+      recovery.project,
+      savedImageUrls
+    );
     showPlanReviewMode();
 
     rememberProject(
@@ -2187,7 +2387,7 @@ form.addEventListener("submit", async (event) => {
 
   let firstInvalidElement = null;
 
-  if (selectedImages.length === 0) {
+  if (getEffectiveImageCount() === 0) {
     setUploadError(uiText("upload.required_error", "Please add at least one product image."));
     firstInvalidElement = uploadZone;
   }
@@ -2199,11 +2399,11 @@ form.addEventListener("submit", async (event) => {
     getSelectedImageLimit();
 
   if (
-    selectedImages.length >
+    getEffectiveImageCount() >
     selectedImageLimit
   ) {
     const excessImageCount =
-      selectedImages.length -
+      getEffectiveImageCount() -
       selectedImageLimit;
 
     setUploadError(
@@ -2246,6 +2446,17 @@ form.addEventListener("submit", async (event) => {
     syncImageInput();
 
     const projectData = new FormData(form);
+    projectData.set(
+      "description",
+      description.value.trim()
+    );
+
+    if (sourceProjectId) {
+      projectData.set(
+        "sourceProjectId",
+        sourceProjectId
+      );
+    }
     // Auto-detect UI language for video generation - Phase 2 Mexico
     const userLang = localStorage.getItem('quickad_lang') || document.documentElement.lang || navigator.language || 'en';
     const normalizedLang = userLang.toLowerCase();
@@ -2337,9 +2548,41 @@ form.addEventListener("submit", async (event) => {
       result.project.status
     );
 
+    const newProjectImageUrls =
+      Array.isArray(
+        result.project?.assets
+          ?.productImages
+      )
+        ? result.project.assets
+            .productImages
+            .map((asset) => {
+              const storedName =
+                String(
+                  asset?.storedName ?? ""
+                );
+
+              if (!storedName) {
+                return "";
+              }
+
+              return (
+                `/api/projects/${result.project.id}` +
+                `/assets/${encodeURIComponent(storedName)}`
+              );
+            })
+            .filter(Boolean)
+        : [];
+
+    sourceProjectId =
+      String(result.project.id ?? "");
+
+    reusableSavedImageUrls =
+      [...newProjectImageUrls];
+
     renderVideoPlanReview(
       result.project,
-      result.storyboard
+      result.storyboard,
+      newProjectImageUrls
     );
     showPlanReviewMode();
 
