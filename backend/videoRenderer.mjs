@@ -472,7 +472,13 @@ export async function renderVideo({
       "-hide_banner",
       "-loglevel",
       "warning",
-      "-y"
+      "-y",
+      "-threads",
+      "1",
+      "-filter_threads",
+      "1",
+      "-filter_complex_threads",
+      "1"
     ];
 
     const videoFilters = [];
