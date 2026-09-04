@@ -2335,16 +2335,6 @@ async function openSavedProject(
       );
     }
 
-    if (
-      !recovery.storyboard ||
-      !Array.isArray(
-        recovery.storyboard.scenes
-      )
-    ) {
-      throw new Error(
-        uiText("saved.no_plan", "This saved project does not have a recoverable video plan.")
-      );
-    }
 
     const savedImageUrls =
       Array.isArray(
@@ -2363,6 +2353,49 @@ async function openSavedProject(
     if (savedImageUrls.length === 0) {
       throw new Error(
         uiText("saved.no_images", "This saved project does not have recoverable product images.")
+      );
+    }
+
+    const hasRecoverableStoryboard =
+      recovery.storyboard &&
+      Array.isArray(
+        recovery.storyboard.scenes
+      );
+
+    if (!hasRecoverableStoryboard) {
+      if (
+        recovery.stage ===
+          "storyboard_failed" ||
+        recovery.project?.status ===
+          "storyboard_failed"
+      ) {
+        restoreSavedProjectSetup(
+          recovery.project,
+          savedImageUrls
+        );
+
+        showProjectSetupMode();
+
+        rememberProject(
+          recovery.project,
+          null,
+          recovery.project.status
+        );
+
+        recentProjectStatus.textContent =
+          uiText(
+            "saved.setup_recovered",
+            "Saved project restored. You can generate the video plan again."
+          );
+
+        return;
+      }
+
+      throw new Error(
+        uiText(
+          "saved.no_plan",
+          "This saved project does not have a recoverable video plan."
+        )
       );
     }
 
