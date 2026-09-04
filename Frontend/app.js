@@ -1808,19 +1808,9 @@ finalVideoButton.addEventListener(
       successDetails.textContent =
         uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · ${currentStoryboard.totalDurationSeconds || 30}-second MP4`, { count: currentStoryboard.scenes.length, seconds: currentStoryboard.totalDurationSeconds || 30 });
 
-      const successNext =
-        document.createElement("small");
-
-      successNext.textContent =
-        uiText(
-          "result.rendered_success",
-          "Your approved video was rendered successfully. Watch or download it below."
-        );
-
       successContent.append(
         successTitle,
-        successDetails,
-        successNext
+        successDetails
       );
 
       formMessage.replaceChildren(
