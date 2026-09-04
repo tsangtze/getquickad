@@ -202,11 +202,10 @@ export function validateStoryboard(
     );
 
   if (
-    actualWordCount < 9 ||
     actualWordCount > maxNarrationWords
   ) {
     errors.push(
-      `Narration must contain between 9 and ${maxNarrationWords} words.`
+      `Narration must contain no more than ${maxNarrationWords} words.`
     );
   }
 

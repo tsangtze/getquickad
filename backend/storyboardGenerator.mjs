@@ -116,7 +116,7 @@ ${durationMode === "manual"
 - Scene 1 must start at 0 seconds.
 - Scene 5 must end exactly at totalDurationSeconds.
 - Set totalDurationSeconds to the actual chosen duration.
-- Narration across all scenes must contain 9-${maxNarrationWords} words.
+- Narration across all scenes must contain no more than ${maxNarrationWords} words.
 - Captions must be concise and contain no more than 60 characters.
 - CAPTION-FIRST RULE: For every scene, narration must be exactly identical to caption. The caption is both the visible on-screen message and the complete spoken voiceover text.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
@@ -167,9 +167,9 @@ AI DURATION DECISION:
 - If durationTierSeconds is 30, totalDurationSeconds must be 27-30 seconds.
 - If durationTierSeconds is 45, totalDurationSeconds must be 41-45 seconds.
 - If durationTierSeconds is 60, totalDurationSeconds must be 55-60 seconds.
-- If durationTierSeconds is 30, total narration must contain 9-65 words.
-- If durationTierSeconds is 45, total narration must contain 9-95 words.
-- If durationTierSeconds is 60, total narration must contain 9-125 words.
+- If durationTierSeconds is 30, total narration must contain no more than 65 words.
+- If durationTierSeconds is 45, total narration must contain no more than 95 words.
+- If durationTierSeconds is 60, total narration must contain no more than 125 words.
 - The narration word limit for the chosen durationTierSeconds overrides any larger narration allowance stated by the plan ceiling.
 `.trim();
 }
