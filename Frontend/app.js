@@ -230,6 +230,12 @@ const durationSetupHome =
   durationFieldset?.parentElement ?? null;
 const planDurationHost =
   document.querySelector("#plan-duration-host");
+const setupAudioHost =
+  document.querySelector("#setup-audio-host");
+const narratorSection =
+  document.querySelector(".narrator-section");
+const musicSection =
+  document.querySelector(".music-section");
 const regeneratePlanButton =
   document.querySelector("#regenerate-plan-button");
 const durationOptions = [...document.querySelectorAll(".duration-option")];
@@ -1337,8 +1343,24 @@ function moveDurationToPlanReview() {
   }
 }
 
+function moveAudioToSetup() {
+  if (setupAudioHost && narratorSection && musicSection) {
+    setupAudioHost.append(narratorSection);
+    setupAudioHost.append(musicSection);
+  }
+}
+
+function moveAudioToPlanReview() {
+  if (regeneratePlanButton && narratorSection && musicSection) {
+    regeneratePlanButton.after(narratorSection, musicSection);
+  }
+}
+
+moveAudioToSetup();
+
 function showPlanReviewMode() {
   moveDurationToPlanReview();
+  moveAudioToPlanReview();
   recentProjects.hidden = true;
   form.hidden = true;
   planReview.hidden = false;
@@ -1481,6 +1503,7 @@ function restoreSavedProjectSetup(
 
 function showProjectSetupMode() {
   moveDurationToSetup();
+  moveAudioToSetup();
   planReview.hidden = true;
   form.hidden = false;
 
