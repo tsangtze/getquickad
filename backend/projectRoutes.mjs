@@ -186,9 +186,19 @@ export function getMinimumDurationTierForImageCount(imageCount) {
   return 60;
 }
 
-function validateProject(request) {
+function validateProject(request, sourceProductImages = []) {
   const productImages =
     request.files?.productImages ?? [];
+
+  const sourceProjectId = cleanText(
+    request.body.sourceProjectId,
+    36
+  );
+
+  const effectiveImageCount =
+    productImages.length > 0
+      ? productImages.length
+      : sourceProductImages.length;
 
   const description = cleanText(
     request.body.description,
@@ -243,10 +253,21 @@ function validateProject(request) {
     10
   ) || "en";
 
-  if (productImages.length < 1) {
+  if (productImages.length < 1 && !sourceProjectId) {
     return {
       code: "PROJECT_IMAGE_REQUIRED",
       error: "Please upload at least one product image."
+    };
+  }
+
+  if (
+    sourceProjectId &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      .test(sourceProjectId)
+  ) {
+    return {
+      code: "SOURCE_PROJECT_ID_INVALID",
+      error: "Invalid source project ID."
     };
   }
 
@@ -263,7 +284,7 @@ function validateProject(request) {
 
   const minimumDurationTierSeconds =
     getMinimumDurationTierForImageCount(
-      productImages.length
+      effectiveImageCount
     );
 
   if (durationMode === "manual") {
@@ -275,7 +296,7 @@ function validateProject(request) {
           : 10;
 
     if (
-      productImages.length >
+      effectiveImageCount >
       maxImagesForDuration
     ) {
       return {
@@ -312,6 +333,8 @@ function validateProject(request) {
 
   return {
     productImages,
+    sourceProjectId,
+    effectiveImageCount,
     productLogo:
       request.files?.productLogo?.[0] ?? null,
     description,
@@ -322,6 +345,261 @@ function validateProject(request) {
     durationMode,
     minimumDurationTierSeconds,
     maxDurationSeconds: requestedMaxDurationSeconds
+  };
+}
+
+async function loadOwnedSourceProject({
+  projectsDirectory,
+  sourceProjectId,
+  ownerId
+}) {
+  if (!sourceProjectId) {
+    return null;
+  }
+
+  const sourceDirectory = path.join(
+    projectsDirectory,
+    sourceProjectId
+  );
+
+  try {
+    const stat = await fs.lstat(sourceDirectory);
+
+    if (
+      !stat.isDirectory() ||
+      stat.isSymbolicLink()
+    ) {
+      const error = new Error("Source project not found.");
+      error.code = "SOURCE_PROJECT_NOT_FOUND";
+      throw error;
+    }
+
+    const sourceProject = JSON.parse(
+      await fs.readFile(
+        path.join(sourceDirectory, "project.json"),
+        "utf8"
+      )
+    );
+
+    if (
+      sourceProject?.id !== sourceProjectId ||
+      sourceProject?.ownerId !== ownerId
+    ) {
+      const error = new Error("Source project not found.");
+      error.code = "SOURCE_PROJECT_NOT_FOUND";
+      throw error;
+    }
+
+    const productImages =
+      Array.isArray(
+        sourceProject.assets?.productImages
+      )
+        ? sourceProject.assets.productImages
+        : [];
+
+    if (productImages.length < 1) {
+      const error = new Error("Source project has no reusable product images.");
+      error.code = "SOURCE_PROJECT_IMAGES_MISSING";
+      throw error;
+    }
+
+    if (productImages.length > MAX_IMAGE_COUNT) {
+      const error = new Error("Source project has too many product images.");
+      error.code = "SOURCE_PROJECT_IMAGE_LIMIT";
+      throw error;
+    }
+
+    for (const asset of productImages) {
+      const storedName =
+        String(asset?.storedName ?? "");
+
+      if (
+        !storedName ||
+        path.basename(storedName) !== storedName ||
+        !ALLOWED_MIME_TYPES.has(asset?.mimeType)
+      ) {
+        const error = new Error("Source project contains an invalid product image.");
+        error.code = "SOURCE_PROJECT_ASSET_INVALID";
+        throw error;
+      }
+    }
+
+    const productLogo =
+      sourceProject.assets?.productLogo ?? null;
+
+    if (productLogo) {
+      const storedName =
+        String(productLogo?.storedName ?? "");
+
+      if (
+        !storedName ||
+        path.basename(storedName) !== storedName ||
+        !ALLOWED_MIME_TYPES.has(productLogo?.mimeType)
+      ) {
+        const error = new Error("Source project contains an invalid product logo.");
+        error.code = "SOURCE_PROJECT_ASSET_INVALID";
+        throw error;
+      }
+    }
+
+    return {
+      project: sourceProject,
+      directory: sourceDirectory,
+      productImages,
+      productLogo
+    };
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      const notFound = new Error("Source project not found.");
+      notFound.code = "SOURCE_PROJECT_NOT_FOUND";
+      throw notFound;
+    }
+
+    throw error;
+  }
+}
+
+async function copySourceProductImages({
+  sourceProject,
+  projectDirectory
+}) {
+  if (!sourceProject) {
+    return [];
+  }
+
+  const copiedImages = [];
+
+  for (
+    let index = 0;
+    index < sourceProject.productImages.length;
+    index += 1
+  ) {
+    const asset =
+      sourceProject.productImages[index];
+
+    const extension =
+      ALLOWED_MIME_TYPES.get(asset.mimeType);
+
+    if (!extension) {
+      const error = new Error("Source project contains an invalid product image.");
+      error.code = "SOURCE_PROJECT_ASSET_INVALID";
+      throw error;
+    }
+
+    const sourcePath = path.join(
+      sourceProject.directory,
+      asset.storedName
+    );
+
+    const sourceStat =
+      await fs.lstat(sourcePath);
+
+    if (
+      !sourceStat.isFile() ||
+      sourceStat.isSymbolicLink()
+    ) {
+      const error = new Error("Source project product image is unavailable.");
+      error.code = "SOURCE_PROJECT_ASSET_MISSING";
+      throw error;
+    }
+
+    if (sourceStat.size > MAX_FILE_SIZE) {
+      const error = new Error("Source project product image is too large.");
+      error.code = "SOURCE_PROJECT_ASSET_TOO_LARGE";
+      throw error;
+    }
+
+    const storedName =
+      `product-${String(index + 1).padStart(2, "0")}${extension}`;
+
+    const destinationPath = path.join(
+      projectDirectory,
+      storedName
+    );
+
+    await fs.copyFile(
+      sourcePath,
+      destinationPath
+    );
+
+    copiedImages.push({
+      originalName:
+        String(
+          asset.originalName ??
+          asset.storedName
+        ),
+      storedName,
+      mimeType: asset.mimeType,
+      size: sourceStat.size
+    });
+  }
+
+  return copiedImages;
+}
+
+async function copySourceProductLogo({
+  sourceProject,
+  projectDirectory
+}) {
+  const asset =
+    sourceProject?.productLogo ?? null;
+
+  if (!asset) {
+    return null;
+  }
+
+  const extension =
+    ALLOWED_MIME_TYPES.get(asset.mimeType);
+
+  if (!extension) {
+    const error = new Error("Source project contains an invalid product logo.");
+    error.code = "SOURCE_PROJECT_ASSET_INVALID";
+    throw error;
+  }
+
+  const sourcePath = path.join(
+    sourceProject.directory,
+    asset.storedName
+  );
+
+  const sourceStat =
+    await fs.lstat(sourcePath);
+
+  if (
+    !sourceStat.isFile() ||
+    sourceStat.isSymbolicLink()
+  ) {
+    const error = new Error("Source project product logo is unavailable.");
+    error.code = "SOURCE_PROJECT_ASSET_MISSING";
+    throw error;
+  }
+
+  if (sourceStat.size > MAX_FILE_SIZE) {
+    const error = new Error("Source project product logo is too large.");
+    error.code = "SOURCE_PROJECT_ASSET_TOO_LARGE";
+    throw error;
+  }
+
+  const storedName =
+    `logo${extension}`;
+
+  await fs.copyFile(
+    sourcePath,
+    path.join(
+      projectDirectory,
+      storedName
+    )
+  );
+
+  return {
+    originalName:
+      String(
+        asset.originalName ??
+        asset.storedName
+      ),
+    storedName,
+    mimeType: asset.mimeType,
+    size: sourceStat.size
   };
 }
 
@@ -746,8 +1024,63 @@ export async function createProjectRouter({
           return;
         }
 
+        const requestedSourceProjectId =
+          cleanText(
+            request.body.sourceProjectId,
+            36
+          );
+
+        let sourceProject = null;
+
+        if (requestedSourceProjectId) {
+          if (
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+              .test(requestedSourceProjectId)
+          ) {
+            await removeFiles(uploadedFiles);
+
+            response.status(400).json({
+              ok: false,
+              code: "SOURCE_PROJECT_ID_INVALID",
+              error: "Invalid source project ID."
+            });
+            return;
+          }
+
+          try {
+            sourceProject =
+              await loadOwnedSourceProject({
+                projectsDirectory,
+                sourceProjectId:
+                  requestedSourceProjectId,
+                ownerId:
+                  request.authUser.id
+              });
+          } catch (error) {
+            await removeFiles(uploadedFiles);
+
+            if (
+              String(error?.code ?? "").startsWith(
+                "SOURCE_PROJECT_"
+              )
+            ) {
+              response.status(404).json({
+                ok: false,
+                code: error.code,
+                error: error.message
+              });
+              return;
+            }
+
+            throw error;
+          }
+        }
+
         const validated =
-          validateProject(request);
+          validateProject(
+            request,
+            sourceProject?.productImages ?? []
+          );
 
         if (validated.error) {
           await removeFiles(uploadedFiles);
@@ -834,6 +1167,28 @@ export async function createProjectRouter({
             productLogo:
               validated.productLogo
           });
+
+        if (
+          validated.productImages.length < 1 &&
+          sourceProject
+        ) {
+          assets.productImages =
+            await copySourceProductImages({
+              sourceProject,
+              projectDirectory
+            });
+        }
+
+        if (
+          !validated.productLogo &&
+          sourceProject?.productLogo
+        ) {
+          assets.productLogo =
+            await copySourceProductLogo({
+              sourceProject,
+              projectDirectory
+            });
+        }
 
         const project = {
           id: projectId,
