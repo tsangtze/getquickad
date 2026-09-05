@@ -13,6 +13,15 @@ const VIDEO_WIDTH = 720;
 const VIDEO_HEIGHT = 1280;
 const VIDEO_FRAME_RATE = 30;
 
+const DEFAULT_CTA_IMAGE_BY_PRESET = {
+  "shop-now": "cta-shop-now.png",
+  "learn-more": "cta-learn-more.png",
+  "order-today": "cta-order-today.png",
+  "visit-website": "cta-visit-website.png",
+  "book-now": "cta-book-now.png",
+  custom: "cta-custom.png"
+};
+
 function formatNumber(value) {
   return Number(value).toFixed(3);
 }
@@ -620,11 +629,44 @@ export async function renderVideo({
         );
       }
 
-      const imagePath =
+      let imagePath =
         path.join(
           projectDirectory,
           asset.storedName
         );
+
+      if (scene.role === "cta") {
+        const uploadedCtaImage =
+          project.assets?.ctaImage ?? null;
+
+        if (uploadedCtaImage?.storedName) {
+          imagePath = path.join(
+            projectDirectory,
+            uploadedCtaImage.storedName
+          );
+        } else {
+          const ctaPreset =
+            String(
+              project.ctaPreset ?? "shop-now"
+            );
+
+          const bundledCtaName =
+            DEFAULT_CTA_IMAGE_BY_PRESET[
+              ctaPreset
+            ] ??
+            DEFAULT_CTA_IMAGE_BY_PRESET[
+              "shop-now"
+            ];
+
+          imagePath = path.join(
+            process.cwd(),
+            "Frontend",
+            "assets",
+            "cta",
+            bundledCtaName
+          );
+        }
+      }
 
       await fs.access(imagePath);
 

@@ -223,6 +223,27 @@
             </div>
           </div>
 
+          <div class="logo-row cta-image-row">
+            <div>
+              <strong><span data-i18n="cta_image.title">CTA picture</span> <span data-i18n="logo.optional">Optional</span></strong>
+              <span data-i18n="cta_image.help">Upload your own CTA picture, or QuickAd AI will use a matching image automatically.</span>
+            </div>
+
+            <label class="secondary-button" for="cta-image" data-i18n="cta_image.choose">
+              Choose image
+            </label>
+
+            <input
+              id="cta-image"
+              name="ctaImage"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+            >
+
+            <span id="cta-image-name" class="file-name">No image selected</span>
+          </div>
+
           <fieldset class="duration-options" id="duration-options">
             <legend class="field-label"><span class="field-icon" aria-hidden="true">⏱️</span><span data-i18n="duration.label">Video length</span></legend>
 

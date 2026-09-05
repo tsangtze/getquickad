@@ -121,7 +121,7 @@ function createUploadMiddleware(tempDirectory) {
   return multer({
     storage,
     limits: {
-      files: MAX_IMAGE_COUNT + 1,
+      files: MAX_IMAGE_COUNT + 2,
       fileSize: MAX_FILE_SIZE,
       fields: 10
     },
@@ -145,6 +145,10 @@ function createUploadMiddleware(tempDirectory) {
     },
     {
       name: "productLogo",
+      maxCount: 1
+    },
+    {
+      name: "ctaImage",
       maxCount: 1
     }
   ]);
@@ -186,7 +190,11 @@ export function getMinimumDurationTierForImageCount(imageCount) {
   return 60;
 }
 
-function validateProject(request, sourceProductImages = []) {
+function validateProject(
+  request,
+  sourceProductImages = [],
+  sourceCtaPreset = null
+) {
   const productImages =
     request.files?.productImages ?? [];
 
@@ -214,6 +222,25 @@ function validateProject(request, sourceProductImages = []) {
     request.body.callToAction,
     40
   ) || "Shop Now";
+
+  const allowedCtaPresets = new Set([
+    "shop-now",
+    "learn-more",
+    "order-today",
+    "visit-website",
+    "book-now",
+    "custom"
+  ]);
+
+  const requestedCtaPreset =
+    String(
+      request.body.ctaPreset ?? sourceCtaPreset ?? "shop-now"
+    ).trim();
+
+  const ctaPreset =
+    allowedCtaPresets.has(requestedCtaPreset)
+      ? requestedCtaPreset
+      : "shop-now";
 
   const style = cleanText(
       request.body.style,
@@ -337,10 +364,13 @@ function validateProject(request, sourceProductImages = []) {
     effectiveImageCount,
     productLogo:
       request.files?.productLogo?.[0] ?? null,
+    ctaImage:
+      request.files?.ctaImage?.[0] ?? null,
     description,
     website:
       websiteResult.website,
     callToAction,
+    ctaPreset,
     style,
     durationMode,
     minimumDurationTierSeconds,
@@ -442,11 +472,30 @@ async function loadOwnedSourceProject({
       }
     }
 
+    const ctaImage =
+      sourceProject.assets?.ctaImage ?? null;
+
+    if (ctaImage) {
+      const storedName =
+        String(ctaImage?.storedName ?? "");
+
+      if (
+        !storedName ||
+        path.basename(storedName) !== storedName ||
+        !ALLOWED_MIME_TYPES.has(ctaImage?.mimeType)
+      ) {
+        const error = new Error("Source project contains an invalid CTA image.");
+        error.code = "SOURCE_PROJECT_ASSET_INVALID";
+        throw error;
+      }
+    }
+
     return {
       project: sourceProject,
       directory: sourceDirectory,
       productImages,
-      productLogo
+      productLogo,
+      ctaImage
     };
   } catch (error) {
     if (error?.code === "ENOENT") {
@@ -603,10 +652,77 @@ async function copySourceProductLogo({
   };
 }
 
+async function copySourceCtaImage({
+  sourceProject,
+  projectDirectory
+}) {
+  const asset =
+    sourceProject?.ctaImage ?? null;
+
+  if (!asset) {
+    return null;
+  }
+
+  const extension =
+    ALLOWED_MIME_TYPES.get(asset.mimeType);
+
+  if (!extension) {
+    const error = new Error("Source project contains an invalid CTA image.");
+    error.code = "SOURCE_PROJECT_ASSET_INVALID";
+    throw error;
+  }
+
+  const sourcePath = path.join(
+    sourceProject.directory,
+    asset.storedName
+  );
+
+  const sourceStat =
+    await fs.lstat(sourcePath);
+
+  if (
+    !sourceStat.isFile() ||
+    sourceStat.isSymbolicLink()
+  ) {
+    const error = new Error("Source project CTA image is unavailable.");
+    error.code = "SOURCE_PROJECT_ASSET_MISSING";
+    throw error;
+  }
+
+  if (sourceStat.size > MAX_FILE_SIZE) {
+    const error = new Error("Source project CTA image is too large.");
+    error.code = "SOURCE_PROJECT_ASSET_TOO_LARGE";
+    throw error;
+  }
+
+  const storedName =
+    `cta${extension}`;
+
+  await fs.copyFile(
+    sourcePath,
+    path.join(
+      projectDirectory,
+      storedName
+    )
+  );
+
+  return {
+    originalName:
+      String(
+        asset.originalName ??
+        asset.storedName
+      ),
+    storedName,
+    mimeType: asset.mimeType,
+    size: sourceStat.size
+  };
+}
+
 async function moveProjectAssets({
   projectDirectory,
   productImages,
-  productLogo
+  productLogo,
+  ctaImage
 }) {
   const savedImages = [];
 
@@ -651,9 +767,31 @@ async function moveProjectAssets({
     };
   }
 
+  let savedCtaImage = null;
+
+  if (ctaImage) {
+    const extension =
+      ALLOWED_MIME_TYPES.get(ctaImage.mimetype);
+
+    const storedName = `cta${extension}`;
+
+    await fs.rename(
+      ctaImage.path,
+      path.join(projectDirectory, storedName)
+    );
+
+    savedCtaImage = {
+      originalName: ctaImage.originalname,
+      storedName,
+      mimeType: ctaImage.mimetype,
+      size: ctaImage.size
+    };
+  }
+
   return {
     productImages: savedImages,
-    productLogo: savedLogo
+    productLogo: savedLogo,
+    ctaImage: savedCtaImage
   };
 }
 
@@ -1079,7 +1217,8 @@ export async function createProjectRouter({
         const validated =
           validateProject(
             request,
-            sourceProject?.productImages ?? []
+            sourceProject?.productImages ?? [],
+            sourceProject?.project?.ctaPreset ?? null
           );
 
         if (validated.error) {
@@ -1165,7 +1304,9 @@ export async function createProjectRouter({
             productImages:
               validated.productImages,
             productLogo:
-              validated.productLogo
+              validated.productLogo,
+            ctaImage:
+              validated.ctaImage
           });
 
         if (
@@ -1190,6 +1331,17 @@ export async function createProjectRouter({
             });
         }
 
+        if (
+          !validated.ctaImage &&
+          sourceProject?.ctaImage
+        ) {
+          assets.ctaImage =
+            await copySourceCtaImage({
+              sourceProject,
+              projectDirectory
+            });
+        }
+
         const project = {
           id: projectId,
           ownerId: request.authUser.id,
@@ -1201,6 +1353,8 @@ export async function createProjectRouter({
             validated.website,
           callToAction:
             validated.callToAction,
+          ctaPreset:
+            validated.ctaPreset,
           style:
             validated.style,
           language:
@@ -1478,6 +1632,8 @@ export async function createProjectRouter({
             project.website,
           callToAction:
             project.callToAction,
+          ctaPreset:
+            project.ctaPreset ?? null,
           style:
             project.style,
           output:
@@ -1516,6 +1672,23 @@ export async function createProjectRouter({
                     url:
                       `/api/projects/${projectId}/assets/${encodeURIComponent(
                         project.assets.productLogo.storedName
+                      )}`
+                  }
+                : null,
+            ctaImage:
+              project.assets?.ctaImage
+                ? {
+                    originalName:
+                      project.assets.ctaImage.originalName,
+                    mimeType:
+                      project.assets.ctaImage.mimeType,
+                    size:
+                      project.assets.ctaImage.size,
+                    storedName:
+                      project.assets.ctaImage.storedName,
+                    url:
+                      `/api/projects/${projectId}/assets/${encodeURIComponent(
+                        project.assets.ctaImage.storedName
                       )}`
                   }
                 : null
@@ -1627,7 +1800,8 @@ export async function createProjectRouter({
                   ? project.assets.productImages
                   : []
               ),
-              project.assets?.productLogo
+              project.assets?.productLogo,
+              project.assets?.ctaImage
             ]
               .filter(Boolean)
               .map(

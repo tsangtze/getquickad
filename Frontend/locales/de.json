@@ -415,5 +415,10 @@
   "style.aria": "Videostil",
   "music.track_label": "Musiktitel",
   "benefits.aria": "Vorteile von QuickAd AI",
-  "nav.home_aria": "QuickAd AI-Startseite"
+  "nav.home_aria": "QuickAd AI-Startseite",
+  "cta_image.title": "CTA-Bild",
+  "cta_image.help": "Laden Sie Ihr eigenes CTA-Bild hoch oder lassen Sie QuickAd AI automatisch ein passendes Bild verwenden.",
+  "cta_image.choose": "Bild auswählen",
+  "cta_image.none": "Kein Bild ausgewählt",
+  "cta_image.invalid": "Bitte verwenden Sie für das CTA-Bild JPG, PNG oder WebP."
 }
