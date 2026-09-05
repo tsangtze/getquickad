@@ -1742,8 +1742,19 @@ finalVideoButton.addEventListener(
       resultSummary.className =
         "video-result-summary";
 
+      const renderedDurationSeconds =
+        Math.round(
+          Number(
+            result.video?.durationSeconds
+          ) ||
+          Number(
+            currentStoryboard.totalDurationSeconds
+          ) ||
+          30
+        );
+
       resultSummary.textContent =
-        uiText("result.summary_complete", `${currentStoryboard.scenes.length} scenes · ${currentStoryboard.totalDurationSeconds || 30}-second MP4 · AI narration complete`, { count: currentStoryboard.scenes.length, seconds: currentStoryboard.totalDurationSeconds || 30 });
+        uiText("result.summary_complete", `${currentStoryboard.scenes.length} scenes · ${renderedDurationSeconds}-second MP4 · AI narration complete`, { count: currentStoryboard.scenes.length, seconds: renderedDurationSeconds });
 
       const resultActions =
         document.createElement("span");
@@ -1817,7 +1828,7 @@ finalVideoButton.addEventListener(
         document.createElement("span");
 
       successDetails.textContent =
-        uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · ${currentStoryboard.totalDurationSeconds || 30}-second MP4`, { count: currentStoryboard.scenes.length, seconds: currentStoryboard.totalDurationSeconds || 30 });
+        uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · ${renderedDurationSeconds}-second MP4`, { count: currentStoryboard.scenes.length, seconds: renderedDurationSeconds });
 
       successContent.append(
         successTitle,
@@ -1839,16 +1850,6 @@ finalVideoButton.addEventListener(
         "success-popover"
       );
 
-      window.setTimeout(() => {
-        formMessage.classList.remove(
-          "success-popover"
-        );
-
-        planStatus.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
-      }, 3000);
     } catch (error) {
       window.quickAdMusic.lock("");
       finalVideoButton.disabled = false;

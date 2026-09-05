@@ -73,7 +73,9 @@ function buildSystemInstructions(
   imageCount = 1
 ) {
   const requiredSceneCount =
-    Math.max(5, imageCount);
+    imageCount <= 5
+      ? 5
+      : imageCount + 1;
   const languageDescription = describeLanguage(language);
   const maxNarrationWords =
     getNarrationWordLimit(
@@ -136,7 +138,9 @@ ${durationMode === "manual"
 - Scene 1 must use imageIndex 1.
 - Scene 2 must use imageIndex 2 when at least 2 images are available.
 - Continue matching scene numbers to image indexes in upload order while unused images are available.
-- When there are 6 through 10 uploaded images, create one scene per image and use image indexes 1 through ${imageCount} exactly once in upload order.
+- When there are 6 through 10 uploaded images, Scenes 1 through ${imageCount} must use image indexes 1 through ${imageCount} exactly once in upload order so every uploaded image receives its own normal content scene.
+- The final Scene ${requiredSceneCount} is a dedicated call-to-action scene. Reuse one available uploaded image for this CTA scene; no additional uploaded image is required.
+- Do not turn Scene ${imageCount} into the call to action when there are 6 through 10 uploaded images. Scene ${imageCount} must remain a normal content scene for uploaded image ${imageCount}.
 - Every uploaded image must be used by at least one scene.
 - When there are fewer uploaded images than scenes, reuse images as needed, restarting from imageIndex 1 and continuing in upload order.
 - When there are 1 through 5 uploaded images, create 5 scenes and reuse images in upload order as needed.
