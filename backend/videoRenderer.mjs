@@ -364,6 +364,135 @@ function validateInputs({
 
 import { prepareMusic, audioMixFilters, validateMusicVolume } from "./musicCatalog.mjs";
 
+async function renderSceneClip({
+  scene,
+  imagePath,
+  logoPath,
+  outputPath,
+  fontPath,
+  titlePath,
+  captionPath,
+  rolePath,
+  brandPath,
+  showCtaWebsite
+}) {
+  const sceneDuration =
+    scene.endSeconds -
+    scene.startSeconds;
+
+  const sceneFilters =
+    buildVideoFilter({
+      scene,
+      inputIndex: 0,
+      fontPath,
+      titlePath,
+      captionPath,
+      rolePath,
+      brandPath,
+      showCtaWebsite
+    });
+
+  const commandArguments = [
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-y",
+    "-threads",
+    "1",
+    "-filter_threads",
+    "1",
+    "-filter_complex_threads",
+    "1",
+    "-loop",
+    "1",
+    "-framerate",
+    String(VIDEO_FRAME_RATE),
+    "-t",
+    formatNumber(sceneDuration),
+    "-i",
+    imagePath
+  ];
+
+  let videoLabel =
+    "[scene0]";
+
+  if (logoPath) {
+    commandArguments.push(
+      "-loop",
+      "1",
+      "-framerate",
+      String(VIDEO_FRAME_RATE),
+      "-t",
+      formatNumber(sceneDuration),
+      "-i",
+      logoPath
+    );
+
+    sceneFilters.push(
+      "[1:v]" +
+        "scale=96:96:" +
+        "force_original_aspect_ratio=decrease," +
+        "format=rgba" +
+        "[logoOverlay]"
+    );
+
+    sceneFilters.push(
+      "[scene0][logoOverlay]" +
+        "overlay=" +
+        "x=W-w-46:" +
+        "y=245:" +
+        "format=auto" +
+        "[sceneFinal]"
+    );
+
+    videoLabel =
+      "[sceneFinal]";
+  }
+
+  commandArguments.push(
+    "-filter_complex",
+    sceneFilters.join(";"),
+    "-map",
+    videoLabel,
+    "-c:v",
+    "libx264",
+    "-preset",
+    "medium",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-r",
+    String(VIDEO_FRAME_RATE),
+    "-threads",
+    "1",
+    "-an",
+    outputPath
+  );
+
+  await runFfmpeg(
+    commandArguments,
+    {
+      timeoutMilliseconds:
+        10 * 60 * 1000
+    }
+  );
+
+  const outputStats =
+    await fs.stat(outputPath);
+
+  if (outputStats.size === 0) {
+    throw new Error(
+      `FFmpeg created an empty scene clip for scene ${scene.sceneNumber}.`
+    );
+  }
+
+  return {
+    outputPath,
+    durationSeconds:
+      sceneDuration
+  };
+}
 export async function renderVideo({
   project,
   storyboard,
@@ -406,6 +535,7 @@ export async function renderVideo({
   );
 
   const textFiles = [];
+  const temporaryFiles = [];
   const hideRoleLabel =
     String(project.language || project.targetLanguage || "en")
       .toLowerCase()
@@ -468,20 +598,7 @@ export async function renderVideo({
       await fs.access(logoPath);
     }
 
-    const commandArguments = [
-      "-hide_banner",
-      "-loglevel",
-      "warning",
-      "-y",
-      "-threads",
-      "1",
-      "-filter_threads",
-      "1",
-      "-filter_complex_threads",
-      "1"
-    ];
-
-    const videoFilters = [];
+    const sceneClipPaths = [];
 
     for (
       let sceneIndex = 0;
@@ -502,16 +619,13 @@ export async function renderVideo({
         );
       }
 
-      const imagePath = path.join(
-        projectDirectory,
-        asset.storedName
-      );
+      const imagePath =
+        path.join(
+          projectDirectory,
+          asset.storedName
+        );
 
       await fs.access(imagePath);
-
-      const sceneDuration =
-        scene.endSeconds -
-        scene.startSeconds;
 
       const captionPath =
         await createTextFile(
@@ -530,121 +644,131 @@ export async function renderVideo({
             : getRoleLabel(scene.role)
         );
 
-      commandArguments.push(
-        "-loop",
-        "1",
-        "-framerate",
-        String(VIDEO_FRAME_RATE),
-        "-t",
-        formatNumber(sceneDuration),
-        "-i",
-        imagePath
+      const sceneClipPath =
+        path.join(
+          projectDirectory,
+          `video-scene-${sceneIndex + 1}-${randomUUID()}.tmp.mp4`
+        );
+
+      temporaryFiles.push(
+        sceneClipPath
       );
 
-      videoFilters.push(
-        ...buildVideoFilter({
-          scene,
-          inputIndex:
-            sceneIndex,
-          fontPath,
-          titlePath,
-          captionPath,
-          rolePath,
-          brandPath,
-          showCtaWebsite:
-            Boolean(project.website)
-        })
-      );
-    }
+      await renderSceneClip({
+        scene,
+        imagePath,
+        logoPath:
+          logoAsset
+            ? logoPath
+            : null,
+        outputPath:
+          sceneClipPath,
+        fontPath,
+        titlePath,
+        captionPath,
+        rolePath,
+        brandPath,
+        showCtaWebsite:
+          Boolean(project.website)
+      });
 
-    const logoInputIndex =
-      logoAsset
-        ? storyboard.scenes.length
-        : null;
-
-    if (logoAsset) {
-      commandArguments.push(
-        "-loop",
-        "1",
-        "-framerate",
-        String(VIDEO_FRAME_RATE),
-        "-t",
-        formatNumber(
-          storyboard.totalDurationSeconds
-        ),
-        "-i",
-        logoPath
+      sceneClipPaths.push(
+        sceneClipPath
       );
     }
 
-    const audioInputIndex =
-      storyboard.scenes.length +
-      (logoAsset ? 1 : 0);
+    if (
+      sceneClipPaths.length !==
+      storyboard.scenes.length
+    ) {
+      throw new Error(
+        "Not all storyboard scenes were rendered."
+      );
+    }
 
-    commandArguments.push(
-      "-i",
-      narrationPath
+    const concatListPath =
+      path.join(
+        projectDirectory,
+        `video-concat-${randomUUID()}.tmp.txt`
+      );
+
+    temporaryFiles.push(
+      concatListPath
     );
 
-    if (music.path) commandArguments.push("-stream_loop", "-1", "-i", music.path);
+    const escapeConcatPath =
+      (filePath) =>
+        filePath
+          .replace(/\\/g, "/")
+          .replace(/'/g, "'\\''");
 
-    const sceneLabels =
-      storyboard.scenes
+    const concatList =
+      sceneClipPaths
         .map(
-          (_scene, index) =>
-            `[scene${index}]`
+          (sceneClipPath) =>
+            `file '${escapeConcatPath(sceneClipPath)}'`
         )
-        .join("");
+        .join("\n");
 
-    if (logoAsset) {
-      videoFilters.push(
-        `${sceneLabels}` +
-        `concat=n=${storyboard.scenes.length}:v=1:a=0[videoBase]`
-      );
+    await fs.writeFile(
+      concatListPath,
+      `${concatList}\n`,
+      "utf8"
+    );
 
-      videoFilters.push(
-        `[${logoInputIndex}:v]` +
-        "scale=96:96:" +
-        "force_original_aspect_ratio=decrease," +
-        "format=rgba" +
-        "[logoOverlay]"
-      );
+    const commandArguments = [
+      "-hide_banner",
+      "-loglevel",
+      "warning",
+      "-y",
+      "-threads",
+      "1",
+      "-filter_threads",
+      "1",
+      "-filter_complex_threads",
+      "1",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      concatListPath,
+      "-i",
+      narrationPath
+    ];
 
-      videoFilters.push(
-        "[videoBase][logoOverlay]" +
-        "overlay=" +
-        "x=W-w-46:" +
-        "y=245:" +
-        "format=auto" +
-        "[video]"
-      );
-    } else {
-      videoFilters.push(
-        `${sceneLabels}` +
-        `concat=n=${storyboard.scenes.length}:v=1:a=0[video]`
+    const narrationInputIndex = 1;
+
+    let musicInputIndex = null;
+
+    if (music.path) {
+      musicInputIndex = 2;
+
+      commandArguments.push(
+        "-stream_loop",
+        "-1",
+        "-i",
+        music.path
       );
     }
 
-    videoFilters.push(...audioMixFilters(audioInputIndex,
-      music.path ? audioInputIndex + 1 : null, storyboard.totalDurationSeconds, musicVolume));
+    const audioFilters =
+      audioMixFilters(
+        narrationInputIndex,
+        musicInputIndex,
+        storyboard.totalDurationSeconds,
+        musicVolume
+      );
 
     commandArguments.push(
       "-filter_complex",
-      videoFilters.join(";"),
+      audioFilters.join(";"),
       "-map",
-      "[video]",
+      "0:v:0",
       "-map",
       "[audio]",
       "-c:v",
-      "libx264",
-      "-preset",
-      "medium",
-      "-crf",
-      "20",
-      "-pix_fmt",
-      "yuv420p",
-      "-r",
-      String(VIDEO_FRAME_RATE),
+      "copy",
       "-c:a",
       "aac",
       "-b:a",
@@ -731,6 +855,17 @@ export async function renderVideo({
 
     await Promise.all(
       textFiles.map(
+        (filePath) =>
+          fs.rm(
+            filePath,
+            {
+              force: true
+            }
+          )
+      )
+    );
+    await Promise.all(
+      temporaryFiles.map(
         (filePath) =>
           fs.rm(
             filePath,
