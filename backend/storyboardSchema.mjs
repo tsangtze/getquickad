@@ -113,7 +113,9 @@ export function validateStoryboard(
   }
 
   const requiredSceneCount =
-    Math.max(5, imageCount);
+    imageCount <= 5
+      ? 5
+      : imageCount + 1;
 
   if (
     value.scenes.length !== requiredSceneCount
