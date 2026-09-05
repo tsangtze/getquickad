@@ -190,6 +190,7 @@ const ALLOWED_TYPES = new Set([
 const form = document.querySelector("#video-form");
 const imageInput = document.querySelector("#product-images");
 const logoInput = document.querySelector("#product-logo");
+const ctaImageInput = document.querySelector("#cta-image");
 const uploadZone = document.querySelector("#upload-zone");
 const previewList = document.querySelector("#image-preview-list");
 const imageCount = document.querySelector("#image-count");
@@ -198,6 +199,7 @@ const uploadDescription =
 const uploadFormats =
   document.querySelector("#upload-formats");
 const logoName = document.querySelector("#logo-name");
+const ctaImageName = document.querySelector("#cta-image-name");
 const description = document.querySelector("#productDesc");
 const websiteInput = document.querySelector("#website");
 const characterCount = document.querySelector("#character-count");
@@ -601,6 +603,35 @@ logoInput.addEventListener("change", () => {
   logoName.textContent = logo.name;
 });
 
+ctaImageInput?.addEventListener("change", () => {
+  const ctaImage = ctaImageInput.files[0];
+
+  if (!ctaImage) {
+    ctaImageName.textContent = uiText(
+      "cta_image.none",
+      "No image selected"
+    );
+    return;
+  }
+
+  if (!ALLOWED_TYPES.has(ctaImage.type)) {
+    ctaImageInput.value = "";
+    ctaImageName.textContent = uiText(
+      "cta_image.none",
+      "No image selected"
+    );
+    setUploadError(
+      uiText(
+        "cta_image.invalid",
+        "Please use a JPG, PNG, or WebP CTA picture."
+      )
+    );
+    return;
+  }
+
+  setUploadError();
+  ctaImageName.textContent = ctaImage.name;
+});
 description?.addEventListener("input", () => {
   characterCount.textContent = `${description.value.length} / 500`;
 
@@ -1406,6 +1437,9 @@ function restoreSavedCallToAction(project) {
   const savedCallToAction =
     String(project?.callToAction ?? "").trim();
 
+  const savedCtaPreset =
+    String(project?.ctaPreset ?? "").trim();
+
   const ctaKeys = {
     "Shop Now": "cta.shop",
     "Learn More": "cta.learn",
@@ -1414,7 +1448,19 @@ function restoreSavedCallToAction(project) {
     "Book Now": "cta.book"
   };
 
+  const ctaValueByPreset = {
+    "shop-now": "Shop Now",
+    "learn-more": "Learn More",
+    "order-today": "Order Today",
+    "visit-website": "Visit Our Website",
+    "book-now": "Book Now"
+  };
+
+  const presetValue =
+    ctaValueByPreset[savedCtaPreset] ?? null;
+
   const standardValue =
+    presetValue ??
     Object.keys(ctaKeys).find(
       (value) =>
         savedCallToAction === value ||
@@ -1422,7 +1468,13 @@ function restoreSavedCallToAction(project) {
           uiText(ctaKeys[value], value)
     );
 
-  if (standardValue) {
+  if (savedCtaPreset === "custom") {
+    callToActionSelect.value =
+      "custom";
+
+    customCtaInput.value =
+      savedCallToAction;
+  } else if (standardValue) {
     callToActionSelect.value =
       standardValue;
 
@@ -2614,6 +2666,26 @@ form.addEventListener("submit", async (event) => {
     projectData.set('language', targetLang);
     projectData.set('targetLanguage', targetLang);
 
+    const ctaPresetByValue = {
+      "Shop Now": "shop-now",
+      "Learn More": "learn-more",
+      "Order Today": "order-today",
+      "Visit Our Website": "visit-website",
+      "Book Now": "book-now"
+    };
+
+    const selectedCtaPreset =
+      callToActionSelect.value === "custom"
+        ? "custom"
+        : ctaPresetByValue[
+            callToActionSelect.value
+          ] ?? "shop-now";
+
+    projectData.set(
+      "ctaPreset",
+      selectedCtaPreset
+    );
+
     if (
       callToActionSelect.value ===
       "custom"
@@ -3258,6 +3330,16 @@ if(typeof window.refreshProjects === 'function'){
 
 window.addEventListener("quickad:languagechange", () => {
   renderImagePreviews();
+
+  const ctaImage = ctaImageInput?.files?.[0];
+
+  ctaImageName.textContent =
+    ctaImage?.name ??
+    uiText(
+      "cta_image.none",
+      "No image selected"
+    );
+
   if (currentStoryboard) {
     renderCurrentScenePlan();
     validateVideoPlan();

@@ -403,5 +403,10 @@
   "style.aria": "Video stili",
   "music.track_label": "Müzik parçası",
   "benefits.aria": "QuickAd AI avantajları",
-  "nav.home_aria": "QuickAd AI ana sayfası"
+  "nav.home_aria": "QuickAd AI ana sayfası",
+  "cta_image.title": "CTA resmi",
+  "cta_image.help": "Kendi CTA resminizi yükleyin veya QuickAd AI uygun bir resmi otomatik olarak kullansın.",
+  "cta_image.choose": "Resim seç",
+  "cta_image.none": "Resim seçilmedi",
+  "cta_image.invalid": "CTA resmi için JPG, PNG veya WebP kullanın."
 }

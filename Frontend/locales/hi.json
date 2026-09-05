@@ -403,5 +403,10 @@
   "style.aria": "वीडियो शैली",
   "music.track_label": "संगीत ट्रैक",
   "benefits.aria": "QuickAd AI के लाभ",
-  "nav.home_aria": "QuickAd AI होम"
+  "nav.home_aria": "QuickAd AI होम",
+  "cta_image.title": "CTA चित्र",
+  "cta_image.help": "अपना CTA चित्र अपलोड करें, या QuickAd AI को अपने आप उपयुक्त चित्र का उपयोग करने दें।",
+  "cta_image.choose": "चित्र चुनें",
+  "cta_image.none": "कोई चित्र नहीं चुना गया",
+  "cta_image.invalid": "CTA चित्र के लिए JPG, PNG या WebP का उपयोग करें।"
 }

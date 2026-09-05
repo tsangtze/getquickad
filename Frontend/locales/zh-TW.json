@@ -404,5 +404,10 @@
   "style.aria": "影片風格",
   "music.track_label": "音樂曲目",
   "benefits.aria": "QuickAd AI 優點",
-  "nav.home_aria": "QuickAd AI 首頁"
+  "nav.home_aria": "QuickAd AI 首頁",
+  "cta_image.title": "CTA 圖片",
+  "cta_image.help": "上傳您自己的 CTA 圖片，或讓 QuickAd AI 自動使用合適的圖片。",
+  "cta_image.choose": "選擇圖片",
+  "cta_image.none": "尚未選擇圖片",
+  "cta_image.invalid": "請使用 JPG、PNG 或 WebP 格式的 CTA 圖片。"
 }

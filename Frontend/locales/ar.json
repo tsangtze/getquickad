@@ -153,5 +153,10 @@
   "result.scenes_prefix": "{count} scenes · ",
   "music.creating_selected": "Creating your video with the selected soundtrack…",
   "recent.delete_failed": "Project deletion failed. Please refresh before retrying.",
-  "recent.delete_project_aria": "Delete project {title}"
+  "recent.delete_project_aria": "Delete project {title}",
+  "cta_image.title": "صورة CTA",
+  "cta_image.help": "حمّل صورة CTA الخاصة بك، أو دع QuickAd AI يستخدم صورة مناسبة تلقائيًا.",
+  "cta_image.choose": "اختر صورة",
+  "cta_image.none": "لم يتم اختيار صورة",
+  "cta_image.invalid": "يرجى استخدام صورة CTA بتنسيق JPG أو PNG أو WebP."
 }

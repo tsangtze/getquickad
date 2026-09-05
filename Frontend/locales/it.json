@@ -415,5 +415,10 @@
   "style.aria": "Stile video",
   "music.track_label": "Traccia musicale",
   "benefits.aria": "Vantaggi di QuickAd AI",
-  "nav.home_aria": "Home di QuickAd AI"
+  "nav.home_aria": "Home di QuickAd AI",
+  "cta_image.title": "Immagine CTA",
+  "cta_image.help": "Carica la tua immagine CTA oppure lascia che QuickAd AI utilizzi automaticamente un’immagine adatta.",
+  "cta_image.choose": "Scegli immagine",
+  "cta_image.none": "Nessuna immagine selezionata",
+  "cta_image.invalid": "Usa un’immagine CTA in formato JPG, PNG o WebP."
 }
