@@ -691,7 +691,8 @@ const SCENE_TIMELINE_WEIGHTS = {
   7: [3, 4, 4, 4, 4, 3, 3],
   8: [3, 3, 3, 4, 3, 3, 3, 3],
   9: [3, 3, 3, 3, 3, 3, 3, 3, 3],
-  10: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+  10: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+  11: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
 };
 
 function countNarrationWords(scenes) {
@@ -728,7 +729,7 @@ function normalizeSceneTimeline({
 
   if (!timelineWeights) {
     throw new Error(
-      "A video plan must contain between 3 and 10 scenes."
+      "A video plan must contain between 3 and 11 scenes."
     );
   }
 
