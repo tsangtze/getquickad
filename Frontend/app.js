@@ -108,9 +108,6 @@ document.addEventListener("click", (event) => {
   playQuickAdSound("click");
 });
 
-let accountProjectHistory = [];
-let accountHistoryRevision = 0;
-let accountListRequest = 0;
 
 const MAX_IMAGES = 10;
 
@@ -176,11 +173,6 @@ function getSelectedImageLimit() {
   );
 }
 
-let PROJECT_HISTORY_KEY =
-  null;
-const MAX_RECENT_PROJECTS = 10;
-const PROJECT_ID_PATTERN =
-  /^[0-9a-f-]{36}$/i;
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -200,29 +192,26 @@ const uploadFormats =
   document.querySelector("#upload-formats");
 const logoName = document.querySelector("#logo-name");
 const ctaImageName = document.querySelector("#cta-image-name");
+const logoPreview = document.querySelector("#logo-preview");
+const logoPreviewImage = document.querySelector("#logo-preview-image");
+const ctaImagePreview = document.querySelector("#cta-image-preview");
+const ctaImagePreviewImage = document.querySelector("#cta-image-preview-image");
 const description = document.querySelector("#productDesc");
+
+function resizeProductDescription() {
+  if (!description) {
+    return;
+  }
+
+  description.style.height = "auto";
+  description.style.height = `${description.scrollHeight}px`;
+}
 const websiteInput = document.querySelector("#website");
 const characterCount = document.querySelector("#character-count");
 const uploadError = document.querySelector("#upload-error");
 const descriptionError = document.querySelector("#description-error");
 const formMessage = document.querySelector("#form-message");
 const createButton = document.querySelector("#create-button");
-const recentProjects =
-  document.querySelector(
-    "#recent-projects"
-  );
-const recentProjectList =
-  document.querySelector(
-    "#recent-project-list"
-  );
-const recentProjectStatus =
-  document.querySelector(
-    "#recent-project-status"
-  );
-const clearProjectHistoryButton =
-  document.querySelector(
-    "#clear-project-history"
-  );
 
 const styleOptions = [...document.querySelectorAll(".style-option")];
 const styleSection =
@@ -288,13 +277,15 @@ const narratorOptions = [
 ];
 
 let selectedImages = [];
-let sourceProjectId = "";
-let reusableSavedImageUrls = [];
 let currentPlanMaxVideoSeconds = 30;
 let currentPlanId = "free";
 let currentProjectId = "";
 let currentStoryboard = null;
 let reviewImageUrls = [];
+let reviewCtaImageUrl = "";
+let reviewDefaultCtaImageUrl = "";
+let reviewUploadedCtaImageUrl = "";
+let reviewCtaImageSource = "default";
 let currentReviewImageCount = 0;
 
 function fileKey(file) {
@@ -316,9 +307,7 @@ function syncImageInput() {
 }
 
 function getEffectiveImageCount() {
-  return selectedImages.length > 0
-    ? selectedImages.length
-    : reusableSavedImageUrls.length;
+  return selectedImages.length;
 }
 
 function updateDurationAvailability() {
@@ -393,67 +382,16 @@ function updateDurationAvailability() {
 function renderImagePreviews() {
   previewList.replaceChildren();
 
-  if (
-    selectedImages.length === 0 &&
-    reusableSavedImageUrls.length > 0
-  ) {
-    reusableSavedImageUrls.forEach(
-      (imageUrl, index) => {
-        const preview =
-          document.createElement("div");
-
-        preview.className = "image-preview";
-
-        const image =
-          document.createElement("img");
-
-        image.alt = uiText(
-          "upload.preview_alt",
-          `Saved product image ${index + 1}`,
-          { number: index + 1 }
-        );
-
-        image.src = imageUrl;
-        preview.append(image);
-        previewList.append(preview);
-      }
-    );
-
-    const selectedImageLimit =
-      getSelectedImageLimit();
-
-    if (uploadDescription) {
-      uploadDescription.textContent =
-        `Add up to ${selectedImageLimit} clear product photos. You can also add your logo.`;
-    }
-
-    if (uploadFormats) {
-      uploadFormats.textContent =
-        `JPG, PNG or WebP · Maximum ${selectedImageLimit} images`;
-    }
-
-    imageCount.textContent = uiText(
-      "upload.count",
-      `${reusableSavedImageUrls.length} of ${selectedImageLimit}`,
-      {
-        count: reusableSavedImageUrls.length,
-        max: selectedImageLimit
-      }
-    );
-
-    imageCount.style.color =
-      "var(--success)";
-
-    updateDurationAvailability();
-    return;
-  }
-
   selectedImages.forEach((file, index) => {
     const preview = document.createElement("div");
     preview.className = "image-preview";
 
     const image = document.createElement("img");
-    image.alt = uiText("upload.preview_alt", `Selected product image ${index + 1}`, { number: index + 1 });
+    image.alt = uiText(
+      "upload.preview_alt",
+      `Selected product image ${index + 1}`,
+      { number: index + 1 }
+    );
 
     const imageUrl = URL.createObjectURL(file);
     image.src = imageUrl;
@@ -475,8 +413,7 @@ function renderImagePreviews() {
     removeButton.addEventListener("click", () => {
       selectedImages.splice(index, 1);
       syncImageInput();
-      renderRecentProjects();
-renderImagePreviews();
+      renderImagePreviews();
       setUploadError();
     });
 
@@ -486,16 +423,6 @@ renderImagePreviews();
 
   const selectedImageLimit =
     getSelectedImageLimit();
-
-  if (uploadDescription) {
-    uploadDescription.textContent =
-      `Add up to ${selectedImageLimit} clear product photos. You can also add your logo.`;
-  }
-
-  if (uploadFormats) {
-    uploadFormats.textContent =
-      `JPG, PNG or WebP · Maximum ${selectedImageLimit} images`;
-  }
 
   imageCount.textContent = uiText(
     "upload.count",
@@ -511,6 +438,7 @@ renderImagePreviews();
   } else {
     imageCount.style.color = "";
   }
+
   updateDurationAvailability();
 }
 
@@ -556,8 +484,7 @@ function addImages(files) {
 
   selectedImages.push(...uniqueFiles);
   syncImageInput();
-  renderRecentProjects();
-renderImagePreviews();
+  renderImagePreviews();
 }
 
 imageInput.addEventListener("change", () => {
@@ -587,20 +514,37 @@ logoInput.addEventListener("change", () => {
 
   if (!logo) {
     logoName.textContent = "";
+    logoPreview.hidden = true;
+    logoPreviewImage.removeAttribute("src");
     return;
   }
 
   if (!ALLOWED_TYPES.has(logo.type)) {
     logoInput.value = "";
     logoName.textContent = "";
+    logoPreview.hidden = true;
+    logoPreviewImage.removeAttribute("src");
     setUploadError(
-      uiText("upload.logo_type_error", "Please use a JPG, PNG, or WebP logo.")
+      uiText(
+        "upload.logo_type_error",
+        "Please use a JPG, PNG, or WebP logo."
+      )
     );
     return;
   }
 
   setUploadError();
   logoName.textContent = logo.name;
+
+  const logoUrl = URL.createObjectURL(logo);
+  logoPreviewImage.src = logoUrl;
+  logoPreviewImage.alt = logo.name;
+  logoPreview.hidden = false;
+  logoPreviewImage.addEventListener(
+    "load",
+    () => URL.revokeObjectURL(logoUrl),
+    { once: true }
+  );
 });
 
 ctaImageInput?.addEventListener("change", () => {
@@ -611,6 +555,8 @@ ctaImageInput?.addEventListener("change", () => {
       "cta_image.none",
       "No image selected"
     );
+    ctaImagePreview.hidden = true;
+    ctaImagePreviewImage.removeAttribute("src");
     return;
   }
 
@@ -620,6 +566,8 @@ ctaImageInput?.addEventListener("change", () => {
       "cta_image.none",
       "No image selected"
     );
+    ctaImagePreview.hidden = true;
+    ctaImagePreviewImage.removeAttribute("src");
     setUploadError(
       uiText(
         "cta_image.invalid",
@@ -631,14 +579,28 @@ ctaImageInput?.addEventListener("change", () => {
 
   setUploadError();
   ctaImageName.textContent = ctaImage.name;
+
+  const ctaImageUrl = URL.createObjectURL(ctaImage);
+  ctaImagePreviewImage.src = ctaImageUrl;
+  ctaImagePreviewImage.alt = ctaImage.name;
+  ctaImagePreview.hidden = false;
+  ctaImagePreviewImage.addEventListener(
+    "load",
+    () => URL.revokeObjectURL(ctaImageUrl),
+    { once: true }
+  );
 });
+
 description?.addEventListener("input", () => {
+  resizeProductDescription();
   characterCount.textContent = `${description.value.length} / 500`;
 
   if (description.value.trim()) {
     descriptionError.textContent = "";
   }
 });
+
+resizeProductDescription();
 
 styleOptions.forEach((option) => {
   const radio = option.querySelector('input[type="radio"]');
@@ -687,6 +649,15 @@ durationOptions.forEach((option) => {
     }
   });
 });
+const CTA_REVIEW_IMAGE_BY_PRESET = {
+  "shop-now": "/assets/cta/cta-shop-now.png",
+  "learn-more": "/assets/cta/cta-learn-more.png",
+  "order-today": "/assets/cta/cta-order-today.png",
+  "visit-website": "/assets/cta/cta-visit-website.png",
+  "book-now": "/assets/cta/cta-book-now.png",
+  custom: "/assets/cta/cta-custom.png"
+};
+
 function clearReviewImageUrls() {
   window.quickAdMusic.stop();
   reviewImageUrls.forEach((imageUrl) => {
@@ -700,6 +671,10 @@ function clearReviewImageUrls() {
   });
 
   reviewImageUrls = [];
+  reviewCtaImageUrl = "";
+  reviewDefaultCtaImageUrl = "";
+  reviewUploadedCtaImageUrl = "";
+  reviewCtaImageSource = "default";
   currentReviewImageCount = 0;
 }
 
@@ -1065,9 +1040,14 @@ function createSceneReviewCard(scene) {
   const picture = document.createElement("img");
   picture.alt = uiText("scene.picture_alt", `Picture assigned to scene ${scene.sceneNumber}`, { number: scene.sceneNumber });
 
+  const isCtaScene =
+    scene.role === "cta";
+
   picture.src =
-    reviewImageUrls[scene.imageIndex - 1] ||
-    "";
+    isCtaScene
+      ? reviewCtaImageUrl
+      : reviewImageUrls[scene.imageIndex - 1] ||
+        "";
 
   pictureFrame.append(picture);
 
@@ -1128,10 +1108,79 @@ function createSceneReviewCard(scene) {
 
   pictureLabel.append(pictureSelect);
 
-  pictureColumn.append(
-    pictureFrame,
-    pictureLabel
-  );
+  pictureColumn.append(pictureFrame);
+
+  if (isCtaScene && reviewUploadedCtaImageUrl) {
+    const ctaSourceLabel =
+      document.createElement("label");
+
+    const ctaSourceTitle =
+      document.createElement("span");
+
+    ctaSourceTitle.textContent =
+      "CTA picture";
+
+    const ctaSourceSelect =
+      document.createElement("select");
+
+    ctaSourceSelect.className =
+      "scene-picture-select";
+
+    const uploadedOption =
+      document.createElement("option");
+
+    uploadedOption.value = "uploaded";
+    uploadedOption.textContent =
+      "Your uploaded picture";
+
+    const defaultOption =
+      document.createElement("option");
+
+    defaultOption.value = "default";
+    defaultOption.textContent =
+      "QuickAd default";
+
+    ctaSourceSelect.append(
+      uploadedOption,
+      defaultOption
+    );
+
+    ctaSourceSelect.value =
+      reviewCtaImageSource;
+
+    ctaSourceSelect.addEventListener(
+      "change",
+      () => {
+        reviewCtaImageSource =
+          ctaSourceSelect.value === "uploaded"
+            ? "uploaded"
+            : "default";
+
+        reviewCtaImageUrl =
+          reviewCtaImageSource === "uploaded"
+            ? reviewUploadedCtaImageUrl
+            : reviewDefaultCtaImageUrl;
+
+        picture.src =
+          reviewCtaImageUrl;
+
+        scene.approved = false;
+        updateSceneApprovalState();
+        validateVideoPlan();
+      }
+    );
+
+    ctaSourceLabel.append(
+      ctaSourceTitle,
+      ctaSourceSelect
+    );
+
+    pictureColumn.append(
+      ctaSourceLabel
+    );
+  } else if (!isCtaScene) {
+    pictureColumn.append(pictureLabel);
+  }
 
   const captionColumn = document.createElement("div");
   captionColumn.className = "scene-caption-column";
@@ -1423,7 +1472,6 @@ function showPlanReviewMode() {
   moveDurationToPlanReview();
   moveStyleToPlanReview();
   moveAudioToPlanReview();
-  recentProjects.hidden = true;
   form.hidden = true;
   planReview.hidden = false;
 
@@ -1433,156 +1481,6 @@ function showPlanReviewMode() {
   });
 }
 
-function restoreSavedCallToAction(project) {
-  const savedCallToAction =
-    String(project?.callToAction ?? "").trim();
-
-  const savedCtaPreset =
-    String(project?.ctaPreset ?? "").trim();
-
-  const ctaKeys = {
-    "Shop Now": "cta.shop",
-    "Learn More": "cta.learn",
-    "Order Today": "cta.order",
-    "Visit Our Website": "cta.visit",
-    "Book Now": "cta.book"
-  };
-
-  const ctaValueByPreset = {
-    "shop-now": "Shop Now",
-    "learn-more": "Learn More",
-    "order-today": "Order Today",
-    "visit-website": "Visit Our Website",
-    "book-now": "Book Now"
-  };
-
-  const presetValue =
-    ctaValueByPreset[savedCtaPreset] ?? null;
-
-  const standardValue =
-    presetValue ??
-    Object.keys(ctaKeys).find(
-      (value) =>
-        savedCallToAction === value ||
-        savedCallToAction ===
-          uiText(ctaKeys[value], value)
-    );
-
-  if (savedCtaPreset === "custom") {
-    callToActionSelect.value =
-      "custom";
-
-    customCtaInput.value =
-      savedCallToAction;
-  } else if (standardValue) {
-    callToActionSelect.value =
-      standardValue;
-
-    customCtaInput.value = "";
-  } else if (savedCallToAction) {
-    callToActionSelect.value =
-      "custom";
-
-    customCtaInput.value =
-      savedCallToAction;
-  } else {
-    callToActionSelect.value =
-      "Shop Now";
-
-    customCtaInput.value = "";
-  }
-
-  customCtaCount.textContent =
-    uiText(
-      "cta.count",
-      `${customCtaInput.value.length} / 40 characters`,
-      {
-        count: customCtaInput.value.length,
-        max: 40
-      }
-    );
-
-  updateCustomCtaField();
-}
-
-function restoreSavedProjectSetup(
-  project,
-  savedImageUrls
-) {
-  sourceProjectId = String(project?.id ?? "");
-
-  reusableSavedImageUrls =
-    Array.isArray(savedImageUrls)
-      ? [...savedImageUrls]
-      : [];
-
-  selectedImages = [];
-  syncImageInput();
-
-  description.value =
-    String(project?.description ?? "");
-
-  characterCount.textContent =
-    `${description.value.length} / 500`;
-
-  if (websiteInput) {
-    websiteInput.value =
-      String(project?.website ?? "");
-  }
-
-  restoreSavedCallToAction(project);
-
-  const savedStyle =
-    String(project?.style ?? "");
-
-  const styleRadio =
-    [...document.querySelectorAll(
-      'input[name="style"]'
-    )].find(
-      (radio) =>
-        radio.value === savedStyle
-    );
-
-  if (styleRadio) {
-    styleRadio.checked = true;
-
-    styleOptions.forEach((option) => {
-      const radio =
-        option.querySelector(
-          'input[type="radio"]'
-        );
-
-      option.classList.toggle(
-        "selected",
-        radio === styleRadio
-      );
-    });
-  }
-
-  const savedDurationChoice =
-    project?.output?.durationMode === "auto"
-      ? "auto"
-      : String(
-          project?.output?.maxDurationSeconds ??
-          project?.output?.durationSeconds ??
-          ""
-        );
-
-  const durationRadio =
-    [...document.querySelectorAll(
-      'input[name="maxDurationSeconds"]'
-    )].find(
-      (radio) =>
-        radio.value === savedDurationChoice
-    );
-
-  if (durationRadio) {
-    durationRadio.checked = true;
-  }
-
-  renderImagePreviews();
-  updateDurationAvailability();
-}
 
 function showProjectSetupMode() {
   moveDurationToSetup();
@@ -1615,6 +1513,47 @@ function renderVideoPlanReview(
 
   currentReviewImageCount =
     reviewImageUrls.length;
+
+  const uploadedCtaAsset =
+    project?.assets?.ctaImage;
+
+  const ctaPreset =
+    String(
+      project?.ctaPreset ||
+        "shop-now"
+    );
+
+  reviewDefaultCtaImageUrl =
+    CTA_REVIEW_IMAGE_BY_PRESET[
+      ctaPreset
+    ] ||
+    CTA_REVIEW_IMAGE_BY_PRESET[
+      "shop-now"
+    ];
+
+  reviewUploadedCtaImageUrl = "";
+
+  if (
+    project?.id &&
+    uploadedCtaAsset?.storedName
+  ) {
+    reviewUploadedCtaImageUrl =
+      `/api/projects/${encodeURIComponent(
+        project.id
+      )}/assets/${encodeURIComponent(
+        uploadedCtaAsset.storedName
+      )}`;
+  }
+
+  reviewCtaImageSource =
+    reviewUploadedCtaImageUrl
+      ? "uploaded"
+      : "default";
+
+  reviewCtaImageUrl =
+    reviewCtaImageSource === "uploaded"
+      ? reviewUploadedCtaImageUrl
+      : reviewDefaultCtaImageUrl;
 
   currentProjectId =
     project.id;
@@ -1740,7 +1679,9 @@ finalVideoButton.addEventListener(
             musicChoice: window.quickAdMusic.value,
             musicVolume: window.quickAdMusic.volume,
             narratorChoice:
-              selectedNarratorVoice()
+              selectedNarratorVoice(),
+            ctaImageSource:
+              reviewCtaImageSource
           })
         }
       );
@@ -1760,18 +1701,8 @@ finalVideoButton.addEventListener(
 
       window.quickAdMusic.lock("ready");
       finalVideoButton.textContent =
-        uiText("result.video_ready", "Video Ready"); try{ updateQuota(); }catch(e){} try{ loadAccountProjects(); }catch(e){} // auto-refresh quota ✓";
+        uiText("result.video_ready", "Video Ready");
 
-      rememberProject(
-        {
-          id:
-            currentProjectId,
-          status:
-            "video_ready"
-        },
-        currentStoryboard,
-        "video_ready"
-      );
 
       planStatus.classList.add(
         "approved",
@@ -1961,575 +1892,7 @@ customCtaInput.addEventListener(
 
 updateCustomCtaField();
 
-function readProjectHistory() {
-  if (!PROJECT_HISTORY_KEY) return [];
-  return accountProjectHistory.slice(0, MAX_RECENT_PROJECTS);
-}
 
-function writeProjectHistory(history) {
-  if (!PROJECT_HISTORY_KEY) return;
-  accountProjectHistory = history.slice(0, MAX_RECENT_PROJECTS);
-  accountHistoryRevision++;
-  try {
-    localStorage.setItem(
-      PROJECT_HISTORY_KEY,
-      JSON.stringify(history.slice(0, MAX_RECENT_PROJECTS))
-    );
-  } catch {
-    // Browser storage failure must not turn successful generation into failure.
-    console.warn("Project history could not be saved in this browser.");
-  }
-}
-
-function removeProjectFromHistory(projectId) {
-  const remainingHistory =
-    readProjectHistory().filter(
-      (entry) =>
-        entry.id !== projectId
-    );
-
-  writeProjectHistory(
-    remainingHistory
-  );
-
-  renderRecentProjects();
-}
-
-function rememberProject(
-  project,
-  storyboard = null,
-  status = ""
-) {
-  const projectId =
-    String(project?.id ?? "");
-
-  if (
-    !PROJECT_ID_PATTERN.test(projectId)
-  ) {
-    return;
-  }
-
-  const existingHistory =
-    readProjectHistory();
-
-  const existingEntry =
-    existingHistory.find(
-      (entry) =>
-        entry.id === projectId
-    );
-
-  const title =
-    String(
-      storyboard?.title ??
-      project?.storyboard?.title ??
-      existingEntry?.title ??
-      "Untitled video"
-    ).trim() ||
-    "Untitled video";
-
-  const resolvedStatus =
-    String(
-      status ||
-      project?.status ||
-      existingEntry?.status ||
-      "storyboard_ready"
-    );
-
-  const historyEntry = {
-    id:
-      projectId,
-    title,
-    style:
-      String(
-        project?.style ??
-        existingEntry?.style ??
-        ""
-      ),
-    status:
-      resolvedStatus,
-    createdAt:
-      project?.createdAt ??
-      existingEntry?.createdAt ??
-      new Date().toISOString(),
-    updatedAt:
-      new Date().toISOString()
-  };
-
-  const nextHistory = [
-    historyEntry,
-    ...existingHistory.filter(
-      (entry) =>
-        entry.id !== projectId
-    )
-  ].slice(0, MAX_RECENT_PROJECTS);
-
-  writeProjectHistory(nextHistory);
-  renderRecentProjects();
-}
-
-function projectStatusLabel(status) {
-  switch (status) {
-    case "video_ready":
-      return uiText("status.video_ready", "Video ready");
-
-    case "storyboard_ready":
-      return uiText("status.plan_ready", "Plan ready");
-
-    case "narration_failed":
-    case "video_failed":
-    case "storyboard_failed":
-      return uiText("status.needs_attention", "Needs attention");
-
-    default:
-      return uiText("status.saved_project", "Saved project");
-  }
-}
-
-function formatProjectDate(value) {
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(date.getTime())
-  ) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat(
-    undefined,
-    {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit"
-    }
-  ).format(date);
-}
-
-async function deleteSavedProject(entry, button) {
-  const warning =
-    uiText(
-      "recent.delete_confirm",
-      'Permanently delete "{title}"? This removes its uploaded images, narration, video and render files. Download anything you want to keep first. This cannot be undone.',
-      { title: entry.title }
-    );
-
-  const currentProjectWarning =
-    entry.id === currentProjectId
-      ? " " +
-        uiText(
-          "recent.delete_current_warning",
-          "The current page will reload and unsaved edits will be discarded."
-        )
-      : "";
-
-  if (
-    !window.confirm(
-      warning + currentProjectWarning
-    )
-  ) {
-    return;
-  }
-  button.disabled = true;
-  button.textContent =
-    `🗑️ ${uiText("recent.deleting", "Deleting…")}`;
-  try {
-    const response = await quickAdProjectFetch(`/api/projects/${encodeURIComponent(entry.id)}`, {method: "DELETE"});
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw data;
-    if (entry.id === currentProjectId) {
-      window.location.reload();
-      return;
-    }
-    await loadAccountProjects();
-  } catch (error) {
-    recentProjectStatus.textContent =
-      localizedApiError(error) ||
-      uiText(
-        "recent.delete_failed",
-        "Project deletion failed. Please refresh before retrying."
-      );
-    recentProjectStatus.classList.add("error");
-  } finally {
-    button.disabled = false;
-    button.textContent = `🗑️ ${uiText("recent.delete", "Delete")}`;
-  }
-}
-
-function renderRecentProjects() {
-  const history =
-    readProjectHistory();
-
-  recentProjectList.replaceChildren();
-  recentProjectStatus.textContent = "";
-  recentProjectStatus.classList.remove(
-    "error"
-  );
-
-  recentProjects.hidden =
-    history.length === 0;
-
-  if (history.length === 0) {
-    return;
-  }
-
-  history.forEach((entry) => {
-    const card =
-      document.createElement("article");
-
-    card.className =
-      "recent-project-card";
-
-    const information =
-      document.createElement("div");
-
-    information.className =
-      "recent-project-info";
-
-    const title =
-      document.createElement("strong");
-
-    title.textContent =
-      entry.title;
-
-    const details =
-      document.createElement("span");
-
-    const detailParts = [
-      projectStatusLabel(
-        entry.status
-      ),
-      entry.style,
-      formatProjectDate(
-        entry.updatedAt ||
-        entry.createdAt
-      ),
-      uiText("recent.project_id", `Project ${entry.id.slice(0, 8)}`, { id: entry.id.slice(0, 8) })
-    ].filter(Boolean);
-
-    details.textContent =
-      detailParts.join(" · ");
-
-    information.append(
-      title,
-      details
-    );
-
-    const openButton =
-      document.createElement("button");
-
-    openButton.type = "button";
-    openButton.className =
-      "open-recent-project";
-
-    openButton.textContent =
-      entry.status === "video_ready"
-        ? `▶️ ${uiText("recent.open_video", "Open Video")}`
-        : `↪️ ${uiText("recent.continue", "Continue")}`;
-
-    openButton.addEventListener(
-      "click",
-      () => {
-        openSavedProject(
-          entry.id,
-          openButton
-        );
-      }
-    );
-
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "button";
-    deleteButton.className = "delete-recent-project";
-    deleteButton.textContent = `🗑️ ${uiText("recent.delete", "Delete")}`;
-    deleteButton.setAttribute("aria-label", uiText("recent.delete_project_aria", `Delete project ${entry.title}`, { title: entry.title }));
-    deleteButton.addEventListener("click", () => deleteSavedProject(entry, deleteButton));
-    const actions = document.createElement("div");
-    actions.className = "recent-project-actions";
-    actions.append(openButton, deleteButton);
-    card.append(information, actions);
-
-    recentProjectList.append(card);
-  });
-}
-
-function renderRecoveredVideoResult(
-  recovery
-) {
-  currentStoryboard.scenes.forEach(
-    (scene) => {
-      scene.approved = true;
-    }
-  );
-
-  renderCurrentScenePlan();
-
-  finalVideoButton.disabled = true;
-  finalVideoButton.textContent =
-    uiText("result.video_ready_check", "Video Ready ✓");
-
-  planStatus.classList.add(
-    "approved",
-    "video-result-card"
-  );
-
-  const resultHeading =
-    document.createElement("strong");
-
-  resultHeading.className =
-    "video-result-heading";
-
-  resultHeading.textContent =
-    uiText("result.saved_ready", "Your saved video is ready");
-
-  const resultSummary =
-    document.createElement("span");
-
-  resultSummary.className =
-    "video-result-summary";
-
-  resultSummary.textContent =
-    uiText(
-      "result.summary_complete",
-      `${currentStoryboard.scenes.length} scenes · ${currentStoryboard.totalDurationSeconds || 30}-second MP4 · AI narration complete`,
-      {
-        count: currentStoryboard.scenes.length,
-        seconds:
-          currentStoryboard.totalDurationSeconds ||
-          30
-      }
-    );
-
-  const resultActions =
-    document.createElement("span");
-
-  resultActions.className =
-    "video-result-actions";
-
-  const watchLink =
-    document.createElement("a");
-
-  watchLink.href =
-    recovery.videoUrl;
-
-  watchLink.target = "_blank";
-  watchLink.rel = "noopener";
-  watchLink.className =
-    "video-result-link primary";
-
-  watchLink.textContent =
-    uiText("result.watch", "Watch Video");
-
-  const downloadLink =
-    document.createElement("a");
-
-  downloadLink.href =
-    recovery.videoUrl + "?download=1";
-
-  downloadLink.download =
-    "quickad-video.mp4";
-
-  downloadLink.className =
-    "video-result-link";
-
-  downloadLink.textContent =
-    uiText("result.download", "Download MP4");
-
-  resultActions.append(
-    watchLink,
-    downloadLink
-  );
-
-  planStatus.replaceChildren(
-    resultHeading,
-    resultSummary,
-    resultActions
-  );
-}
-
-async function openSavedProject(
-  projectId,
-  openButton
-) {
-  const originalButtonText =
-    openButton.textContent;
-
-  openButton.disabled = true;
-  openButton.textContent =
-    uiText(
-      "saved.opening_button",
-      "Opening..."
-    );
-
-  recentProjectStatus.textContent =
-    uiText("saved.opening", "Opening your saved project...");
-
-  recentProjectStatus.classList.remove(
-    "error"
-  );
-
-  try {
-    const response =
-      await quickAdProjectFetch(
-        `/api/projects/${projectId}`
-      );
-
-    const recovery =
-      await response.json();
-
-    if (
-      !response.ok ||
-      !recovery.ok
-    ) {
-      if (response.status === 404) {
-        removeProjectFromHistory(
-          projectId
-        );
-      }
-
-      throw new Error(
-        uiText(
-          "saved.open_error",
-          "The saved project could not be opened."
-        )
-      );
-    }
-
-
-    const savedImageUrls =
-      Array.isArray(
-        recovery.project?.assets
-          ?.productImages
-      )
-        ? recovery.project.assets
-            .productImages
-            .map(
-              (asset) =>
-                asset.url
-            )
-            .filter(Boolean)
-        : [];
-
-    if (savedImageUrls.length === 0) {
-      throw new Error(
-        uiText("saved.no_images", "This saved project does not have recoverable product images.")
-      );
-    }
-
-    const hasRecoverableStoryboard =
-      recovery.storyboard &&
-      Array.isArray(
-        recovery.storyboard.scenes
-      );
-
-    if (!hasRecoverableStoryboard) {
-      if (
-        recovery.stage ===
-          "storyboard_failed" ||
-        recovery.project?.status ===
-          "storyboard_failed"
-      ) {
-        restoreSavedProjectSetup(
-          recovery.project,
-          savedImageUrls
-        );
-
-        showProjectSetupMode();
-
-        rememberProject(
-          recovery.project,
-          null,
-          recovery.project.status
-        );
-
-        recentProjectStatus.textContent =
-          uiText(
-            "saved.setup_recovered",
-            "Saved project restored. You can generate the video plan again."
-          );
-
-        return;
-      }
-
-      throw new Error(
-        uiText(
-          "saved.no_plan",
-          "This saved project does not have a recoverable video plan."
-        )
-      );
-    }
-
-    finalVideoButton.textContent =
-      uiText("review.final_btn_arrow", "Create Final Video →");
-
-    renderVideoPlanReview(
-      recovery.project,
-      recovery.storyboard,
-      savedImageUrls
-    );
-
-    restoreSavedProjectSetup(
-      recovery.project,
-      savedImageUrls
-    );
-    showPlanReviewMode();
-
-    rememberProject(
-      recovery.project,
-      recovery.storyboard,
-      recovery.project.status
-    );
-
-    if (
-      recovery.stage ===
-      "video_ready"
-    ) {
-      if (!recovery.videoUrl) {
-        throw new Error(
-          uiText("saved.video_missing", "The saved video file is unavailable.")
-        );
-      }
-
-      renderRecoveredVideoResult(
-        recovery
-      );
-
-      recentProjectStatus.textContent =
-        uiText("saved.video_opened", "Saved video opened successfully.");
-    } else {
-      planStatus.textContent = uiText("saved.plan_opened", `Saved plan opened. Review and confirm all ${currentStoryboard.scenes.length} scenes.`, { count: currentStoryboard.scenes.length });
-
-      recentProjectStatus.textContent =
-        uiText("saved.plan_opened_success", "Saved video plan opened successfully.");
-    }
-
-    planReview.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  } catch (error) {
-    recentProjectStatus.textContent =
-      uiText(
-        "saved.open_error",
-        "The saved project could not be opened."
-      );
-
-    recentProjectStatus.classList.add(
-      "error"
-    );
-  } finally {
-    if (openButton.isConnected) {
-      openButton.disabled = false;
-      openButton.textContent =
-        originalButtonText;
-    }
-  }
-}
-
-clearProjectHistoryButton.textContent = `🔄 ${uiText("recent.refresh", "Refresh projects")}`;
-clearProjectHistoryButton.addEventListener("click", () => {
-  loadAccountProjects();
-});
 
 
 regeneratePlanButton.addEventListener("click", () => {
@@ -2627,12 +1990,6 @@ form.addEventListener("submit", async (event) => {
       description.value.trim()
     );
 
-    if (sourceProjectId) {
-      projectData.set(
-        "sourceProjectId",
-        sourceProjectId
-      );
-    }
     // Auto-detect UI language for video generation - Phase 2 Mexico
     const userLang = localStorage.getItem('quickad_lang') || document.documentElement.lang || navigator.language || 'en';
     const normalizedLang = userLang.toLowerCase();
@@ -2722,13 +2079,19 @@ form.addEventListener("submit", async (event) => {
     const result = await response.json();
 
     if (!response.ok || !result.ok) {
-      throw new Error(
-        localizedApiError(result) ||
-        uiText(
-          "api.project_input_invalid",
-          "Please check your project details and try again."
-        )
-      );
+      const apiError =
+        new Error(
+          localizedApiError(result) ||
+          uiText(
+            "api.project_input_invalid",
+            "Please check your project details and try again."
+          )
+        );
+
+      apiError.code =
+        String(result?.code || "");
+
+      throw apiError;
     }
 
     const shortProjectId =
@@ -2736,13 +2099,6 @@ form.addEventListener("submit", async (event) => {
 
     const sceneCount =
       result.storyboard.scenes.length;
-
-    // Record the saved project before rendering its review interface.
-    rememberProject(
-      result.project,
-      result.storyboard,
-      result.project.status
-    );
 
     const newProjectImageUrls =
       Array.isArray(
@@ -2769,11 +2125,6 @@ form.addEventListener("submit", async (event) => {
             .filter(Boolean)
         : [];
 
-    sourceProjectId =
-      String(result.project.id ?? "");
-
-    reusableSavedImageUrls =
-      [...newProjectImageUrls];
 
     renderVideoPlanReview(
       result.project,
@@ -2860,11 +2211,9 @@ form.addEventListener("submit", async (event) => {
       });
     }, 3000);
   } catch (error) {
-    formMessage.textContent =
-      uiText(
-        "api.project_input_invalid",
-        "Please check your project details and try again."
-      );
+    formMessage.textContent = String(error?.message || uiText("api.project_input_invalid", "Please check your project details and try again."));
+
+    if (error?.code === "FREE_VIDEO_PLAN_LIMIT_REACHED") { const upgradeLink = document.createElement("a"); upgradeLink.href = "/billing.html"; upgradeLink.className = "form-message-upgrade"; upgradeLink.textContent = uiText("quota.upgrade_plan", "Upgrade Plan"); formMessage.append(" ", upgradeLink); }
 
     formMessage.classList.add(
       "visible",
@@ -2892,7 +2241,6 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-renderRecentProjects();
 renderImagePreviews();
 
 
@@ -2921,11 +2269,6 @@ window.quickAdAccountChanged = (user) => {
 
   quickAdIdentityKnown = true;
   quickAdHistoryUser = nextId;
-  PROJECT_HISTORY_KEY = nextId
-    ? `quickadAIRecentProjectsV2:${nextId}`
-    : null;
-
-  renderRecentProjects();
 };
 
 window.quickAdNotifyAccountChange = () => {
@@ -3015,14 +2358,7 @@ async function quickAdProjectFetch(url, options = {}) {
 }
 
 quickAdCheckPageSession()
-  .then((user) => {
-    if (user && !quickAdPageLeaving) return loadAccountProjects();
-  })
-  .catch(() => {
-    recentProjects.hidden = false;
-    recentProjectStatus.textContent =
-      uiText("account.session_unavailable", "Session unavailable. Open Account to try again.");
-  });
+  .catch(() => {});
 
 window.addEventListener("focus", () => {
   if (!quickAdPageLeaving) {
@@ -3035,76 +2371,6 @@ window.addEventListener("pageshow", (event) => {
 });
 
 
-async function loadAccountProjects() {
-  if (quickAdPageLeaving) return;
-
-  const requestNumber = ++accountListRequest;
-  const revision = accountHistoryRevision;
-  const historyKey = PROJECT_HISTORY_KEY;
-
-  if (!historyKey) {
-    recentProjects.hidden = false;
-    recentProjectStatus.textContent = uiText("recent.sign_in", "Sign in to see your saved projects.");
-    return;
-  }
-
-  clearProjectHistoryButton.disabled = true;
-  recentProjects.hidden = false;
-  recentProjectStatus.textContent = uiText("recent.loading", "Loading your saved projects...");
-
-  try {
-    const response = await quickAdProjectFetch("/api/projects");
-    const data = await response.json();
-
-    if (
-      quickAdPageLeaving ||
-      requestNumber !== accountListRequest ||
-      historyKey !== PROJECT_HISTORY_KEY
-    ) return;
-
-    if (!response.ok || !data.ok || !Array.isArray(data.projects)) {
-      throw new Error(uiText("recent.load_failed", "Your project list could not be loaded."));
-    }
-
-    // Do not overwrite a project added while this request was running.
-    if (revision !== accountHistoryRevision) return;
-
-    const projects = data.projects.filter(
-      entry => entry && PROJECT_ID_PATTERN.test(String(entry.id ?? ""))
-    );
-
-    writeProjectHistory(projects);
-    renderRecentProjects();
-
-    if (projects.length === 0) {
-      recentProjects.hidden = false;
-      recentProjectStatus.textContent =
-        uiText("recent.empty", "No saved projects in this account yet.");
-    }
-  } catch (error) {
-    if (!quickAdPageLeaving && historyKey === PROJECT_HISTORY_KEY) {
-      recentProjects.hidden = false;
-      recentProjectStatus.textContent =
-        uiText(
-          "recent.error",
-          "Project list unavailable. Click Refresh projects to retry."
-        );
-    }
-  } finally {
-    if (!quickAdPageLeaving && requestNumber === accountListRequest) {
-      clearProjectHistoryButton.disabled = false;
-    }
-  }
-}
-
-// Update the old browser-only description without changing saved files.
-for (const paragraph of recentProjects.querySelectorAll("p")) {
-  if (paragraph.textContent.trim() ===
-      "Projects created in this browser appear here.") {
-    paragraph.textContent =
-      uiText("recent.desc", "Your 10 most recent saved projects in this account appear here.");
-  }
-}
 
 window.addEventListener('load', updateQuota);
 setTimeout(updateQuota, 1000);
@@ -3120,7 +2386,7 @@ setTimeout(updateQuota, 1000);
     try{
       const url = String(args[0]||'');
       if(url.includes('/finalize') && res.status===201){
-        setTimeout(()=>{ try{ updateQuota(); }catch(e){} try{ loadAccountProjects(); }catch(e){} }, 800);
+        setTimeout(()=>{ try{ updateQuota(); }catch(e){} }, 800);
       }
     }catch(e){}
     return res;
@@ -3177,7 +2443,6 @@ async function updateQuota(){
     planName = '',
     remaining = 2,
     total = 2,
-    projects = 0
   } = {}) => {
     const leftIcon =
       type === 'paid'
@@ -3204,25 +2469,10 @@ async function updateQuota(){
             }
           );
 
-    const projectsText = uiText(
-      "quota.saved_projects_html",
-      "Saved projects: <b>{projects}</b>",
-      { projects }
-    );
     banner.innerHTML = `
       <div class="quota-status-item">
         <span class="quota-status-icon" aria-hidden="true">${leftIcon}</span>
         <span class="quota-status-text">${leftText}</span>
-      </div>
-
-      <span
-        class="quota-status-divider"
-        aria-hidden="true"
-      ></span>
-
-      <div class="quota-status-item">
-        <span class="quota-status-icon" aria-hidden="true">📁</span>
-        <span class="quota-status-text">${projectsText}</span>
       </div>
     `;
 
@@ -3234,7 +2484,6 @@ async function updateQuota(){
       await fetch('/api/projects/usage');
 
     let usage = null;
-    let projects = 0;
 
     if(res.ok){
       const data =
@@ -3243,39 +2492,8 @@ async function updateQuota(){
       usage =
         data.usage || null;
 
-      projects =
-        usage?.projectCount ??
-        data.projects ??
-        data.projectsCount ??
-        data.totalProjects ??
-        0;
     }
 
-    if(!usage){
-      try{
-        const pRes =
-          await fetch('/api/projects');
-
-        if(pRes.ok){
-          const pData =
-            await pRes.json();
-
-          if(Array.isArray(pData)){
-            projects =
-              pData.length;
-          } else if(pData.projects){
-            projects =
-              pData.projects.length;
-          } else if(pData.count){
-            projects =
-              pData.count;
-          }
-
-          usage =
-            pData.usage || null;
-        }
-      }catch{}
-    }
 
     updateDurationOptionsForPlan(usage);
 
@@ -3287,16 +2505,14 @@ async function updateQuota(){
         remaining:
           usage.monthlyCreditsRemaining ?? 0,
         total:
-          usage.monthlyCreditsTotal ?? 0,
-        projects
+          usage.monthlyCreditsTotal ?? 0
       });
     } else {
       renderQuotaBanner({
         type: 'free',
         remaining:
           usage?.freeVideosRemaining ?? 2,
-        total: 2,
-        projects
+        total: 2
       });
     }
   }catch(e){
@@ -3305,27 +2521,16 @@ async function updateQuota(){
       e
     );
 
-    const fallbackProjects =
-      document
-        .querySelectorAll(
-          '#recentProjects > div'
-        ).length || 0;
-
     renderQuotaBanner({
       type: 'free',
       remaining: 2,
-      total: 2,
-      projects: fallbackProjects
+      total: 2
     });
   }
 }
-// Run on load + after projects load
+// Run quota refresh on page load
 document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(updateQuota, 500); });
 window.addEventListener('load', ()=>{ setTimeout(updateQuota, 1000); });
-if(typeof window.refreshProjects === 'function'){
-  const _origRefresh = window.refreshProjects;
-  window.refreshProjects = async function(...args){ const r = await _origRefresh(...args); updateQuota(); return r; };
-}
 
 
 window.addEventListener("quickad:languagechange", () => {
@@ -3344,8 +2549,6 @@ window.addEventListener("quickad:languagechange", () => {
     renderCurrentScenePlan();
     validateVideoPlan();
   }
-  clearProjectHistoryButton.textContent = `🔄 ${uiText("recent.refresh", "Refresh projects")}`;
-  renderRecentProjects();
   updateQuota();
 });
 function getLocalizedCallToAction() {
@@ -3406,34 +2609,10 @@ function localizedApiError(result) {
         "Project access could not be verified. Please try again."
     },
 
-    PROJECT_DELETE_FAILED: {
-      key: "recent.delete_failed",
-      fallback:
-        "Project deletion failed. Please refresh before retrying."
-    },
-
     USAGE_LOAD_FAILED: {
       key: "billing.usage_load_error",
       fallback:
         "Usage could not be loaded."
-    },
-
-    PROJECT_LIST_LOAD_FAILED: {
-      key: "recent.load_failed",
-      fallback:
-        "Your project list could not be loaded."
-    },
-
-    PROJECT_DELETE_BLOCKED: {
-      key: "recent.delete_blocked",
-      fallback:
-        "This project is still processing or needs review. It cannot be deleted yet."
-    },
-
-    PROJECT_LIMIT_REACHED: {
-      key: "quota.project_limit_reached",
-      fallback:
-        "You have reached your limit of 10 saved projects. Delete an old project to free up space and create a new one."
     },
 
     VIDEO_DURATION_LIMIT_EXCEEDED: {
@@ -3446,6 +2625,12 @@ function localizedApiError(result) {
       key: "quota.duration_not_allowed",
       fallback:
         "Your current plan does not support this video duration or number of images."
+    },
+
+    FREE_VIDEO_PLAN_LIMIT_REACHED: {
+      key: "quota.free_video_plan_limit_reached",
+      fallback:
+        "You’ve reached the free limit for creating video plans. Upgrade your plan to continue."
     },
 
     FREE_VIDEO_LIMIT_REACHED: {
@@ -3506,18 +2691,6 @@ function localizedApiError(result) {
       key: "api.project_input_invalid",
       fallback:
         "Please check your project details and try again."
-    },
-
-    SAVED_PROJECT_NOT_FOUND: {
-      key: "saved.not_found",
-      fallback:
-        "The saved project was not found."
-    },
-
-    SAVED_PROJECT_OPEN_FAILED: {
-      key: "saved.open_error",
-      fallback:
-        "The saved project could not be opened."
     },
 
     PROJECT_ASSET_NAME_INVALID: {

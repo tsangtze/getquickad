@@ -136,11 +136,12 @@ app.use(async (error, request, response, next) => {
   });
 });
 
-// Run 7-day cleanup on startup and every 24h
-const DATA_ROOT = process.env.DATA_ROOT || process.env.PROJECTS_ROOT || "/opt/render/project/src/data";
-const PROJECTS_ROOT = path.join(DATA_ROOT, "projects");
-cleanupExpiredProjects(PROJECTS_ROOT).catch(console.error);
-setInterval(() => cleanupExpiredProjects(PROJECTS_ROOT).catch(console.error), 24*60*60*1000);
+// Temporary project cleanup runs on startup and every 24 hours.
+cleanupExpiredProjects(projectRoot).catch(console.error);
+setInterval(
+  () => cleanupExpiredProjects(projectRoot).catch(console.error),
+  24 * 60 * 60 * 1000
+);
 
 app.listen(port, "0.0.0.0", () => {
   console.log(

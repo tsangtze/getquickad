@@ -100,7 +100,7 @@ test("finalize rejects invalid music before paid work and persists valid selecti
       getUserUsage:async()=>({finalVideoCount:0,planId:"free",monthlyCreditsUsed:0}),
       canGenerateFinalVideo:()=>({ok:true,freeRerender:false}),
       recordSuccessfulFinalVideo:async()=>({planId:"free",creditCost:0}),
-      LIMITS:{FREE_FINAL_VIDEOS:2,MAX_PROJECTS:10,FREE_MAX_VIDEO_SECONDS:30,PAID_MAX_VIDEO_SECONDS:60},
+      LIMITS:{FREE_FINAL_VIDEOS:2,FREE_MAX_VIDEO_SECONDS:30,PAID_MAX_VIDEO_SECONDS:60},
       uploadToR2:async()=>{throw new Error("R2 disabled in background music test");},
       generateNarration:async()=>{narrationCalls++;return {};},
       renderVideo:async({musicChoice,musicVolume})=>{renderChoice=musicChoice;renderVolume=musicVolume;return {music:{id:musicChoice}};}

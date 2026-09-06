@@ -508,7 +508,8 @@ export async function renderVideo({
   storyboard,
   projectDirectory,
   musicChoice = "none",
-  musicVolume = 10
+  musicVolume = 10,
+  ctaImageSource = null
 }) {
   validateMusicVolume(musicVolume);
   const music = await prepareMusic(musicChoice);
@@ -639,7 +640,19 @@ export async function renderVideo({
         const uploadedCtaImage =
           project.assets?.ctaImage ?? null;
 
-        if (uploadedCtaImage?.storedName) {
+        const useUploadedCtaImage =
+          ctaImageSource === "uploaded" ||
+          (
+            ctaImageSource == null &&
+            Boolean(
+              uploadedCtaImage?.storedName
+            )
+          );
+
+        if (
+          useUploadedCtaImage &&
+          uploadedCtaImage?.storedName
+        ) {
           imagePath = path.join(
             projectDirectory,
             uploadedCtaImage.storedName

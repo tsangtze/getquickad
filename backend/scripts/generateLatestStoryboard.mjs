@@ -56,7 +56,7 @@ const latestProject =
 
 if (!latestProject) {
   throw new Error(
-    "No saved project was found."
+    "No project was found."
   );
 }
 

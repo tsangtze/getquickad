@@ -274,7 +274,7 @@
   logoutButton.addEventListener("click", async () => {
     if (busy) return;
     if (!window.confirm(
-      accountText("account.sign_out_confirm", "Sign out and clear this page? Unsaved edits will be discarded. Saved project files will remain.")
+      accountText("account.sign_out_confirm", "Sign out and clear this page? Your current work will be discarded.")
     )) return;
     setBusy(true);
     status.textContent = accountText("account.signing_out", "Signing out...");
