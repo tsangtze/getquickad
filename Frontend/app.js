@@ -1110,7 +1110,7 @@ function createSceneReviewCard(scene) {
 
   pictureColumn.append(pictureFrame);
 
-  if (isCtaScene && reviewUploadedCtaImageUrl) {
+  if (isCtaScene) {
     const ctaSourceLabel =
       document.createElement("label");
 
@@ -1118,65 +1118,200 @@ function createSceneReviewCard(scene) {
       document.createElement("span");
 
     ctaSourceTitle.textContent =
-      "CTA picture";
+      uiText("scene.cta_picture", "CTA picture");
 
-    const ctaSourceSelect =
-      document.createElement("select");
-
-    ctaSourceSelect.className =
-      "scene-picture-select";
-
-    const uploadedOption =
-      document.createElement("option");
-
-    uploadedOption.value = "uploaded";
-    uploadedOption.textContent =
-      "Your uploaded picture";
-
-    const defaultOption =
-      document.createElement("option");
-
-    defaultOption.value = "default";
-    defaultOption.textContent =
-      "QuickAd default";
-
-    ctaSourceSelect.append(
-      uploadedOption,
-      defaultOption
+    ctaSourceLabel.append(
+      ctaSourceTitle
     );
 
-    ctaSourceSelect.value =
-      reviewCtaImageSource;
+    if (reviewUploadedCtaImageUrl) {
+      const ctaSourceSelect =
+        document.createElement("select");
 
-    ctaSourceSelect.addEventListener(
-      "change",
+      ctaSourceSelect.className =
+        "scene-picture-select";
+
+      const uploadedOption =
+        document.createElement("option");
+
+      uploadedOption.value = "uploaded";
+      uploadedOption.textContent =
+        uiText("scene.cta_uploaded", "Your uploaded picture");
+
+      const defaultOption =
+        document.createElement("option");
+
+      defaultOption.value = "default";
+      defaultOption.textContent =
+        uiText("scene.cta_default", "QuickAd default");
+
+      ctaSourceSelect.append(
+        uploadedOption,
+        defaultOption
+      );
+
+      ctaSourceSelect.value =
+        reviewCtaImageSource;
+
+      ctaSourceSelect.addEventListener(
+        "change",
+        () => {
+          reviewCtaImageSource =
+            ctaSourceSelect.value === "uploaded"
+              ? "uploaded"
+              : "default";
+
+          reviewCtaImageUrl =
+            reviewCtaImageSource === "uploaded"
+              ? reviewUploadedCtaImageUrl
+              : reviewDefaultCtaImageUrl;
+
+          picture.src =
+            reviewCtaImageUrl;
+
+          scene.approved = false;
+          updateSceneApprovalState();
+          validateVideoPlan();
+        }
+      );
+
+      ctaSourceLabel.append(
+        ctaSourceSelect
+      );
+    } else {
+      const defaultSource =
+        document.createElement("div");
+
+      defaultSource.textContent =
+        uiText("scene.cta_default", "QuickAd default");
+
+      ctaSourceLabel.append(
+        defaultSource
+      );
+    }
+
+    const ctaUploadInput =
+      document.createElement("input");
+
+    ctaUploadInput.type = "file";
+    ctaUploadInput.accept =
+      "image/jpeg,image/png,image/webp";
+    ctaUploadInput.hidden = true;
+
+    const ctaUploadButton =
+      document.createElement("button");
+
+    ctaUploadButton.type = "button";
+    ctaUploadButton.className =
+      "secondary-button";
+
+    ctaUploadButton.textContent =
+      reviewUploadedCtaImageUrl
+        ? uiText("scene.cta_replace", "Replace CTA picture")
+        : uiText("scene.cta_upload", "Upload CTA picture");
+
+    const ctaUploadError =
+      document.createElement("div");
+
+    ctaUploadError.className =
+      "field-error";
+
+    ctaUploadButton.addEventListener(
+      "click",
       () => {
-        reviewCtaImageSource =
-          ctaSourceSelect.value === "uploaded"
-            ? "uploaded"
-            : "default";
-
-        reviewCtaImageUrl =
-          reviewCtaImageSource === "uploaded"
-            ? reviewUploadedCtaImageUrl
-            : reviewDefaultCtaImageUrl;
-
-        picture.src =
-          reviewCtaImageUrl;
-
-        scene.approved = false;
-        updateSceneApprovalState();
-        validateVideoPlan();
+        ctaUploadInput.click();
       }
     );
 
-    ctaSourceLabel.append(
-      ctaSourceTitle,
-      ctaSourceSelect
+    ctaUploadInput.addEventListener(
+      "change",
+      async () => {
+        const file =
+          ctaUploadInput.files?.[0];
+
+        if (!file) {
+          return;
+        }
+
+        if (!ALLOWED_TYPES.has(file.type)) {
+          ctaUploadError.textContent =
+            uiText("scene.cta_invalid", "Please use a JPG, PNG, or WebP CTA picture.");
+
+          ctaUploadInput.value = "";
+          return;
+        }
+
+        const formData =
+          new FormData();
+
+        formData.append(
+          "ctaImage",
+          file
+        );
+
+        ctaUploadError.textContent = "";
+        ctaUploadButton.disabled = true;
+        ctaUploadButton.textContent =
+          uiText("scene.cta_uploading", "Uploading...");
+
+        try {
+          const response =
+            await quickAdProjectFetch(
+              `/api/projects/${encodeURIComponent(currentProjectId)}/cta-image`,
+              {
+                method: "POST",
+                body: formData
+              }
+            );
+
+          const result =
+            await response.json();
+
+          if (
+            !response.ok ||
+            !result?.ok ||
+            !result?.ctaImageUrl
+          ) {
+            throw new Error(
+              localizedApiError(result) ||
+                result?.error ||
+                uiText("scene.cta_upload_failed", "The CTA picture could not be uploaded.")
+            );
+          }
+
+          reviewUploadedCtaImageUrl =
+            result.ctaImageUrl;
+
+          reviewCtaImageSource =
+            "uploaded";
+
+          reviewCtaImageUrl =
+            reviewUploadedCtaImageUrl;
+
+          scene.approved = false;
+
+          renderCurrentScenePlan();
+          updateSceneApprovalState();
+          validateVideoPlan();
+        } catch (error) {
+          ctaUploadError.textContent =
+            error?.message ||
+            uiText("scene.cta_upload_failed", "The CTA picture could not be uploaded.");
+
+          ctaUploadButton.disabled = false;
+          ctaUploadButton.textContent =
+            reviewUploadedCtaImageUrl
+              ? uiText("scene.cta_replace", "Replace CTA picture")
+              : uiText("scene.cta_upload", "Upload CTA picture");
+        }
+      }
     );
 
     pictureColumn.append(
-      ctaSourceLabel
+      ctaSourceLabel,
+      ctaUploadInput,
+      ctaUploadButton,
+      ctaUploadError
     );
   } else if (!isCtaScene) {
     pictureColumn.append(pictureLabel);
