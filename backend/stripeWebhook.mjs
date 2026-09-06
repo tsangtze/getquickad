@@ -159,7 +159,10 @@ async function applySubscription(
         Boolean(
           subscription.cancel_at_period_end ||
           subscription.cancel_at
-        )
+        ),
+
+      stripeEntitlementVerifiedAt:
+        new Date().toISOString()
     }
   );
 

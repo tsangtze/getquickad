@@ -59,9 +59,9 @@ function userFile(projectRoot, userId) {
   );
 }
 
-const userFinalVideoAccounting = new Map();
+const userUsageMutations = new Map();
 
-async function withUserFinalVideoAccountingLock(
+async function withUserUsageMutationLock(
   projectRoot,
   userId,
   operation
@@ -70,7 +70,7 @@ async function withUserFinalVideoAccountingLock(
     userFile(projectRoot, userId);
 
   const previous =
-    userFinalVideoAccounting.get(key) ||
+    userUsageMutations.get(key) ||
     Promise.resolve();
 
   let release;
@@ -80,7 +80,7 @@ async function withUserFinalVideoAccountingLock(
       release = resolve;
     });
 
-  userFinalVideoAccounting.set(
+  userUsageMutations.set(
     key,
     current
   );
@@ -93,10 +93,10 @@ async function withUserFinalVideoAccountingLock(
     release();
 
     if (
-      userFinalVideoAccounting.get(key) ===
+      userUsageMutations.get(key) ===
       current
     ) {
-      userFinalVideoAccounting.delete(key);
+      userUsageMutations.delete(key);
     }
   }
 }
@@ -207,14 +207,18 @@ export async function getStripeBillingState(
         data.stripeSubscriptionId || null,
 
       stripeSubscriptionStatus:
-        data.stripeSubscriptionStatus || null
+        data.stripeSubscriptionStatus || null,
+
+      stripeEntitlementVerifiedAt:
+        data.stripeEntitlementVerifiedAt || null
     };
   } catch (error) {
     if (error.code === "ENOENT") {
       return {
         stripeCustomerId: null,
         stripeSubscriptionId: null,
-        stripeSubscriptionStatus: null
+        stripeSubscriptionStatus: null,
+        stripeEntitlementVerifiedAt: null
       };
     }
 
@@ -232,9 +236,14 @@ export async function updateStripeSubscription(
     stripeSubscriptionStatus = null,
     currentPeriodStart = null,
     currentPeriodEnd = null,
-    cancelAtPeriodEnd = false
+    cancelAtPeriodEnd = false,
+    stripeEntitlementVerifiedAt = null
   }
 ) {
+  return withUserUsageMutationLock(
+    projectRoot,
+    userId,
+    async () => {
   const normalizedPlanId =
     normalizePlanId(planId);
 
@@ -318,6 +327,9 @@ export async function updateStripeSubscription(
     stripeSubscriptionStatus:
       stripeSubscriptionStatus || null,
 
+    stripeEntitlementVerifiedAt:
+      stripeEntitlementVerifiedAt || null,
+
     createdAt:
       current.createdAt || now,
 
@@ -332,11 +344,17 @@ export async function updateStripeSubscription(
   );
 
   return next;
+    }
+  );
 }
 export async function incrementFinalVideo(
   projectRoot,
   userId
 ) {
+  return withUserUsageMutationLock(
+    projectRoot,
+    userId,
+    async () => {
   const dir = usersDir(projectRoot);
   await fs.mkdir(dir, { recursive: true });
 
@@ -387,14 +405,15 @@ export async function incrementFinalVideo(
   );
 
   return next;
+    }
+  );
 }
-
 export async function recordSuccessfulFinalVideo(
   projectRoot,
   userId,
   durationSeconds
 ) {
-  return withUserFinalVideoAccountingLock(
+  return withUserUsageMutationLock(
     projectRoot,
     userId,
     async () => {
@@ -578,6 +597,10 @@ export async function recordSuccessfulVideoPlan(
   projectRoot,
   userId
 ) {
+  return withUserUsageMutationLock(
+    projectRoot,
+    userId,
+    async () => {
   const usage =
     await getUserUsage(
       projectRoot,
@@ -669,8 +692,9 @@ export async function recordSuccessfulVideoPlan(
   );
 
   return next;
+    }
+  );
 }
-
 export function canGenerateFinalVideo(
   usage,
   project,
