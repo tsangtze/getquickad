@@ -571,7 +571,7 @@ ctaImageInput?.addEventListener("change", () => {
     setUploadError(
       uiText(
         "cta_image.invalid",
-        "Please use a JPG, PNG, or WebP CTA picture."
+        "Please use a JPG, PNG, or WebP call-to-action image."
       )
     );
     return;
@@ -1118,7 +1118,7 @@ function createSceneReviewCard(scene) {
       document.createElement("span");
 
     ctaSourceTitle.textContent =
-      uiText("scene.cta_picture", "CTA picture");
+      uiText("scene.cta_picture", "Call-to-action image");
 
     ctaSourceLabel.append(
       ctaSourceTitle
@@ -1207,8 +1207,8 @@ function createSceneReviewCard(scene) {
 
     ctaUploadButton.textContent =
       reviewUploadedCtaImageUrl
-        ? uiText("scene.cta_replace", "Replace CTA picture")
-        : uiText("scene.cta_upload", "Upload CTA picture");
+        ? uiText("scene.cta_replace", "Replace call-to-action image")
+        : uiText("scene.cta_upload", "Upload call-to-action image");
 
     const ctaUploadError =
       document.createElement("div");
@@ -1235,7 +1235,7 @@ function createSceneReviewCard(scene) {
 
         if (!ALLOWED_TYPES.has(file.type)) {
           ctaUploadError.textContent =
-            uiText("scene.cta_invalid", "Please use a JPG, PNG, or WebP CTA picture.");
+            uiText("scene.cta_invalid", "Please use a JPG, PNG, or WebP call-to-action image.");
 
           ctaUploadInput.value = "";
           return;
@@ -1275,7 +1275,7 @@ function createSceneReviewCard(scene) {
             throw new Error(
               localizedApiError(result) ||
                 result?.error ||
-                uiText("scene.cta_upload_failed", "The CTA picture could not be uploaded.")
+                uiText("scene.cta_upload_failed", "The call-to-action image could not be uploaded.")
             );
           }
 
@@ -1296,13 +1296,13 @@ function createSceneReviewCard(scene) {
         } catch (error) {
           ctaUploadError.textContent =
             error?.message ||
-            uiText("scene.cta_upload_failed", "The CTA picture could not be uploaded.");
+            uiText("scene.cta_upload_failed", "The call-to-action image could not be uploaded.");
 
           ctaUploadButton.disabled = false;
           ctaUploadButton.textContent =
             reviewUploadedCtaImageUrl
-              ? uiText("scene.cta_replace", "Replace CTA picture")
-              : uiText("scene.cta_upload", "Upload CTA picture");
+              ? uiText("scene.cta_replace", "Replace call-to-action image")
+              : uiText("scene.cta_upload", "Upload call-to-action image");
         }
       }
     );
