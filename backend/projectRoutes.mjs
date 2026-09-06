@@ -1,6 +1,5 @@
 import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
 import {
-  getUserUsage,
   getPlan,
   recordSuccessfulFinalVideo,
   canGenerateFinalVideo,
@@ -10,6 +9,9 @@ import {
 } from "./usageLimits.mjs";
 import cookieParser from "cookie-parser";
 import { requireUser } from "./authRoutes.mjs";
+import {
+  reconcilePaidEntitlement
+} from "./stripeEntitlement.mjs";
 import { authConfiguration } from "./authService.mjs";
 import crypto from "node:crypto";
 import path from "node:path";
@@ -709,7 +711,7 @@ export async function createProjectRouter({
   router.get("/usage", async (request, response) => {
     try {
       const usage =
-        await getUserUsage(
+        await reconcilePaidEntitlement(
           projectRoot,
           request.authUser.id
         );
@@ -766,7 +768,7 @@ export async function createProjectRouter({
 
 
         const usage =
-          await getUserUsage(
+          await reconcilePaidEntitlement(
             projectRoot,
             request.authUser.id
           );
@@ -1676,6 +1678,61 @@ export async function createProjectRouter({
         const approvedStoryboard =
           validation.storyboard;
 
+        let usage;
+
+        try {
+          usage =
+            await reconcilePaidEntitlement(
+              projectRoot,
+              request.authUser.id,
+              {
+                requireFreshVerification: true
+              }
+            );
+        } catch (error) {
+          if (
+            error?.code ===
+            "STRIPE_ENTITLEMENT_UNAVAILABLE"
+          ) {
+            response.status(503).json({
+              ok: false,
+              code:
+                "STRIPE_ENTITLEMENT_UNAVAILABLE",
+              error:
+                "Your subscription could not be verified right now. Please try again."
+            });
+            return;
+          }
+
+          throw error;
+        }
+
+        const videoCheck =
+          canGenerateFinalVideo(
+            usage,
+            project,
+            selectedMaxDurationSeconds
+          );
+
+        if (!videoCheck.ok) {
+          response
+            .status(videoCheck.status)
+            .json({
+              ok: false,
+              code: videoCheck.code,
+              error: videoCheck.error,
+              limits: LIMITS,
+              usage: {
+                finalVideoCount:
+                  usage.finalVideoCount
+              }
+            });
+          return;
+        }
+
+        const isFreeRerender =
+          videoCheck.freeRerender;
+
         const approvedAt =
           new Date().toISOString();
 
@@ -1718,27 +1775,6 @@ export async function createProjectRouter({
           JSON.stringify(project, null, 2),
           "utf8"
         );
-
-                // --- v0.9.4: Enforce 2 free final videos ---
-        const usage = await getUserUsage(projectRoot, request.authUser.id);
-        const videoCheck =
-          canGenerateFinalVideo(
-            usage,
-            project,
-            selectedMaxDurationSeconds
-          );
-        if (!videoCheck.ok) {
-          response.status(videoCheck.status).json({
-            ok: false,
-            code: videoCheck.code,
-            error: videoCheck.error,
-            limits: LIMITS,
-            usage: { finalVideoCount: usage.finalVideoCount }
-          });
-          return;
-        }
-
-        const isFreeRerender = videoCheck.freeRerender;
 
         generationStage = "narration";
 

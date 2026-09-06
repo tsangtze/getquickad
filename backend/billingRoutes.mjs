@@ -3,6 +3,9 @@ import cookieParser from "cookie-parser";
 import Stripe from "stripe";
 
 import { requireUser } from "./authRoutes.mjs";
+import {
+  reconcilePaidEntitlement
+} from "./stripeEntitlement.mjs";
 import { authConfiguration } from "./authService.mjs";
 import { getStripeBillingState } from "./usageLimits.mjs";
 
@@ -145,6 +148,17 @@ export function createBillingRouter({
 
         const userId =
           String(request.authUser.id);
+        await reconcilePaidEntitlement(
+          projectRoot,
+          userId,
+          {
+            retrieveSubscription:
+              (id) =>
+                stripe.subscriptions.retrieve(id),
+            force: true,
+            requireFreshVerification: true
+          }
+        );
 
         const billingState =
           await getStripeBillingState(
@@ -224,6 +238,20 @@ export function createBillingRouter({
           url: session.url
         });
       } catch (error) {
+        if (
+          error?.code ===
+          "STRIPE_ENTITLEMENT_UNAVAILABLE"
+        ) {
+          response.status(503).json({
+            ok: false,
+            code:
+              "STRIPE_ENTITLEMENT_UNAVAILABLE",
+            error:
+              "Subscription verification is temporarily unavailable. Please try again."
+          });
+          return;
+        }
+
         console.error(
           "Stripe Checkout session failed:",
           error
@@ -252,13 +280,29 @@ export function createBillingRouter({
             String(request.body?.language || "")
               .trim()
           );
+        const stripe =
+          createStripeClient();
+
+        await reconcilePaidEntitlement(
+          projectRoot,
+          userId,
+          {
+            retrieveSubscription:
+              (id) =>
+                stripe.subscriptions.retrieve(id),
+            force: true
+          }
+        );
 
         const billingState =
           await getStripeBillingState(
             projectRoot,
             userId
           );
-        if (!billingState.stripeCustomerId) {
+        if (
+          !billingState.stripeCustomerId ||
+          !billingState.stripeSubscriptionId
+        ) {
           return response.status(400).json({
             ok: false,
             code: "BILLING_NO_PAID_SUBSCRIPTION",
@@ -266,9 +310,6 @@ export function createBillingRouter({
               "No paid subscription was found for this account."
           });
         }
-
-        const stripe =
-          createStripeClient();
 
         const session =
           await stripe.billingPortal.sessions.create({
