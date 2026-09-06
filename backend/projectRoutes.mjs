@@ -669,7 +669,7 @@ export async function createProjectRouter({
     const canGenerateMoreVideos =
       isFree
         ? freeVideosRemaining > 0
-        : monthlyCreditsRemaining >= 10;
+        : monthlyCreditsRemaining > 0;
 
     return {
       finalVideoCount:

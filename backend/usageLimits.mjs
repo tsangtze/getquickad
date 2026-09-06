@@ -59,6 +59,48 @@ function userFile(projectRoot, userId) {
   );
 }
 
+const userFinalVideoAccounting = new Map();
+
+async function withUserFinalVideoAccountingLock(
+  projectRoot,
+  userId,
+  operation
+) {
+  const key =
+    userFile(projectRoot, userId);
+
+  const previous =
+    userFinalVideoAccounting.get(key) ||
+    Promise.resolve();
+
+  let release;
+
+  const current =
+    new Promise((resolve) => {
+      release = resolve;
+    });
+
+  userFinalVideoAccounting.set(
+    key,
+    current
+  );
+
+  await previous;
+
+  try {
+    return await operation();
+  } finally {
+    release();
+
+    if (
+      userFinalVideoAccounting.get(key) ===
+      current
+    ) {
+      userFinalVideoAccounting.delete(key);
+    }
+  }
+}
+
 function normalizePlanId(value) {
   const planId =
     String(value || PLAN_IDS.FREE).toLowerCase();
@@ -352,138 +394,150 @@ export async function recordSuccessfulFinalVideo(
   userId,
   durationSeconds
 ) {
-  const dir = usersDir(projectRoot);
-  await fs.mkdir(dir, { recursive: true });
+  return withUserFinalVideoAccountingLock(
+    projectRoot,
+    userId,
+    async () => {
+      const dir = usersDir(projectRoot);
+      await fs.mkdir(dir, { recursive: true });
 
-  const file = userFile(projectRoot, userId);
+      const file = userFile(projectRoot, userId);
 
-  let current = {
-    finalVideoCount: 0,
-    planId: PLAN_IDS.FREE,
-    monthlyCreditsUsed: 0,
-    currentPeriodStart: null,
-    currentPeriodEnd: null
-  };
+      let current = {
+        finalVideoCount: 0,
+        planId: PLAN_IDS.FREE,
+        monthlyCreditsUsed: 0,
+        currentPeriodStart: null,
+        currentPeriodEnd: null
+      };
 
-  try {
-    current = JSON.parse(
-      await fs.readFile(file, "utf8")
-    );
-  } catch (e) {
-    if (e.code !== "ENOENT") {
-      throw e;
-    }
-  }
+      try {
+        current = JSON.parse(
+          await fs.readFile(file, "utf8")
+        );
+      } catch (e) {
+        if (e.code !== "ENOENT") {
+          throw e;
+        }
+      }
 
-  const planId =
-    normalizePlanId(current.planId);
+      const planId =
+        normalizePlanId(current.planId);
 
-  const plan =
-    getPlan(planId);
+      const plan =
+        getPlan(planId);
 
-  const requestedDurationSeconds =
-    Number(durationSeconds);
+      const requestedDurationSeconds =
+        Number(durationSeconds);
 
-  if (
-    !Number.isFinite(requestedDurationSeconds) ||
-    requestedDurationSeconds < 20 ||
-    requestedDurationSeconds > plan.maxVideoSeconds
-  ) {
-    const error =
-      new Error(
-        `Your ${plan.name} plan supports videos from 20 to ${plan.maxVideoSeconds} seconds.`
+      if (
+        !Number.isFinite(requestedDurationSeconds) ||
+        requestedDurationSeconds < 20 ||
+        requestedDurationSeconds > plan.maxVideoSeconds
+      ) {
+        const error =
+          new Error(
+            `Your ${plan.name} plan supports videos from 20 to ${plan.maxVideoSeconds} seconds.`
+          );
+
+        error.code =
+          "VIDEO_DURATION_LIMIT_EXCEEDED";
+
+        throw error;
+      }
+
+      const now =
+        new Date().toISOString();
+
+      const next = {
+        ...current,
+
+        finalVideoCount:
+          Number(current.finalVideoCount) || 0,
+
+        planId,
+
+        monthlyCreditsUsed:
+          Number(current.monthlyCreditsUsed) || 0,
+
+        currentPeriodStart:
+          current.currentPeriodStart || null,
+
+        currentPeriodEnd:
+          current.currentPeriodEnd || null,
+
+        createdAt:
+          current.createdAt || now,
+
+        updatedAt:
+          now
+      };
+
+      let creditCost = 0;
+
+      if (planId === PLAN_IDS.FREE) {
+        if (
+          next.finalVideoCount >=
+          FREE_FINAL_VIDEOS
+        ) {
+          const error =
+            new Error(
+              `You have used your ${FREE_FINAL_VIDEOS} free videos.`
+            );
+
+          error.code =
+            "FREE_VIDEO_LIMIT_REACHED";
+
+          throw error;
+        }
+
+        next.finalVideoCount += 1;
+      } else {
+        creditCost =
+          getVideoCreditCost(requestedDurationSeconds);
+
+        const creditsRemaining =
+          Math.max(
+            0,
+            plan.monthlyCredits -
+              next.monthlyCreditsUsed
+          );
+
+        if (creditsRemaining <= 0) {
+          const error =
+            new Error(
+              "Not enough credits to record this video."
+            );
+
+          error.code =
+            "CREDIT_LIMIT_REACHED";
+
+          throw error;
+        }
+
+        creditCost =
+          Math.min(
+            creditCost,
+            creditsRemaining
+          );
+
+        next.monthlyCreditsUsed +=
+          creditCost;
+      }
+
+      await fs.writeFile(
+        file,
+        JSON.stringify(next, null, 2),
+        "utf8"
       );
 
-    error.code =
-      "VIDEO_DURATION_LIMIT_EXCEEDED";
-
-    throw error;
-  }
-
-  const now =
-    new Date().toISOString();
-
-  const next = {
-    ...current,
-
-    finalVideoCount:
-      Number(current.finalVideoCount) || 0,
-
-    planId,
-
-    monthlyCreditsUsed:
-      Number(current.monthlyCreditsUsed) || 0,
-
-    currentPeriodStart:
-      current.currentPeriodStart || null,
-
-    currentPeriodEnd:
-      current.currentPeriodEnd || null,
-
-    createdAt:
-      current.createdAt || now,
-
-    updatedAt:
-      now
-  };
-
-  let creditCost = 0;
-
-  if (planId === PLAN_IDS.FREE) {
-    if (
-      next.finalVideoCount >=
-      FREE_FINAL_VIDEOS
-    ) {
-      const error =
-        new Error(
-          `You have used your ${FREE_FINAL_VIDEOS} free videos.`
-        );
-
-      error.code =
-        "FREE_VIDEO_LIMIT_REACHED";
-
-      throw error;
+      return {
+        usage: next,
+        planId,
+        creditCost
+      };
     }
-
-    next.finalVideoCount += 1;
-  } else {
-    creditCost =
-      getVideoCreditCost(requestedDurationSeconds);
-
-    const creditsRemaining =
-      Math.max(
-        0,
-        plan.monthlyCredits -
-          next.monthlyCreditsUsed
-      );
-
-    if (creditCost > creditsRemaining) {
-      const error =
-        new Error(
-          "Not enough credits to record this video."
-        );
-
-      error.code =
-        "CREDIT_LIMIT_REACHED";
-
-      throw error;
-    }
-
-    next.monthlyCreditsUsed +=
-      creditCost;
-  }
-
-  await fs.writeFile(
-    file,
-    JSON.stringify(next, null, 2),
-    "utf8"
   );
-
-  return {
-    usage: next,
-    planId,
-    creditCost
-  };
 }
 export function canGenerateVideoPlan(usage) {
   const planId =
@@ -691,7 +745,7 @@ export function canGenerateFinalVideo(
     getVideoCreditCost(durationSeconds);
 
   if (
-    creditCost > creditsRemaining
+    creditsRemaining <= 0
   ) {
     return {
       ok: false,
@@ -706,7 +760,11 @@ export function canGenerateFinalVideo(
     ok: true,
     freeRerender: false,
     planId,
-    creditCost
+    creditCost:
+      Math.min(
+        creditCost,
+        creditsRemaining
+      )
   };
 }
 

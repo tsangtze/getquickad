@@ -198,15 +198,41 @@ assert.equal(
 
 console.log("PASS: Pro accepts 60 seconds and rejects 61.");
 
-// Starter with only 14 credits remaining cannot make a 31-45 sec video.
+// Any positive paid balance may fund one final video.
 result =
   canGenerateFinalVideo(
     usage(
       PLAN_IDS.STARTER,
-      { monthlyCreditsUsed: 86 }
+      { monthlyCreditsUsed: 90 }
     ),
     project(),
-    31
+    60
+  );
+
+assert.equal(result.ok, true);
+assert.equal(result.creditCost, 10);
+
+result =
+  canGenerateFinalVideo(
+    usage(
+      PLAN_IDS.STARTER,
+      { monthlyCreditsUsed: 99 }
+    ),
+    project(),
+    60
+  );
+
+assert.equal(result.ok, true);
+assert.equal(result.creditCost, 1);
+
+result =
+  canGenerateFinalVideo(
+    usage(
+      PLAN_IDS.STARTER,
+      { monthlyCreditsUsed: 100 }
+    ),
+    project(),
+    60
   );
 
 assert.equal(result.ok, false);
@@ -215,7 +241,7 @@ assert.equal(
   "CREDIT_LIMIT_REACHED"
 );
 
-console.log("PASS: Insufficient credits block generation.");
+console.log("PASS: Positive last-credit balance is allowed; zero is blocked.");
 
 // Exactly enough credits must work.
 result =
@@ -371,6 +397,116 @@ try {
   );
 
   console.log("PASS: Accounting blocks exhausted paid credits.");
+
+  const lastCreditUserId = "starter-last-credit-user";
+  const lastCreditUserFile =
+    path.join(usersDirectory, `${lastCreditUserId}.json`);
+
+  await fs.writeFile(
+    lastCreditUserFile,
+    JSON.stringify({
+      planId: PLAN_IDS.STARTER,
+      finalVideoCount: 0,
+      monthlyCreditsUsed: 90
+    }),
+    "utf8"
+  );
+
+  accountingResult =
+    await recordSuccessfulFinalVideo(
+      temporaryRoot,
+      lastCreditUserId,
+      60
+    );
+
+  assert.equal(accountingResult.creditCost, 10);
+  assert.equal(
+    accountingResult.usage.monthlyCreditsUsed,
+    100
+  );
+
+  const storedLastCreditUser =
+    JSON.parse(
+      await fs.readFile(lastCreditUserFile, "utf8")
+    );
+
+  assert.equal(
+    storedLastCreditUser.monthlyCreditsUsed,
+    100
+  );
+
+  await assert.rejects(
+    recordSuccessfulFinalVideo(
+      temporaryRoot,
+      lastCreditUserId,
+      30
+    ),
+    (error) =>
+      error.code === "CREDIT_LIMIT_REACHED"
+  );
+
+  console.log("PASS: Accounting consumes the final positive balance and blocks zero.");
+
+  const concurrentUserId = "starter-concurrent-last-credit-user";
+  const concurrentUserFile =
+    path.join(usersDirectory, `${concurrentUserId}.json`);
+
+  await fs.writeFile(
+    concurrentUserFile,
+    JSON.stringify({
+      planId: PLAN_IDS.STARTER,
+      finalVideoCount: 0,
+      monthlyCreditsUsed: 90
+    }),
+    "utf8"
+  );
+
+  const concurrentResults =
+    await Promise.allSettled([
+      recordSuccessfulFinalVideo(
+        temporaryRoot,
+        concurrentUserId,
+        60
+      ),
+      recordSuccessfulFinalVideo(
+        temporaryRoot,
+        concurrentUserId,
+        60
+      )
+    ]);
+
+  const concurrentSuccesses =
+    concurrentResults.filter(
+      (entry) => entry.status === "fulfilled"
+    );
+
+  const concurrentFailures =
+    concurrentResults.filter(
+      (entry) => entry.status === "rejected"
+    );
+
+  assert.equal(concurrentSuccesses.length, 1);
+  assert.equal(concurrentFailures.length, 1);
+  assert.equal(
+    concurrentSuccesses[0].value.creditCost,
+    10
+  );
+  assert.equal(
+    concurrentFailures[0].reason.code,
+    "CREDIT_LIMIT_REACHED"
+  );
+
+  const storedConcurrentUser =
+    JSON.parse(
+      await fs.readFile(concurrentUserFile, "utf8")
+    );
+
+  assert.equal(
+    storedConcurrentUser.monthlyCreditsUsed,
+    100
+  );
+
+  console.log("PASS: Concurrent final-video accounting consumes the last balance exactly once.");
 
   await assert.rejects(
     recordSuccessfulFinalVideo(
