@@ -2303,15 +2303,9 @@ async function quickAdReadSession() {
 }
 
 async function quickAdCheckPageSession() {
-  try {
-    const user = await quickAdReadSession();
-    window.quickAdAccountChanged(user);
-    return user;
-  } catch (error) {
-    // Do not continue showing private content with an uncertain identity.
-    if (quickAdHistoryUser) quickAdReloadPrivatePage();
-    throw error;
-  }
+  const user = await quickAdReadSession();
+  window.quickAdAccountChanged(user);
+  return user;
 }
 
 async function quickAdProjectFetch(url, options = {}) {
@@ -2334,7 +2328,15 @@ async function quickAdProjectFetch(url, options = {}) {
 
   // Delay delivery to existing UI code until identity is checked again.
   const data = await response.json();
-  const currentUser = await quickAdCheckPageSession();
+  const isSuccessfulFinalize =
+    url.includes("/finalize") &&
+    response.status === 201 &&
+    data?.ok === true;
+
+  const currentUser =
+    isSuccessfulFinalize
+      ? user
+      : await quickAdCheckPageSession();
 
   if (
     quickAdPageLeaving ||
