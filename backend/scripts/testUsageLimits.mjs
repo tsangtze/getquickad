@@ -5,6 +5,9 @@ import path from "node:path";
 
 import {
   PLAN_IDS,
+  FREE_VIDEO_PLANS,
+  canGenerateVideoPlan,
+  recordSuccessfulVideoPlan,
   getVideoCreditCost,
   canGenerateFinalVideo,
   recordSuccessfulFinalVideo
@@ -65,6 +68,24 @@ assert.equal(
 );
 
 console.log("PASS: Free accepts 30 seconds and rejects 31.");
+
+// Free lifetime Video Plan limit.
+for (const count of [0, FREE_VIDEO_PLANS - 1]) {
+  result = canGenerateVideoPlan({ planId: PLAN_IDS.FREE, freeVideoPlanCount: count });
+  assert.equal(result.ok, true);
+}
+
+result = canGenerateVideoPlan({ planId: PLAN_IDS.FREE, freeVideoPlanCount: FREE_VIDEO_PLANS });
+assert.equal(result.ok, false);
+assert.equal(result.code, "FREE_VIDEO_PLAN_LIMIT_REACHED");
+assert.equal(result.status, 403);
+
+for (const planId of [PLAN_IDS.STARTER, PLAN_IDS.PRO]) {
+  result = canGenerateVideoPlan({ planId, freeVideoPlanCount: FREE_VIDEO_PLANS });
+  assert.equal(result.ok, true);
+}
+
+console.log("PASS: Free Video Plan lifetime limit enforced at 10; paid plans exempt.");
 
 // Free lifetime-video limit.
 result =
@@ -252,6 +273,25 @@ try {
   await fs.mkdir(usersDirectory, {
     recursive: true
   });
+
+  const planUserId = "free-plan-test-user";
+  const planUserFile = path.join(usersDirectory, `${planUserId}.json`);
+  await fs.writeFile(planUserFile, JSON.stringify({ planId: PLAN_IDS.FREE, finalVideoCount: 0, freeVideoPlanCount: 9, monthlyCreditsUsed: 0 }), "utf8");
+  let planAccountingResult = await recordSuccessfulVideoPlan(temporaryRoot, planUserId);
+  assert.equal(planAccountingResult.freeVideoPlanCount, 10);
+  let storedPlanUser = JSON.parse(await fs.readFile(planUserFile, "utf8"));
+  assert.equal(storedPlanUser.freeVideoPlanCount, 10);
+  await assert.rejects(recordSuccessfulVideoPlan(temporaryRoot, planUserId), (error) => error.code === "FREE_VIDEO_PLAN_LIMIT_REACHED");
+  console.log("PASS: Successful Free Video Plan accounting increments 9 to 10 and blocks the next record.");
+
+  const paidPlanUserId = "starter-plan-test-user";
+  const paidPlanUserFile = path.join(usersDirectory, `${paidPlanUserId}.json`);
+  await fs.writeFile(paidPlanUserFile, JSON.stringify({ planId: PLAN_IDS.STARTER, finalVideoCount: 0, freeVideoPlanCount: 10, monthlyCreditsUsed: 0 }), "utf8");
+  planAccountingResult = await recordSuccessfulVideoPlan(temporaryRoot, paidPlanUserId);
+  assert.equal(planAccountingResult.freeVideoPlanCount, 10);
+  storedPlanUser = JSON.parse(await fs.readFile(paidPlanUserFile, "utf8"));
+  assert.equal(storedPlanUser.freeVideoPlanCount, 10);
+  console.log("PASS: Paid Video Plan generation does not increment the Free lifetime counter.");
 
   const freeUserId = "free-test-user";
   const freeUserFile =

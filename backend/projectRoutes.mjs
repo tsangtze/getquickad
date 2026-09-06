@@ -1,5 +1,13 @@
 import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
-import { getUserUsage, getPlan, recordSuccessfulFinalVideo, countUserProjects, canCreateProject, canGenerateFinalVideo, LIMITS } from "./usageLimits.mjs";
+import {
+  getUserUsage,
+  getPlan,
+  recordSuccessfulFinalVideo,
+  canGenerateFinalVideo,
+  canGenerateVideoPlan,
+  recordSuccessfulVideoPlan,
+  LIMITS
+} from "./usageLimits.mjs";
 import cookieParser from "cookie-parser";
 import { requireUser } from "./authRoutes.mjs";
 import { authConfiguration } from "./authService.mjs";
@@ -191,22 +199,13 @@ export function getMinimumDurationTierForImageCount(imageCount) {
 }
 
 function validateProject(
-  request,
-  sourceProductImages = [],
-  sourceCtaPreset = null
+  request
 ) {
   const productImages =
     request.files?.productImages ?? [];
 
-  const sourceProjectId = cleanText(
-    request.body.sourceProjectId,
-    36
-  );
 
-  const effectiveImageCount =
-    productImages.length > 0
-      ? productImages.length
-      : sourceProductImages.length;
+  const effectiveImageCount = productImages.length;
 
   const description = cleanText(
     request.body.description,
@@ -234,7 +233,7 @@ function validateProject(
 
   const requestedCtaPreset =
     String(
-      request.body.ctaPreset ?? sourceCtaPreset ?? "shop-now"
+      request.body.ctaPreset ?? "shop-now"
     ).trim();
 
   const ctaPreset =
@@ -280,23 +279,13 @@ function validateProject(
     10
   ) || "en";
 
-  if (productImages.length < 1 && !sourceProjectId) {
+  if (productImages.length < 1) {
     return {
       code: "PROJECT_IMAGE_REQUIRED",
       error: "Please upload at least one product image."
     };
   }
 
-  if (
-    sourceProjectId &&
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-      .test(sourceProjectId)
-  ) {
-    return {
-      code: "SOURCE_PROJECT_ID_INVALID",
-      error: "Invalid source project ID."
-    };
-  }
 
   if (productImages.length > 10) {
     return {
@@ -360,7 +349,6 @@ function validateProject(
 
   return {
     productImages,
-    sourceProjectId,
     effectiveImageCount,
     productLogo:
       request.files?.productLogo?.[0] ?? null,
@@ -378,345 +366,6 @@ function validateProject(
   };
 }
 
-async function loadOwnedSourceProject({
-  projectsDirectory,
-  sourceProjectId,
-  ownerId
-}) {
-  if (!sourceProjectId) {
-    return null;
-  }
-
-  const sourceDirectory = path.join(
-    projectsDirectory,
-    sourceProjectId
-  );
-
-  try {
-    const stat = await fs.lstat(sourceDirectory);
-
-    if (
-      !stat.isDirectory() ||
-      stat.isSymbolicLink()
-    ) {
-      const error = new Error("Source project not found.");
-      error.code = "SOURCE_PROJECT_NOT_FOUND";
-      throw error;
-    }
-
-    const sourceProject = JSON.parse(
-      await fs.readFile(
-        path.join(sourceDirectory, "project.json"),
-        "utf8"
-      )
-    );
-
-    if (
-      sourceProject?.id !== sourceProjectId ||
-      sourceProject?.ownerId !== ownerId
-    ) {
-      const error = new Error("Source project not found.");
-      error.code = "SOURCE_PROJECT_NOT_FOUND";
-      throw error;
-    }
-
-    const productImages =
-      Array.isArray(
-        sourceProject.assets?.productImages
-      )
-        ? sourceProject.assets.productImages
-        : [];
-
-    if (productImages.length < 1) {
-      const error = new Error("Source project has no reusable product images.");
-      error.code = "SOURCE_PROJECT_IMAGES_MISSING";
-      throw error;
-    }
-
-    if (productImages.length > MAX_IMAGE_COUNT) {
-      const error = new Error("Source project has too many product images.");
-      error.code = "SOURCE_PROJECT_IMAGE_LIMIT";
-      throw error;
-    }
-
-    for (const asset of productImages) {
-      const storedName =
-        String(asset?.storedName ?? "");
-
-      if (
-        !storedName ||
-        path.basename(storedName) !== storedName ||
-        !ALLOWED_MIME_TYPES.has(asset?.mimeType)
-      ) {
-        const error = new Error("Source project contains an invalid product image.");
-        error.code = "SOURCE_PROJECT_ASSET_INVALID";
-        throw error;
-      }
-    }
-
-    const productLogo =
-      sourceProject.assets?.productLogo ?? null;
-
-    if (productLogo) {
-      const storedName =
-        String(productLogo?.storedName ?? "");
-
-      if (
-        !storedName ||
-        path.basename(storedName) !== storedName ||
-        !ALLOWED_MIME_TYPES.has(productLogo?.mimeType)
-      ) {
-        const error = new Error("Source project contains an invalid product logo.");
-        error.code = "SOURCE_PROJECT_ASSET_INVALID";
-        throw error;
-      }
-    }
-
-    const ctaImage =
-      sourceProject.assets?.ctaImage ?? null;
-
-    if (ctaImage) {
-      const storedName =
-        String(ctaImage?.storedName ?? "");
-
-      if (
-        !storedName ||
-        path.basename(storedName) !== storedName ||
-        !ALLOWED_MIME_TYPES.has(ctaImage?.mimeType)
-      ) {
-        const error = new Error("Source project contains an invalid CTA image.");
-        error.code = "SOURCE_PROJECT_ASSET_INVALID";
-        throw error;
-      }
-    }
-
-    return {
-      project: sourceProject,
-      directory: sourceDirectory,
-      productImages,
-      productLogo,
-      ctaImage
-    };
-  } catch (error) {
-    if (error?.code === "ENOENT") {
-      const notFound = new Error("Source project not found.");
-      notFound.code = "SOURCE_PROJECT_NOT_FOUND";
-      throw notFound;
-    }
-
-    throw error;
-  }
-}
-
-async function copySourceProductImages({
-  sourceProject,
-  projectDirectory
-}) {
-  if (!sourceProject) {
-    return [];
-  }
-
-  const copiedImages = [];
-
-  for (
-    let index = 0;
-    index < sourceProject.productImages.length;
-    index += 1
-  ) {
-    const asset =
-      sourceProject.productImages[index];
-
-    const extension =
-      ALLOWED_MIME_TYPES.get(asset.mimeType);
-
-    if (!extension) {
-      const error = new Error("Source project contains an invalid product image.");
-      error.code = "SOURCE_PROJECT_ASSET_INVALID";
-      throw error;
-    }
-
-    const sourcePath = path.join(
-      sourceProject.directory,
-      asset.storedName
-    );
-
-    const sourceStat =
-      await fs.lstat(sourcePath);
-
-    if (
-      !sourceStat.isFile() ||
-      sourceStat.isSymbolicLink()
-    ) {
-      const error = new Error("Source project product image is unavailable.");
-      error.code = "SOURCE_PROJECT_ASSET_MISSING";
-      throw error;
-    }
-
-    if (sourceStat.size > MAX_FILE_SIZE) {
-      const error = new Error("Source project product image is too large.");
-      error.code = "SOURCE_PROJECT_ASSET_TOO_LARGE";
-      throw error;
-    }
-
-    const storedName =
-      `product-${String(index + 1).padStart(2, "0")}${extension}`;
-
-    const destinationPath = path.join(
-      projectDirectory,
-      storedName
-    );
-
-    await fs.copyFile(
-      sourcePath,
-      destinationPath
-    );
-
-    copiedImages.push({
-      originalName:
-        String(
-          asset.originalName ??
-          asset.storedName
-        ),
-      storedName,
-      mimeType: asset.mimeType,
-      size: sourceStat.size
-    });
-  }
-
-  return copiedImages;
-}
-
-async function copySourceProductLogo({
-  sourceProject,
-  projectDirectory
-}) {
-  const asset =
-    sourceProject?.productLogo ?? null;
-
-  if (!asset) {
-    return null;
-  }
-
-  const extension =
-    ALLOWED_MIME_TYPES.get(asset.mimeType);
-
-  if (!extension) {
-    const error = new Error("Source project contains an invalid product logo.");
-    error.code = "SOURCE_PROJECT_ASSET_INVALID";
-    throw error;
-  }
-
-  const sourcePath = path.join(
-    sourceProject.directory,
-    asset.storedName
-  );
-
-  const sourceStat =
-    await fs.lstat(sourcePath);
-
-  if (
-    !sourceStat.isFile() ||
-    sourceStat.isSymbolicLink()
-  ) {
-    const error = new Error("Source project product logo is unavailable.");
-    error.code = "SOURCE_PROJECT_ASSET_MISSING";
-    throw error;
-  }
-
-  if (sourceStat.size > MAX_FILE_SIZE) {
-    const error = new Error("Source project product logo is too large.");
-    error.code = "SOURCE_PROJECT_ASSET_TOO_LARGE";
-    throw error;
-  }
-
-  const storedName =
-    `logo${extension}`;
-
-  await fs.copyFile(
-    sourcePath,
-    path.join(
-      projectDirectory,
-      storedName
-    )
-  );
-
-  return {
-    originalName:
-      String(
-        asset.originalName ??
-        asset.storedName
-      ),
-    storedName,
-    mimeType: asset.mimeType,
-    size: sourceStat.size
-  };
-}
-
-async function copySourceCtaImage({
-  sourceProject,
-  projectDirectory
-}) {
-  const asset =
-    sourceProject?.ctaImage ?? null;
-
-  if (!asset) {
-    return null;
-  }
-
-  const extension =
-    ALLOWED_MIME_TYPES.get(asset.mimeType);
-
-  if (!extension) {
-    const error = new Error("Source project contains an invalid CTA image.");
-    error.code = "SOURCE_PROJECT_ASSET_INVALID";
-    throw error;
-  }
-
-  const sourcePath = path.join(
-    sourceProject.directory,
-    asset.storedName
-  );
-
-  const sourceStat =
-    await fs.lstat(sourcePath);
-
-  if (
-    !sourceStat.isFile() ||
-    sourceStat.isSymbolicLink()
-  ) {
-    const error = new Error("Source project CTA image is unavailable.");
-    error.code = "SOURCE_PROJECT_ASSET_MISSING";
-    throw error;
-  }
-
-  if (sourceStat.size > MAX_FILE_SIZE) {
-    const error = new Error("Source project CTA image is too large.");
-    error.code = "SOURCE_PROJECT_ASSET_TOO_LARGE";
-    throw error;
-  }
-
-  const storedName =
-    `cta${extension}`;
-
-  await fs.copyFile(
-    sourcePath,
-    path.join(
-      projectDirectory,
-      storedName
-    )
-  );
-
-  return {
-    originalName:
-      String(
-        asset.originalName ??
-        asset.storedName
-      ),
-    storedName,
-    mimeType: asset.mimeType,
-    size: sourceStat.size
-  };
-}
 
 async function moveProjectAssets({
   projectDirectory,
@@ -795,6 +444,7 @@ async function moveProjectAssets({
   };
 }
 
+
 export async function createProjectRouter({
   projectRoot
 }) {
@@ -813,6 +463,28 @@ export async function createProjectRouter({
   };
 
 
+
+  // Serialize project creation per user to prevent overlapping uploads.
+  const activeProjectCreates = new Set();
+  const withUserCreateLock = (handler) => async (request, response, next) => {
+    const userId = String(request.authUser?.id ?? "");
+
+    if (activeProjectCreates.has(userId)) {
+      await removeFiles(allUploadedFiles(request));
+      return response.status(409).json({
+        ok: false,
+        code: "PROJECT_CREATE_BUSY",
+        error: "Another project is already being created. Please wait until it finishes."
+      });
+    }
+
+    activeProjectCreates.add(userId);
+    try {
+      return await handler(request, response, next);
+    } finally {
+      activeProjectCreates.delete(userId);
+    }
+  };
   // Authentication runs before any upload or project handler.
   router.use(cookieParser());
   router.use((_request, response, next) => {
@@ -923,34 +595,9 @@ export async function createProjectRouter({
     recursive: true
   });
 
-  router.delete("/:projectId", withProjectLock(async (request, response) => {
-    const id = request.params.projectId;
-    const directory = path.join(projectsDirectory, id);
-    try {
-      // Recheck ownership inside the lock; never trust a submitted owner ID.
-      const stat = await fs.lstat(directory);
-      if (!stat.isDirectory() || stat.isSymbolicLink()) {
-        return response.status(404).json({ok: false, code: "PROJECT_NOT_FOUND", error: "Project not found."});
-      }
-      const project = JSON.parse(await fs.readFile(path.join(directory, "project.json"), "utf8"));
-      if (project.id !== id || project.ownerId !== request.authUser.id) {
-        return response.status(404).json({ok: false, code: "PROJECT_NOT_FOUND", error: "Project not found."});
-      }
-      const idleStatuses = new Set(["storyboard_ready", "video_ready", "storyboard_failed", "narration_failed", "video_failed", "approval_failed"]);
-      if (!idleStatuses.has(project.status)) {
-        return response.status(409).json({ok: false, code: "PROJECT_DELETE_BLOCKED", error: "This project is still processing or needs review. It cannot be deleted yet."});
-      }
-      await fs.rm(directory, {recursive: true, force: false});
-      return response.json({ok: true, deletedProjectId: id});
-    } catch (error) {
-      if (error?.code === "ENOENT") return response.status(404).json({ok: false, code: "PROJECT_NOT_FOUND", error: "Project not found."});
-      return response.status(503).json({ok: false, code: "PROJECT_DELETE_FAILED", error: "Project deletion could not be completed. Refresh the project list before retrying."});
-    }
-  }));
 
   function buildUsageResponse(
-    usage,
-    projectCount
+    usage
   ) {
     const plan =
       getPlan(usage.planId);
@@ -989,8 +636,6 @@ export async function createProjectRouter({
       finalVideoCount:
         usage.finalVideoCount,
 
-      projectCount,
-
       planId:
         plan.id,
 
@@ -1019,25 +664,23 @@ export async function createProjectRouter({
 
       freeVideosRemaining,
 
-      canCreateMoreProjects:
-        projectCount < LIMITS.MAX_PROJECTS,
-
       canGenerateMoreVideos
     };
   }
   router.get("/usage", async (request, response) => {
     try {
-      const [usage, projectCount] = await Promise.all([
-        getUserUsage(projectRoot, request.authUser.id),
-        countUserProjects(projectRoot, request.authUser.id)
-      ]);
+      const usage =
+        await getUserUsage(
+          projectRoot,
+          request.authUser.id
+        );
+
       response.json({
         ok: true,
         limits: LIMITS,
         usage:
           buildUsageResponse(
-            usage,
-            projectCount
+            usage
           )
       });
     } catch {
@@ -1048,178 +691,20 @@ export async function createProjectRouter({
   const uploadProject =
     createUploadMiddleware(tempDirectory);
 
-  // Authentication middleware above applies to this list too.
-  router.get("/", async (request, response) => {
-    try {
-      const entries = await fs.readdir(projectsDirectory, {
-        withFileTypes: true
-      });
-      const projects = [];
-
-      for (const entry of entries) {
-        if (
-          !entry.isDirectory() ||
-          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-            .test(entry.name)
-        ) {
-          continue;
-        }
-
-        let project;
-        try {
-          project = JSON.parse(
-            await fs.readFile(
-              path.join(projectsDirectory, entry.name, "project.json"),
-              "utf8"
-            )
-          );
-        } catch (error) {
-          // A directory may exist briefly before its first metadata write.
-          if (error?.code === "ENOENT") continue;
-          throw error;
-        }
-
-        if (
-          !project ||
-          project.ownerId !== request.authUser.id ||
-          project.id !== entry.name
-        ) {
-          continue;
-        }
-
-        const createdAt = String(project.createdAt ?? "");
-        const updatedAt = String(
-          project.updatedAt ??
-          project.video?.generatedAt ??
-          project.storyboard?.approvedAt ??
-          project.storyboard?.generatedAt ??
-          createdAt
-        );
-
-        projects.push({
-          id: project.id,
-          title: String(
-            project.storyboard?.title || "Untitled video"
-          ).slice(0, 200),
-          style: String(project.style ?? ""),
-          status: String(project.status ?? "uploaded"),
-          createdAt,
-          updatedAt
-        });
-      }
-
-      const timestamp = (project) =>
-        Date.parse(project.updatedAt) || Date.parse(project.createdAt) || 0;
-
-      projects.sort((a, b) =>
-        timestamp(b) - timestamp(a) || a.id.localeCompare(b.id)
-      );
-
-      const usage = await getUserUsage(projectRoot, request.authUser.id);
-
-      response.json({
-        ok: true,
-        projects: projects.slice(0, 10),
-        limits: LIMITS,
-        usage:
-          buildUsageResponse(
-            usage,
-            projects.length
-          )
-      });
-    } catch {
-      response.status(503).json({
-        ok: false,
-        code: "PROJECT_LIST_LOAD_FAILED",
-
-        error: "Your project list could not be loaded. Please try again."
-      });
-    }
-  });
 
   router.post(
     "/",
     uploadProject,
-    async (request, response, next) => {
+    withUserCreateLock(async (request, response, next) => {
       const uploadedFiles =
         allUploadedFiles(request);
 
       let projectDirectory = "";
 
       try {
-        // --- v0.9.4: Enforce max 10 projects per user ---
-        const userProjectCount = await countUserProjects(projectRoot, request.authUser.id);
-        const createCheck = canCreateProject(userProjectCount);
-        if (!createCheck.ok) {
-          await removeFiles(uploadedFiles);
-          response.status(createCheck.status).json({
-            ok: false,
-            code: createCheck.code,
-            error: createCheck.error,
-            limits: LIMITS,
-            projectCount: userProjectCount
-          });
-          return;
-        }
-
-        const requestedSourceProjectId =
-          cleanText(
-            request.body.sourceProjectId,
-            36
-          );
-
-        let sourceProject = null;
-
-        if (requestedSourceProjectId) {
-          if (
-            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-              .test(requestedSourceProjectId)
-          ) {
-            await removeFiles(uploadedFiles);
-
-            response.status(400).json({
-              ok: false,
-              code: "SOURCE_PROJECT_ID_INVALID",
-              error: "Invalid source project ID."
-            });
-            return;
-          }
-
-          try {
-            sourceProject =
-              await loadOwnedSourceProject({
-                projectsDirectory,
-                sourceProjectId:
-                  requestedSourceProjectId,
-                ownerId:
-                  request.authUser.id
-              });
-          } catch (error) {
-            await removeFiles(uploadedFiles);
-
-            if (
-              String(error?.code ?? "").startsWith(
-                "SOURCE_PROJECT_"
-              )
-            ) {
-              response.status(404).json({
-                ok: false,
-                code: error.code,
-                error: error.message
-              });
-              return;
-            }
-
-            throw error;
-          }
-        }
 
         const validated =
-          validateProject(
-            request,
-            sourceProject?.productImages ?? [],
-            sourceProject?.project?.ctaPreset ?? null
-          );
+          validateProject(request);
 
         if (validated.error) {
           await removeFiles(uploadedFiles);
@@ -1237,11 +722,31 @@ export async function createProjectRouter({
           return;
         }
 
+
         const usage =
           await getUserUsage(
             projectRoot,
             request.authUser.id
           );
+
+        const videoPlanCheck =
+          canGenerateVideoPlan(usage);
+
+        if (!videoPlanCheck.ok) {
+          await removeFiles(uploadedFiles);
+
+          response
+            .status(videoPlanCheck.status)
+            .json({
+              ok: false,
+              code:
+                videoPlanCheck.code,
+              error:
+                videoPlanCheck.error
+            });
+
+          return;
+        }
 
         const plan =
           getPlan(usage.planId);
@@ -1309,38 +814,6 @@ export async function createProjectRouter({
               validated.ctaImage
           });
 
-        if (
-          validated.productImages.length < 1 &&
-          sourceProject
-        ) {
-          assets.productImages =
-            await copySourceProductImages({
-              sourceProject,
-              projectDirectory
-            });
-        }
-
-        if (
-          !validated.productLogo &&
-          sourceProject?.productLogo
-        ) {
-          assets.productLogo =
-            await copySourceProductLogo({
-              sourceProject,
-              projectDirectory
-            });
-        }
-
-        if (
-          !validated.ctaImage &&
-          sourceProject?.ctaImage
-        ) {
-          assets.ctaImage =
-            await copySourceCtaImage({
-              sourceProject,
-              projectDirectory
-            });
-        }
 
         const project = {
           id: projectId,
@@ -1471,6 +944,11 @@ export async function createProjectRouter({
             "utf8"
           );
 
+          await recordSuccessfulVideoPlan(
+            projectRoot,
+            request.authUser.id
+          );
+
           response.status(201).json({
             ok: true,
             stage:
@@ -1544,200 +1022,9 @@ export async function createProjectRouter({
 
         next(error);
       }
-    }
+    })
   );
 
-  router.get(
-    "/:projectId",
-    async (request, response) => {
-      const projectId =
-        String(request.params.projectId ?? "");
-
-      if (
-        !/^[0-9a-f-]{36}$/i.test(projectId)
-      ) {
-        response.status(400).json({
-          ok: false,
-          code: "PROJECT_ID_INVALID",
-
-          error: "Invalid project ID."
-        });
-        return;
-      }
-
-      const projectDirectory = path.join(
-        projectsDirectory,
-        projectId
-      );
-
-      const projectPath = path.join(
-        projectDirectory,
-        "project.json"
-      );
-
-      const storyboardPath = path.join(
-        projectDirectory,
-        "storyboard.json"
-      );
-
-      try {
-        const project =
-          JSON.parse(
-            await fs.readFile(
-              projectPath,
-              "utf8"
-            )
-          );
-
-        let storyboard = null;
-
-        try {
-          const storyboardRecord =
-            JSON.parse(
-              await fs.readFile(
-                storyboardPath,
-                "utf8"
-              )
-            );
-
-          storyboard =
-            storyboardRecord.storyboard ??
-            null;
-        } catch (storyboardError) {
-          if (
-            storyboardError?.code !==
-            "ENOENT"
-          ) {
-            throw storyboardError;
-          }
-        }
-
-        const productImages =
-          Array.isArray(
-            project.assets?.productImages
-          )
-            ? project.assets.productImages
-            : [];
-
-        const publicProject = {
-          id:
-            project.id,
-          status:
-            project.status,
-          createdAt:
-            project.createdAt,
-          description:
-            project.description,
-          website:
-            project.website,
-          callToAction:
-            project.callToAction,
-          ctaPreset:
-            project.ctaPreset ?? null,
-          style:
-            project.style,
-          output:
-            project.output,
-          storyboard:
-            project.storyboard,
-          assets: {
-            productImages:
-              productImages.map(
-                (asset) => ({
-                  originalName:
-                    asset.originalName,
-                  mimeType:
-                    asset.mimeType,
-                  size:
-                    asset.size,
-                  storedName:
-                    asset.storedName,
-                  url:
-                    `/api/projects/${projectId}/assets/${encodeURIComponent(
-                      asset.storedName
-                    )}`
-                })
-              ),
-            productLogo:
-              project.assets?.productLogo
-                ? {
-                    originalName:
-                      project.assets.productLogo.originalName,
-                    mimeType:
-                      project.assets.productLogo.mimeType,
-                    size:
-                      project.assets.productLogo.size,
-                    storedName:
-                      project.assets.productLogo.storedName,
-                    url:
-                      `/api/projects/${projectId}/assets/${encodeURIComponent(
-                        project.assets.productLogo.storedName
-                      )}`
-                  }
-                : null,
-            ctaImage:
-              project.assets?.ctaImage
-                ? {
-                    originalName:
-                      project.assets.ctaImage.originalName,
-                    mimeType:
-                      project.assets.ctaImage.mimeType,
-                    size:
-                      project.assets.ctaImage.size,
-                    storedName:
-                      project.assets.ctaImage.storedName,
-                    url:
-                      `/api/projects/${projectId}/assets/${encodeURIComponent(
-                        project.assets.ctaImage.storedName
-                      )}`
-                  }
-                : null
-          }
-        };
-
-        const videoReady =
-          project.status ===
-          "video_ready";
-
-        response.json({
-          ok: true,
-          stage:
-            videoReady
-              ? "video_ready"
-              : storyboard
-                ? "plan_review"
-                : project.status,
-          project:
-            publicProject,
-          storyboard,
-          videoUrl:
-            videoReady
-              ? `/api/projects/${projectId}/video`
-              : null
-        });
-      } catch (error) {
-        if (error?.code === "ENOENT") {
-          response.status(404).json({
-            ok: false,
-            code: "SAVED_PROJECT_NOT_FOUND",
-            error: "The saved project was not found."
-          });
-          return;
-        }
-
-        console.error(
-          "Saved project recovery failed:",
-          error
-        );
-
-        response.status(500).json({
-          ok: false,
-          code: "SAVED_PROJECT_OPEN_FAILED",
-          error: "The saved project could not be opened."
-        });
-      }
-    }
-  );
 
   router.get(
     "/:projectId/assets/:storedName",
@@ -1841,7 +1128,7 @@ export async function createProjectRouter({
         }
 
         console.error(
-          "Saved project asset recovery failed:",
+          "Project asset access failed:",
           error
         );
 
@@ -2084,6 +1371,41 @@ export async function createProjectRouter({
             "automatic"
           );
 
+        const requestedCtaImageSource =
+          String(
+            request.body?.ctaImageSource ||
+            (
+              project.assets?.ctaImage?.storedName
+                ? "uploaded"
+                : "default"
+            )
+          );
+
+        const allowedCtaImageSources =
+          new Set([
+            "uploaded",
+            "default"
+          ]);
+
+        if (
+          !allowedCtaImageSources.has(
+            requestedCtaImageSource
+          ) ||
+          (
+            requestedCtaImageSource ===
+              "uploaded" &&
+            !project.assets?.ctaImage?.storedName
+          )
+        ) {
+          response.status(400).json({
+            ok: false,
+            code: "CTA_IMAGE_SOURCE_INVALID",
+            error:
+              "Select a valid CTA picture."
+          });
+          return;
+        }
+
         const allowedNarrators = new Set([
           "automatic",
           "woman-warm",
@@ -2298,7 +1620,9 @@ export async function createProjectRouter({
               approvedStoryboard,
             projectDirectory,
             musicChoice,
-            musicVolume
+            musicVolume,
+            ctaImageSource:
+              requestedCtaImageSource
           });
 
         // --- R2: upload final MP4 to Cloudflare ---
@@ -2438,5 +1762,3 @@ export async function cleanFailedUpload(
     allUploadedFiles(request)
   );
 }
-
-

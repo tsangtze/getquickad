@@ -45,44 +45,6 @@
         <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">🎬</span><span>MP4</span></span>
       </div>
     </section>
-
-    <section
-      id="recent-projects"
-      class="recent-projects"
-      aria-labelledby="recent-projects-heading"
-      hidden
-    >
-      <div class="recent-projects-header">
-        <div>
-          <p class="eyebrow"><span data-i18n="recent.eyebrow">Continue where you stopped</span></p>
-          <h2 id="recent-projects-heading"><span data-i18n="recent.h2">Recent Projects</span></h2>
-          <p>
-            <span data-i18n="recent.desc">Your 10 most recent saved projects in this account appear here.</span>
-          </p>
-        </div>
-
-        <button
-          id="clear-project-history"
-          class="clear-project-history"
-          type="button"
-        >
-          <span>🔄 <span data-i18n="recent.refresh">Refresh projects</span></span>
-        </button>
-      </div>
-
-      <div
-        id="recent-project-list"
-        class="recent-project-list"
-      ></div>
-
-      <p
-        id="recent-project-status"
-        class="recent-project-status"
-        role="status"
-      ></p>
-    </section>
-
-
     <form id="video-form" class="creation-form" novalidate>
       <section class="form-card" aria-labelledby="upload-heading">
         <div class="step-number">1</div>
@@ -91,53 +53,86 @@
           <div class="step-heading">
             <div>
               <h2 id="upload-heading"><span class="heading-icon" aria-hidden="true">🖼️</span><span data-i18n="upload.title">Upload your images</span></h2>
-              <p><span id="upload-description" data-i18n="upload.desc">Add 1–10 clear product photos. You can also add your logo.</span></p>
+              <p><span id="upload-description" data-i18n="upload.desc">Add 1–10 clear product photos. You can also add your logo and CTA picture.</span></p>
             </div>
 
             <span id="image-count" class="step-status">0 of 10</span>
           </div>
 
-          <input
-            id="product-images"
-            name="productImages"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            hidden
-          >
+          <div class="upload-choice-grid">
+            <div class="upload-choice upload-choice-products">
+              <input
+                id="product-images"
+                name="productImages"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                hidden
+              >
 
-          <label id="upload-zone" class="upload-zone" for="product-images">
-            <span class="upload-icon" aria-hidden="true">+</span>
-            <strong><span data-i18n="upload.choose">Choose product photos</span></strong>
-            <span><span data-i18n="upload.drag">or drag and drop them here</span></span>
-            <small id="upload-formats" data-i18n="upload.formats">JPG, PNG or WebP · Maximum 10 images</small>
-          </label>
+              <label id="upload-zone" class="upload-zone upload-choice-zone" for="product-images">
+                <span class="upload-icon" aria-hidden="true">+</span>
+                <strong><span data-i18n="upload.choose">Choose product photos</span></strong>
+                <span><span data-i18n="upload.drag">or drag and drop them here</span></span>
+                <small id="upload-formats" data-i18n="upload.formats">JPG, PNG or WebP · Maximum 10 images</small>
+              </label>
 
-          <div
-            id="image-preview-list"
-            class="image-preview-list"
-            aria-live="polite"
-          ></div>
-
-          <div class="logo-row">
-            <div>
-              <strong><span data-i18n="logo.title">Product logo</span></strong>
-              <span><span data-i18n="logo.optional">Optional</span></span>
+              <div
+                id="image-preview-list"
+                class="image-preview-list"
+                aria-live="polite"
+              ></div>
             </div>
 
-            <input
-              id="product-logo"
-              name="productLogo"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              hidden
-            >
+            <div class="upload-choice">
+              <input
+                id="product-logo"
+                name="productLogo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                hidden
+              >
 
-            <label class="secondary-button" for="product-logo">
-              <span data-i18n="logo.add">Add logo</span>
-            </label>
+              <label class="upload-zone upload-choice-zone" for="product-logo">
+                <span class="upload-icon" aria-hidden="true">+</span>
+                <strong>
+                  <span data-i18n="logo.title">Product logo</span>
+                  <span class="upload-optional">(<span data-i18n="logo.optional">Optional</span>)</span>
+                </strong>
+                <span><span data-i18n="upload.drag">Choose or drag and drop here</span></span>
+                <small>JPG, PNG or WebP</small>
+              </label>
 
-            <span id="logo-name" class="file-name"></span>
+              <div id="logo-preview" class="single-image-preview" hidden>
+                <img id="logo-preview-image" alt="">
+              </div>
+              <span id="logo-name" class="file-name upload-choice-name"></span>
+            </div>
+
+            <div class="upload-choice">
+              <input
+                id="cta-image"
+                name="ctaImage"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                hidden
+              >
+
+              <label class="upload-zone upload-choice-zone" for="cta-image">
+                <span class="upload-icon" aria-hidden="true">+</span>
+                <strong>
+                  <span data-i18n="cta_image.title">CTA picture</span>
+                  <span class="upload-optional">(<span data-i18n="logo.optional">Optional</span>)</span>
+                </strong>
+                <span><span data-i18n="cta_image.help">Upload your own, or use our default image.</span></span>
+                <small>JPG, PNG or WebP</small>
+              </label>
+
+              <div id="cta-image-preview" class="single-image-preview" hidden>
+                <img id="cta-image-preview-image" alt="">
+              </div>
+              <span id="cta-image-name" class="file-name upload-choice-name">No image selected</span>
+            </div>
           </div>
 
           <p id="upload-error" class="field-error" role="alert"></p>
@@ -160,7 +155,7 @@
             <span><span data-i18n="logo.optional">Optional</span></span>
           </label>
 
-          <textarea data-i18n-placeholder="step2.placeholder" id="productDesc" rows="4" class="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Add useful facts, or leave blank and QuickAd AI will identify what is visible."></textarea>
+          <textarea data-i18n-placeholder="step2.placeholder" id="productDesc" rows="2" class="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Add useful facts, or leave blank and QuickAd AI will identify what is visible."></textarea>
 
           <div class="text-meta">
             <span><span data-i18n="step2.hint">Add known facts such as price or benefits, or leave blank for image-based identification.</span></span>
@@ -221,27 +216,6 @@
                 ></p>
               </div>
             </div>
-          </div>
-
-          <div class="logo-row cta-image-row">
-            <div>
-              <strong><span data-i18n="cta_image.title">CTA picture</span> <span data-i18n="logo.optional">Optional</span></strong>
-              <span data-i18n="cta_image.help">Upload your own CTA picture, or QuickAd AI will use a matching image automatically.</span>
-            </div>
-
-            <label class="secondary-button" for="cta-image" data-i18n="cta_image.choose">
-              Choose image
-            </label>
-
-            <input
-              id="cta-image"
-              name="ctaImage"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              hidden
-            >
-
-            <span id="cta-image-name" class="file-name">No image selected</span>
           </div>
 
           <fieldset class="duration-options" id="duration-options">
