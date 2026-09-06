@@ -378,6 +378,7 @@ function buildVideoFilter({
   scene,
   inputIndex,
   fontPath,
+  brandFontPath,
   titlePath,
   captionAssPath,
   rolePath,
@@ -399,6 +400,9 @@ function buildVideoFilter({
 
   const font =
     escapeFilterPath(fontPath);
+
+  const brandFont =
+    escapeFilterPath(brandFontPath);
 
   const title =
     escapeFilterPath(titlePath);
@@ -497,7 +501,7 @@ function buildVideoFilter({
         showCtaWebsite
           ? (
               "drawtext=" +
-              `fontfile='${font}':` +
+              `fontfile='${brandFont}':` +
               `textfile='${brand}':` +
               "expansion=none:" +
               "fontcolor=white@0.96:" +
@@ -512,7 +516,7 @@ function buildVideoFilter({
       ) +
 
       "drawtext=" +
-      `fontfile='${font}':` +
+      `fontfile='${brandFont}':` +
       `textfile='${brand}':` +
       "expansion=none:" +
       "fontcolor=white@0.92:" +
@@ -572,6 +576,7 @@ async function renderSceneClip({
   logoPath,
   outputPath,
   fontPath,
+  brandFontPath,
   titlePath,
   captionAssPath,
   rolePath,
@@ -587,6 +592,7 @@ async function renderSceneClip({
       scene,
       inputIndex: 0,
       fontPath,
+      brandFontPath,
       titlePath,
       captionAssPath,
       rolePath,
@@ -720,6 +726,9 @@ export async function renderVideo({
 
   const fontPath =
     await findVideoFont(project.language || project.targetLanguage || "en");
+
+  const brandFontPath =
+    await findVideoFont("en");
 
   const outputName =
     "video.mp4";
@@ -926,6 +935,7 @@ export async function renderVideo({
         outputPath:
           sceneClipPath,
         fontPath,
+        brandFontPath,
         titlePath,
         captionAssPath,
         rolePath,
