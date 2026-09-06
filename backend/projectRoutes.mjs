@@ -162,6 +162,45 @@ function createUploadMiddleware(tempDirectory) {
   ]);
 }
 
+function createCtaUploadMiddleware(tempDirectory) {
+  const storage = multer.diskStorage({
+    destination: (_request, _file, callback) => {
+      callback(null, tempDirectory);
+    },
+    filename: (_request, file, callback) => {
+      const extension =
+        ALLOWED_MIME_TYPES.get(file.mimetype) || "";
+
+      callback(
+        null,
+        `${Date.now()}-${crypto.randomUUID()}${extension}`
+      );
+    }
+  });
+
+  return multer({
+    storage,
+    limits: {
+      files: 1,
+      fileSize: MAX_FILE_SIZE,
+      fields: 0
+    },
+    fileFilter: (_request, file, callback) => {
+      if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+        callback(
+          new multer.MulterError(
+            "LIMIT_UNEXPECTED_FILE",
+            file.fieldname
+          )
+        );
+        return;
+      }
+
+      callback(null, true);
+    }
+  }).single("ctaImage");
+}
+
 function allUploadedFiles(request) {
   if (!request.files) {
     return [];
@@ -691,6 +730,9 @@ export async function createProjectRouter({
   const uploadProject =
     createUploadMiddleware(tempDirectory);
 
+  const uploadCtaImage =
+    createCtaUploadMiddleware(tempDirectory);
+
 
   router.post(
     "/",
@@ -1141,6 +1183,149 @@ export async function createProjectRouter({
     }
   );
 
+  router.post(
+    "/:projectId/cta-image",
+    uploadCtaImage,
+    withProjectLock(async (request, response, next) => {
+      const uploadedFile = request.file;
+      let movedPath = "";
+
+      if (!uploadedFile) {
+        response.status(400).json({
+          ok: false,
+          code: "CTA_IMAGE_REQUIRED",
+          error: "Choose a CTA image to upload."
+        });
+        return;
+      }
+
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      const projectDirectory = path.join(
+        projectsDirectory,
+        projectId
+      );
+
+      const projectPath = path.join(
+        projectDirectory,
+        "project.json"
+      );
+
+      try {
+        const project = JSON.parse(
+          await fs.readFile(
+            projectPath,
+            "utf8"
+          )
+        );
+
+        if (project.status !== "storyboard_ready") {
+          await removeFiles([uploadedFile]);
+
+          response.status(409).json({
+            ok: false,
+            code: "CTA_IMAGE_REVIEW_ONLY",
+            error:
+              "The CTA picture can only be changed while reviewing the video plan."
+          });
+          return;
+        }
+
+        const extension =
+          ALLOWED_MIME_TYPES.get(
+            uploadedFile.mimetype
+          );
+
+        if (!extension) {
+          await removeFiles([uploadedFile]);
+
+          response.status(400).json({
+            ok: false,
+            code: "CTA_IMAGE_INVALID",
+            error:
+              "The CTA image must be a JPEG, PNG, or WebP image."
+          });
+          return;
+        }
+
+        const previousStoredName =
+          String(
+            project.assets?.ctaImage?.storedName ??
+              ""
+          );
+
+        const storedName =
+          `cta-${crypto.randomUUID()}${extension}`;
+
+        const destinationPath =
+          path.join(
+            projectDirectory,
+            storedName
+          );
+
+        await fs.rename(
+          uploadedFile.path,
+          destinationPath
+        );
+
+        movedPath = destinationPath;
+
+        project.assets ??= {};
+
+        project.assets.ctaImage = {
+          originalName: uploadedFile.originalname,
+          storedName,
+          mimeType: uploadedFile.mimetype,
+          size: uploadedFile.size
+        };
+
+        await fs.writeFile(
+          projectPath,
+          JSON.stringify(
+            project,
+            null,
+            2
+          ),
+          "utf8"
+        );
+
+        movedPath = "";
+
+        if (
+          previousStoredName &&
+          previousStoredName !== storedName
+        ) {
+          await fs.rm(
+            path.join(
+              projectDirectory,
+              previousStoredName
+            ),
+            { force: true }
+          ).catch(() => {});
+        }
+
+        response.status(200).json({
+          ok: true,
+          ctaImage:
+            project.assets.ctaImage,
+          ctaImageUrl:
+            `/api/projects/${projectId}/assets/${storedName}`
+        });
+      } catch (error) {
+        await removeFiles([uploadedFile]);
+
+        if (movedPath) {
+          await fs.rm(
+            movedPath,
+            { force: true }
+          ).catch(() => {});
+        }
+
+        next(error);
+      }
+    })
+  );
   router.get(
     "/:projectId/video",
     async (request, response) => {
