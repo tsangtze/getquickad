@@ -128,6 +128,11 @@ ${durationMode === "manual"
 - Narration across all scenes must contain no more than ${maxNarrationWords} words.
 - Captions must be concise and contain no more than 60 characters.
 - CAPTION-FIRST RULE: For every scene, narration must be exactly identical to caption. The caption is both the visible on-screen message and the complete spoken voiceover text.
+- For every scene, set emphasisWords to 1 or 2 meaningful words or short terms copied exactly from that scene's caption.
+- Choose the strongest product, benefit, action, number, or emotionally meaningful terms for emphasis.
+- Do not choose filler words merely to reach two items. One strong emphasis term is better than two weak ones.
+- Every emphasisWords item must appear exactly in the caption. Do not invent, translate, reword, or change the capitalization of the selected text.
+- Keep emphasisWords appropriate for the target language, including Chinese, Japanese, and Korean.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
 - Each scene narration must contain no more than floor(scene duration in seconds × 2.5) words. Examples: 4 seconds = 10 words, 6 seconds = 15 words, 10 seconds = 25 words.
 - Keep each caption concise, natural to read on screen, and natural to speak aloud. Do not add any narration words that are absent from the caption.

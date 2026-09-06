@@ -1660,7 +1660,8 @@ export async function createProjectRouter({
               minDurationSeconds:
                 selectedMinDurationSeconds,
               maxDurationSeconds:
-                selectedMaxDurationSeconds
+                selectedMaxDurationSeconds,
+              allowLegacyMissingEmphasis: true
             }
           );
 

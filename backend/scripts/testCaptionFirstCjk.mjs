@@ -33,6 +33,16 @@ const storyboard = {
             : "benefit",
       narration: caption,
       caption,
+      emphasisWords:
+        [
+          [
+            "轻松",
+            "简洁设计",
+            "省时省力",
+            "工作旅行",
+            "现在开始"
+          ][index]
+        ],
       motion: "none",
       transition: "fade"
     })

@@ -21,6 +21,7 @@ const validStoryboard = {
       narration:
         "Great coffee should travel wherever your day takes you.",
       caption: "Great coffee. Anywhere.",
+      emphasisWords: ["Great coffee", "Anywhere"],
       motion: "slow-zoom-in",
       transition: "cut"
     },
@@ -33,6 +34,7 @@ const validStoryboard = {
       narration:
         "Meet the compact rechargeable coffee maker designed for life on the move.",
       caption: "Compact and rechargeable",
+      emphasisWords: ["Compact", "rechargeable"],
       motion: "slow-pan-right",
       transition: "slide"
     },
@@ -45,6 +47,7 @@ const validStoryboard = {
       narration:
         "Brew a fresh cup at work, outdoors, or while traveling.",
       caption: "Fresh coffee on demand",
+      emphasisWords: ["Fresh coffee", "demand"],
       motion: "slow-zoom-out",
       transition: "fade"
     },
@@ -57,6 +60,7 @@ const validStoryboard = {
       narration:
         "Simple controls make every cup quick and convenient.",
       caption: "Simple. Quick. Convenient.",
+      emphasisWords: ["Quick", "Convenient"],
       motion: "slow-pan-left",
       transition: "dissolve"
     },
@@ -69,6 +73,7 @@ const validStoryboard = {
       narration:
         "Get yours for seventy-nine dollars and enjoy better coffee anywhere.",
       caption: "Shop Now · $79",
+      emphasisWords: ["Shop Now", "$79"],
       motion: "slow-zoom-in",
       transition: "fade"
     }
@@ -131,6 +136,208 @@ console.log(
 
 console.log(
   `Narration: ${validStoryboard.narrationWordCount} words`
+);
+
+// --- CAPTION EMPHASIS REGRESSION TESTS ---
+
+const oneEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+oneEmphasisStoryboard.scenes[0].emphasisWords = [
+  "Great coffee"
+];
+
+const oneEmphasisResult =
+  validateStoryboard(
+    oneEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (!oneEmphasisResult.ok) {
+  throw new Error(
+    `Expected one valid emphasis term to pass: ${oneEmphasisResult.errors.join(" ")}`
+  );
+}
+
+console.log(
+  "PASS: One valid emphasis term accepted."
+);
+
+const twoEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+twoEmphasisStoryboard.scenes[0].emphasisWords = [
+  "Great coffee",
+  "Anywhere"
+];
+
+const twoEmphasisResult =
+  validateStoryboard(
+    twoEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (!twoEmphasisResult.ok) {
+  throw new Error(
+    `Expected two valid emphasis terms to pass: ${twoEmphasisResult.errors.join(" ")}`
+  );
+}
+
+console.log(
+  "PASS: Two valid emphasis terms accepted."
+);
+
+const missingEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+missingEmphasisStoryboard.scenes[0].emphasisWords = [
+  "SALE"
+];
+
+const missingEmphasisResult =
+  validateStoryboard(
+    missingEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (missingEmphasisResult.ok) {
+  throw new Error(
+    "Expected emphasis text absent from caption to fail."
+  );
+}
+
+if (
+  !missingEmphasisResult.errors.some(
+    (error) =>
+      error.includes(
+        "emphasis term must appear exactly in its caption"
+      )
+  )
+) {
+  throw new Error(
+    `Expected missing-emphasis validation error: ${missingEmphasisResult.errors.join(" ")}`
+  );
+}
+
+console.log(
+  "PASS: Emphasis term absent from caption rejected."
+);
+
+const tooManyEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+tooManyEmphasisStoryboard.scenes[0].emphasisWords = [
+  "Great",
+  "coffee",
+  "Anywhere"
+];
+
+const tooManyEmphasisResult =
+  validateStoryboard(
+    tooManyEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (tooManyEmphasisResult.ok) {
+  throw new Error(
+    "Expected more than two emphasis terms to fail."
+  );
+}
+
+console.log(
+  "PASS: More than two emphasis terms rejected."
+);
+
+const emptyEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+emptyEmphasisStoryboard.scenes[0].emphasisWords = [];
+
+const emptyEmphasisResult =
+  validateStoryboard(
+    emptyEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (emptyEmphasisResult.ok) {
+  throw new Error(
+    "Expected empty emphasisWords to fail."
+  );
+}
+
+console.log(
+  "PASS: Empty emphasisWords rejected."
+);
+
+// --- caption emphasis legacy compatibility tests ---
+
+const legacyMissingEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+for (
+  const scene of
+  legacyMissingEmphasisStoryboard.scenes
+) {
+  delete scene.emphasisWords;
+}
+
+const strictLegacyResult =
+  validateStoryboard(
+    legacyMissingEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (strictLegacyResult.ok) {
+  throw new Error(
+    "Storyboard missing emphasisWords must remain invalid by default."
+  );
+}
+
+console.log(
+  "PASS: Missing emphasisWords rejected by default."
+);
+
+const compatibleLegacyResult =
+  validateStoryboard(
+    legacyMissingEmphasisStoryboard,
+    {
+      imageCount: 2,
+      allowLegacyMissingEmphasis: true
+    }
+  );
+
+if (!compatibleLegacyResult.ok) {
+  throw new Error(
+    `Expected legacy storyboard without emphasis to validate: ${compatibleLegacyResult.errors.join(" ")}`
+  );
+}
+
+if (
+  compatibleLegacyResult.storyboard.scenes.some(
+    (scene) =>
+      !Array.isArray(scene.emphasisWords) ||
+      scene.emphasisWords.length !== 0
+  )
+) {
+  throw new Error(
+    "Legacy compatibility must normalize missing emphasisWords to empty arrays."
+  );
+}
+
+console.log(
+  "PASS: Legacy storyboard without emphasis accepted and normalized."
 );
 
 // --- v0.9.4 duration-limit boundary tests ---
@@ -353,6 +560,7 @@ function storyboardWithWordCount(seconds, wordCount) {
         .join(" ");
 
     scene.caption = `Scene ${index + 1}`;
+    scene.emphasisWords = [`Scene ${index + 1}`];
     scene.narration = text;
     wordIndex += count;
   });

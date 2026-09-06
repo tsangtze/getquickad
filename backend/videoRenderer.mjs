@@ -62,6 +62,202 @@ function wrapText(value, maximumCharacters = 28) {
     .join("\n");
 }
 
+function escapeAssText(value) {
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/{/g, "\\{")
+    .replace(/}/g, "\\}");
+}
+
+function buildAssCaptionText(
+  caption,
+  emphasisWords = []
+) {
+  const source = String(caption ?? "");
+  const ranges = [];
+
+  for (const emphasisWord of emphasisWords) {
+    const term = String(emphasisWord ?? "");
+
+    if (!term) {
+      continue;
+    }
+
+    let searchFrom = 0;
+
+    while (searchFrom < source.length) {
+      const start =
+        source.indexOf(term, searchFrom);
+
+      if (start < 0) {
+        break;
+      }
+
+      ranges.push({
+        start,
+        end: start + term.length
+      });
+
+      searchFrom = start + term.length;
+    }
+  }
+
+  ranges.sort(
+    (left, right) =>
+      left.start - right.start ||
+      right.end - left.end
+  );
+
+  const mergedRanges = [];
+
+  for (const range of ranges) {
+    const previous =
+      mergedRanges[mergedRanges.length - 1];
+
+    if (
+      previous &&
+      range.start <= previous.end
+    ) {
+      previous.end =
+        Math.max(previous.end, range.end);
+      continue;
+    }
+
+    mergedRanges.push({ ...range });
+  }
+
+  if (mergedRanges.length === 0) {
+    return escapeAssText(source);
+  }
+
+  const YELLOW = "{\\c&H0000FFFF&}";
+  const WHITE = "{\\c&H00FFFFFF&}";
+  let result = "";
+  let cursor = 0;
+
+  for (const range of mergedRanges) {
+    result +=
+      escapeAssText(
+        source.slice(cursor, range.start)
+      );
+
+    result += YELLOW;
+    result +=
+      escapeAssText(
+        source.slice(range.start, range.end)
+      );
+    result += WHITE;
+
+    cursor = range.end;
+  }
+
+  result +=
+    escapeAssText(source.slice(cursor));
+
+  return result;
+}
+
+function getAssFontName(language = "en") {
+  const normalizedLanguage =
+    String(language || "en").toLowerCase();
+
+  if (
+    normalizedLanguage === "zh-tw" ||
+    normalizedLanguage === "zh-hant" ||
+    normalizedLanguage.startsWith("zh-hant-") ||
+    normalizedLanguage === "zh-hk" ||
+    normalizedLanguage === "zh-mo"
+  ) {
+    return "Noto Sans CJK TC";
+  }
+
+  if (
+    normalizedLanguage.startsWith("zh") ||
+    normalizedLanguage.startsWith("ja") ||
+    normalizedLanguage.startsWith("ko")
+  ) {
+    return "Noto Sans CJK SC";
+  }
+
+  if (normalizedLanguage.startsWith("hi")) {
+    return "Noto Serif Devanagari";
+  }
+
+  return "Inter";
+}
+
+function buildCaptionAss({
+  caption,
+  emphasisWords = [],
+  durationSeconds,
+  language = "en"
+}) {
+  const assText =
+    buildAssCaptionText(
+      caption,
+      emphasisWords
+    );
+
+  const safeDuration =
+    Math.max(
+      0.01,
+      Number(durationSeconds) || 0.01
+    );
+
+  const totalCentiseconds =
+    Math.max(
+      1,
+      Math.round(safeDuration * 100)
+    );
+
+  const hours =
+    Math.floor(
+      totalCentiseconds / 360000
+    );
+
+  const minutes =
+    Math.floor(
+      (totalCentiseconds % 360000) /
+      6000
+    );
+
+  const seconds =
+    Math.floor(
+      (totalCentiseconds % 6000) /
+      100
+    );
+
+  const centiseconds =
+    totalCentiseconds % 100;
+
+  const endTime =
+    `${hours}:` +
+    `${String(minutes).padStart(2, "0")}:` +
+    `${String(seconds).padStart(2, "0")}.` +
+    `${String(centiseconds).padStart(2, "0")}`;
+
+  const fontName =
+    getAssFontName(language);
+
+  return [
+    "[Script Info]",
+    "ScriptType: v4.00+",
+    `PlayResX: ${VIDEO_WIDTH}`,
+    `PlayResY: ${VIDEO_HEIGHT}`,
+    "WrapStyle: 2",
+    "ScaledBorderAndShadow: yes",
+    "",
+    "[V4+ Styles]",
+    "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
+    `Style: Caption,${fontName},40,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,2,2,42,42,162,1`,
+    "",
+    "[Events]",
+    "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
+    `Dialogue: 0,0:00:00.00,${endTime},Caption,,0,0,0,,${assText}`,
+    ""
+  ].join("\n");
+}
+
 function getBrandText(project) {
   if (project.website) {
     try {
@@ -183,7 +379,7 @@ function buildVideoFilter({
   inputIndex,
   fontPath,
   titlePath,
-  captionPath,
+  captionAssPath,
   rolePath,
   brandPath,
   showCtaWebsite
@@ -207,8 +403,13 @@ function buildVideoFilter({
   const title =
     escapeFilterPath(titlePath);
 
-  const caption =
-    escapeFilterPath(captionPath);
+  const captionAss =
+    escapeFilterPath(captionAssPath);
+
+  const fontDirectory =
+    escapeFilterPath(
+      path.dirname(fontPath)
+    );
 
   const role =
     escapeFilterPath(rolePath);
@@ -287,18 +488,9 @@ function buildVideoFilter({
       "x=34:y=1000:w=652:h=176:" +
       `color=${accentColor}:t=fill,` +
 
-      "drawtext=" +
-      `fontfile='${font}':` +
-      `textfile='${caption}':` +
-      "expansion=none:" +
-      "fontcolor=white:" +
-      "fontsize=40:" +
-      "line_spacing=10:" +
-      "x=(w-text_w)/2:" +
-      "y=1028:" +
-      "shadowcolor=black@0.70:" +
-      "shadowx=2:" +
-      "shadowy=2," +
+      "ass=" +
+      `filename='${captionAss}':` +
+      `fontsdir='${fontDirectory}',` +
 
       (
         scene.role === "cta" &&
@@ -381,7 +573,7 @@ async function renderSceneClip({
   outputPath,
   fontPath,
   titlePath,
-  captionPath,
+  captionAssPath,
   rolePath,
   brandPath,
   showCtaWebsite
@@ -396,7 +588,7 @@ async function renderSceneClip({
       inputIndex: 0,
       fontPath,
       titlePath,
-      captionPath,
+      captionAssPath,
       rolePath,
       brandPath,
       showCtaWebsite
@@ -683,13 +875,27 @@ export async function renderVideo({
 
       await fs.access(imagePath);
 
-      const captionPath =
+      const sceneDuration =
+        scene.endSeconds -
+        scene.startSeconds;
+
+      const captionAssPath =
         await createTextFile(
-          `video-caption-${sceneIndex + 1}.tmp.txt`,
-          wrapText(
-            scene.caption,
-            28
-          )
+          `video-caption-${sceneIndex + 1}.tmp.ass`,
+          buildCaptionAss({
+            caption:
+              scene.caption,
+            emphasisWords:
+              Array.isArray(scene.emphasisWords)
+                ? scene.emphasisWords
+                : [],
+            durationSeconds:
+              sceneDuration,
+            language:
+              project.language ||
+              project.targetLanguage ||
+              "en"
+          })
         );
 
       const rolePath =
@@ -721,7 +927,7 @@ export async function renderVideo({
           sceneClipPath,
         fontPath,
         titlePath,
-        captionPath,
+        captionAssPath,
         rolePath,
         brandPath,
         showCtaWebsite:
@@ -940,3 +1146,8 @@ export async function uploadToR2(localPath, key) {
   await r2Client.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: stream, ContentType: "video/mp4" }));
   return `${R2_PUBLIC_BASE}/${key}`;
 }
+
+export const __captionEmphasisTestHelpers = {
+  escapeAssText,
+  buildAssCaptionText
+};

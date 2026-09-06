@@ -39,6 +39,7 @@ export const SceneSchema = z
     role: z.enum(SCENE_ROLES),
     narration: z.string(),
     caption: z.string(),
+    emphasisWords: z.array(z.string()).min(1).max(2),
     motion: z.enum(MOTION_TYPES),
     transition: z.enum(TRANSITION_TYPES)
   })
@@ -62,6 +63,18 @@ export const StoryboardSchema = z
       .strict()
   })
   .strict();
+const LegacySceneSchema =
+  SceneSchema.extend({
+    emphasisWords:
+      z.array(z.string()).max(2)
+  });
+
+const LegacyStoryboardSchema =
+  StoryboardSchema.extend({
+    scenes:
+      z.array(LegacySceneSchema)
+  });
+
 
 function countWords(text) {
   return String(text)
@@ -84,11 +97,40 @@ export function validateStoryboard(
   {
     imageCount,
     minDurationSeconds = 20,
-    maxDurationSeconds = 30
+    maxDurationSeconds = 30,
+    allowLegacyMissingEmphasis = false
   }
 ) {
+  const storyboardForValidation =
+    allowLegacyMissingEmphasis &&
+    Array.isArray(storyboard?.scenes)
+      ? {
+          ...storyboard,
+          scenes:
+            storyboard.scenes.map(
+              (scene) =>
+                Object.prototype.hasOwnProperty.call(
+                  scene,
+                  "emphasisWords"
+                )
+                  ? scene
+                  : {
+                      ...scene,
+                      emphasisWords: []
+                    }
+            )
+        }
+      : storyboard;
+
+  const validationSchema =
+    allowLegacyMissingEmphasis
+      ? LegacyStoryboardSchema
+      : StoryboardSchema;
+
   const parsed =
-    StoryboardSchema.safeParse(storyboard);
+    validationSchema.safeParse(
+      storyboardForValidation
+    );
 
   if (!parsed.success) {
     return {
@@ -159,6 +201,14 @@ export function validateStoryboard(
       errors.push(
         `Scene ${scene.sceneNumber} caption is too long.`
       );
+    }
+
+    for (const emphasisWord of scene.emphasisWords) {
+      if (!scene.caption.includes(emphasisWord)) {
+        errors.push(
+          `Scene ${scene.sceneNumber} emphasis term must appear exactly in its caption: ${emphasisWord}`
+        );
+      }
     }
 
 
