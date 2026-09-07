@@ -135,6 +135,14 @@ ${durationMode === "manual"
 - Keep emphasisWords appropriate for the target language, including Chinese, Japanese, and Korean.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
 - Each scene narration must contain no more than floor(scene duration in seconds × 2.5) words. Examples: 4 seconds = 10 words, 6 seconds = 15 words, 10 seconds = 25 words.
+- PACING TARGET: Aim for the spoken narration to occupy approximately 75-90% of each scene's duration so the viewer does not wait through a long silent tail before the next scene.
+- For languages normally written with spaces, a useful target is approximately 1.9-2.25 spoken words per second of scene duration, while never exceeding the 2.5-words-per-second maximum above.
+- For Chinese, Japanese, Korean, and other languages where whitespace word counts are not a reliable pacing measure, apply the same 75-90% spoken-time goal naturally rather than trying to satisfy an English-style word count.
+- When a scene would otherwise contain too little narration for its assigned duration, enrich the caption/narration with useful, truthful details supported by the customer's supplied information or clearly visible image content.
+- If there is not enough truthful material to enrich that scene naturally, shorten that scene and redistribute the available time among other scenes that can support useful narration.
+- Across longer 45-second and 60-second videos, use the additional available time for proportionally richer useful storytelling rather than stretching short 30-second-style captions across longer scenes.
+- Never leave a long silent tail merely to fill the selected video duration.
+- Never add repetitive filler or invent unsupported claims merely to occupy time.
 - Keep each caption concise, natural to read on screen, and natural to speak aloud. Do not add any narration words that are absent from the caption.
 - Never invent certifications, reviews, discounts, guarantees, or product features.
 - Use only facts supplied by the customer.
