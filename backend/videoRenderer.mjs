@@ -186,28 +186,14 @@ function getAssFontName(language = "en") {
   return "Inter";
 }
 
-function buildCaptionAss({
-  caption,
-  emphasisWords = [],
-  durationSeconds,
-  language = "en"
-}) {
-  const assText =
-    buildAssCaptionText(
-      caption,
-      emphasisWords
-    );
-
-  const safeDuration =
-    Math.max(
-      0.01,
-      Number(durationSeconds) || 0.01
-    );
+function formatAssTime(seconds) {
+  const safeSeconds =
+    Math.max(0, Number(seconds) || 0);
 
   const totalCentiseconds =
     Math.max(
-      1,
-      Math.round(safeDuration * 100)
+      0,
+      Math.round(safeSeconds * 100)
     );
 
   const hours =
@@ -221,7 +207,7 @@ function buildCaptionAss({
       6000
     );
 
-  const seconds =
+  const wholeSeconds =
     Math.floor(
       (totalCentiseconds % 6000) /
       100
@@ -230,21 +216,184 @@ function buildCaptionAss({
   const centiseconds =
     totalCentiseconds % 100;
 
-  const endTime =
+  return (
     `${hours}:` +
     `${String(minutes).padStart(2, "0")}:` +
-    `${String(seconds).padStart(2, "0")}.` +
-    `${String(centiseconds).padStart(2, "0")}`;
+    `${String(wholeSeconds).padStart(2, "0")}.` +
+    `${String(centiseconds).padStart(2, "0")}`
+  );
+}
+
+function getCaptionSegmentWeight(text) {
+  const characters =
+    Array.from(String(text ?? ""))
+      .filter(
+        (character) =>
+          !/\s/u.test(character)
+      );
+
+  return Math.max(1, characters.length);
+}
+
+function buildCaptionEvents({
+  caption,
+  emphasisWords = [],
+  captionSegments,
+  durationSeconds,
+  spokenDurationSeconds
+}) {
+  const safeDuration =
+    Math.max(
+      0.01,
+      Number(durationSeconds) || 0.01
+    );
+
+  const segments =
+    Array.isArray(captionSegments) &&
+    captionSegments.length > 0
+      ? captionSegments.slice(0, 3)
+      : [
+          {
+            text: String(caption ?? ""),
+            emphasisWords:
+              Array.isArray(emphasisWords)
+                ? emphasisWords
+                : []
+          }
+        ];
+
+  if (segments.length === 1) {
+    return [
+      {
+        startSeconds: 0,
+        endSeconds: safeDuration,
+        text:
+          String(segments[0].text ?? ""),
+        emphasisWords:
+          Array.isArray(
+            segments[0].emphasisWords
+          )
+            ? segments[0].emphasisWords
+            : []
+      }
+    ];
+  }
+
+  const requestedSpokenDuration =
+    Number(spokenDurationSeconds);
+
+  const speechWindow =
+    Number.isFinite(requestedSpokenDuration) &&
+    requestedSpokenDuration > 0
+      ? Math.min(
+          requestedSpokenDuration,
+          safeDuration
+        )
+      : safeDuration;
+
+  const weights =
+    segments.map(
+      (segment) =>
+        getCaptionSegmentWeight(
+          segment.text
+        )
+    );
+
+  const totalWeight =
+    weights.reduce(
+      (sum, weight) => sum + weight,
+      0
+    );
+
+  let elapsedWeight = 0;
+  let previousEnd = 0;
+
+  return segments.map(
+    (segment, segmentIndex) => {
+      const isLast =
+        segmentIndex ===
+        segments.length - 1;
+
+      const startSeconds =
+        previousEnd;
+
+      let endSeconds;
+
+      if (isLast) {
+        endSeconds = safeDuration;
+      } else {
+        elapsedWeight +=
+          weights[segmentIndex];
+
+        endSeconds =
+          speechWindow *
+          (elapsedWeight / totalWeight);
+
+        endSeconds =
+          Math.max(
+            startSeconds + 0.01,
+            Math.min(
+              endSeconds,
+              safeDuration
+            )
+          );
+      }
+
+      previousEnd = endSeconds;
+
+      return {
+        startSeconds,
+        endSeconds,
+        text:
+          String(segment.text ?? ""),
+        emphasisWords:
+          Array.isArray(
+            segment.emphasisWords
+          )
+            ? segment.emphasisWords
+            : []
+      };
+    }
+  );
+}
+
+function buildCaptionAss({
+  caption,
+  emphasisWords = [],
+  captionSegments,
+  durationSeconds,
+  spokenDurationSeconds,
+  language = "en"
+}) {
+  const events =
+    buildCaptionEvents({
+      caption,
+      emphasisWords,
+      captionSegments,
+      durationSeconds,
+      spokenDurationSeconds
+    });
 
   const fontName =
     getAssFontName(language);
+
+  const dialogueLines =
+    events.map((event) => {
+      const assText =
+        buildAssCaptionText(
+          event.text,
+          event.emphasisWords
+        );
+
+      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,0,,${assText}`;
+    });
 
   return [
     "[Script Info]",
     "ScriptType: v4.00+",
     `PlayResX: ${VIDEO_WIDTH}`,
     `PlayResY: ${VIDEO_HEIGHT}`,
-    "WrapStyle: 2",
+    "WrapStyle: 0",
     "ScaledBorderAndShadow: yes",
     "",
     "[V4+ Styles]",
@@ -253,7 +402,7 @@ function buildCaptionAss({
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
-    `Dialogue: 0,0:00:00.00,${endTime},Caption,,0,0,0,,${assText}`,
+    ...dialogueLines,
     ""
   ].join("\n");
 }
@@ -707,7 +856,8 @@ export async function renderVideo({
   projectDirectory,
   musicChoice = "none",
   musicVolume = 10,
-  ctaImageSource = null
+  ctaImageSource = null,
+  narrationMetadata = null
 }) {
   validateMusicVolume(musicVolume);
   const music = await prepareMusic(musicChoice);
@@ -820,6 +970,38 @@ export async function renderVideo({
       const scene =
         storyboard.scenes[sceneIndex];
 
+        const sceneTiming =
+          Array.isArray(
+            narrationMetadata?.sceneTimings
+          )
+            ? narrationMetadata.sceneTimings.find(
+                (timing) =>
+                  timing?.sceneNumber ===
+                  scene.sceneNumber
+              ) ??
+              narrationMetadata.sceneTimings[
+                sceneIndex
+              ]
+            : null;
+
+        const spokenDurationSeconds =
+          Number.isFinite(
+            Number(
+              sceneTiming?.spokenDurationSeconds
+            )
+          )
+            ? Math.max(
+                0,
+                Math.min(
+                  Number(
+                    sceneTiming.spokenDurationSeconds
+                  ),
+                  scene.endSeconds -
+                  scene.startSeconds
+                )
+              )
+            : undefined;
+
       const asset =
         project.assets.productImages[
           scene.imageIndex - 1
@@ -898,6 +1080,13 @@ export async function renderVideo({
               Array.isArray(scene.emphasisWords)
                 ? scene.emphasisWords
                 : [],
+            captionSegments:
+              Array.isArray(
+                scene.captionSegments
+              )
+                ? scene.captionSegments
+                : undefined,
+            spokenDurationSeconds,
             durationSeconds:
               sceneDuration,
             language:
@@ -1159,5 +1348,7 @@ export async function uploadToR2(localPath, key) {
 
 export const __captionEmphasisTestHelpers = {
   escapeAssText,
-  buildAssCaptionText
+  buildAssCaptionText,
+  buildCaptionEvents,
+  buildCaptionAss
 };

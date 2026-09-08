@@ -1510,6 +1510,57 @@ export async function createProjectRouter({
           )
             ? submittedStoryboardInput.scenes.map(
                 (scene) => {
+                  const hasCaptionSegments =
+                    Array.isArray(
+                      scene.captionSegments
+                    ) &&
+                    scene.captionSegments.length > 0;
+
+                  if (hasCaptionSegments) {
+                    const captionSegments =
+                      scene.captionSegments.map(
+                        (segment) => ({
+                          ...segment,
+                          text:
+                            String(
+                              segment.text ?? ""
+                            ).trim(),
+                          emphasisWords:
+                            Array.isArray(
+                              segment.emphasisWords
+                            )
+                              ? segment.emphasisWords.map(
+                                  (term) =>
+                                    String(
+                                      term ?? ""
+                                    ).trim()
+                                )
+                              : []
+                        })
+                      );
+
+                    const firstSegment =
+                      captionSegments[0];
+
+                    return {
+                      ...scene,
+                      captionSegments,
+                      caption:
+                        firstSegment.text,
+                      emphasisWords:
+                        [
+                          ...firstSegment.emphasisWords
+                        ],
+                      narration:
+                        captionSegments
+                          .map(
+                            (segment) =>
+                              segment.text
+                          )
+                          .join(" ")
+                    };
+                  }
+
                   const caption =
                     String(
                       scene.caption ?? ""
@@ -1841,6 +1892,7 @@ export async function createProjectRouter({
             storyboard:
               approvedStoryboard,
             projectDirectory,
+            narrationMetadata: narration,
             musicChoice,
             musicVolume,
             ctaImageSource:

@@ -126,13 +126,19 @@ ${durationMode === "manual"
 - Scene ${requiredSceneCount} must end exactly at totalDurationSeconds.
 - Set totalDurationSeconds to the actual chosen duration.
 - Narration across all scenes must contain no more than ${maxNarrationWords} words.
-- Captions must be concise and contain no more than 60 characters.
-- CAPTION-FIRST RULE: For every scene, narration must be exactly identical to caption. The caption is both the visible on-screen message and the complete spoken voiceover text.
-- For every scene, set emphasisWords to 1 or 2 meaningful words or short terms copied exactly from that scene's caption.
+- SEQUENTIAL CAPTION RULE: Every scene must contain 1 to 3 captionSegments shown in order while that scene's narration is spoken.
+- Each captionSegments item must contain text and emphasisWords.
+- Each caption segment text must be concise, natural to read on screen, natural to speak aloud, and contain no more than 60 characters.
+- The complete scene narration must be exactly the caption segment texts joined in order with a single normal space between segments.
+- Do not add narration words that are absent from captionSegments, and do not omit spoken words from captionSegments.
+- Use 1 segment when the spoken message is naturally short. Use 2 or 3 segments when a longer scene needs richer narration. Do not force extra segments merely to reach 3.
+- For longer 45-second and 60-second videos, prefer multiple sequential caption segments in longer scenes when needed to support useful natural narration and avoid long silent tails.
+- For every caption segment, set emphasisWords to 1 or 2 meaningful words or short terms copied exactly from that segment's text.
 - Choose the strongest product, benefit, action, number, or emotionally meaningful terms for emphasis.
 - Do not choose filler words merely to reach two items. One strong emphasis term is better than two weak ones.
-- Every emphasisWords item must appear exactly in the caption. Do not invent, translate, reword, or change the capitalization of the selected text.
-- Keep emphasisWords appropriate for the target language, including Chinese, Japanese, and Korean.
+- Every caption-segment emphasisWords item must appear exactly in that segment's text. Do not invent, translate, reword, or change the capitalization of the selected text.
+- Keep caption-segment emphasisWords appropriate for the target language, including Chinese, Japanese, and Korean.
+- COMPATIBILITY FIELDS: For each newly generated scene, set caption exactly equal to captionSegments[0].text and set the scene-level emphasisWords exactly equal to captionSegments[0].emphasisWords.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
 - Each scene narration must contain no more than floor(scene duration in seconds × 2.5) words. Examples: 4 seconds = 10 words, 6 seconds = 15 words, 10 seconds = 25 words.
 - PACING TARGET: Aim for the spoken narration to occupy approximately 75-90% of each scene's duration so the viewer does not wait through a long silent tail before the next scene.
@@ -143,7 +149,7 @@ ${durationMode === "manual"
 - Across longer 45-second and 60-second videos, use the additional available time for proportionally richer useful storytelling rather than stretching short 30-second-style captions across longer scenes.
 - Never leave a long silent tail merely to fill the selected video duration.
 - Never add repetitive filler or invent unsupported claims merely to occupy time.
-- Keep each caption concise, natural to read on screen, and natural to speak aloud. Do not add any narration words that are absent from the caption.
+- Keep every caption segment concise and natural. The sequential caption segments collectively contain the complete spoken narration for the scene.
 - Never invent certifications, reviews, discounts, guarantees, or product features.
 - Use only facts supplied by the customer.
 - imageIndex must reference an available uploaded image.
@@ -318,6 +324,216 @@ async function buildImageContent({
   return imageContent;
 }
 
+function splitCaptionText(text, maxCharacters = 60) {
+  const source =
+    String(text ?? "").trim();
+
+  if (source.length <= maxCharacters) {
+    return [source];
+  }
+
+  const characters =
+    Array.from(source);
+
+  const chunks = [];
+  let remaining =
+    characters;
+
+  const preferredBoundaries =
+    new Set([
+      "।",
+      ".",
+      "!",
+      "?",
+      "！",
+      "？",
+      "。",
+      ";",
+      "；",
+      ":",
+      "：",
+      ",",
+      "，",
+      "、",
+      "—",
+      "–",
+      "-",
+      " "
+    ]);
+
+  while (remaining.length > maxCharacters) {
+    let splitIndex = -1;
+
+    for (
+      let index = maxCharacters;
+      index > 0;
+      index--
+    ) {
+      if (
+        preferredBoundaries.has(
+          remaining[index - 1]
+        )
+      ) {
+        splitIndex = index;
+        break;
+      }
+    }
+
+    if (splitIndex <= 0) {
+      splitIndex =
+        maxCharacters;
+    }
+
+    const chunk =
+      remaining
+        .slice(0, splitIndex)
+        .join("")
+        .trim();
+
+    if (chunk) {
+      chunks.push(chunk);
+    }
+
+    remaining =
+      remaining
+        .slice(splitIndex);
+
+    while (
+      remaining.length > 0 &&
+      remaining[0] === " "
+    ) {
+      remaining =
+        remaining.slice(1);
+    }
+  }
+
+  const finalChunk =
+    remaining
+      .join("")
+      .trim();
+
+  if (finalChunk) {
+    chunks.push(finalChunk);
+  }
+
+  return chunks;
+}
+function normalizeGeneratedCaptionSegments(storyboard) {
+  return {
+    ...storyboard,
+    scenes: storyboard.scenes.map((scene) => {
+      if (
+        !Array.isArray(scene.captionSegments) ||
+        scene.captionSegments.length === 0
+      ) {
+        return scene;
+      }
+
+      let captionSegments =
+        scene.captionSegments.map((segment) => ({
+          ...segment,
+          text: String(segment.text ?? "").trim(),
+          emphasisWords:
+            Array.isArray(segment.emphasisWords)
+              ? segment.emphasisWords
+                  .map((term) =>
+                    String(term).trim()
+                  )
+                  .filter(Boolean)
+              : []
+        }));
+
+      const needsRedistribution =
+        captionSegments.some(
+          (segment) =>
+            Array.from(segment.text).length > 60
+        );
+
+      if (needsRedistribution) {
+        const completeText =
+          captionSegments
+            .map((segment) => segment.text)
+            .join(" ")
+            .trim()
+            .replace(/\s+/gu, " ");
+
+        const redistributedTexts =
+          splitCaptionText(
+            completeText,
+            60
+          );
+
+        if (
+          redistributedTexts.length >= 1 &&
+          redistributedTexts.length <= 3
+        ) {
+          const originalEmphasis =
+            captionSegments
+              .flatMap((segment) =>
+                segment.emphasisWords
+              )
+              .filter(Boolean);
+
+          captionSegments =
+            redistributedTexts.map((text) => {
+              const matchingEmphasis =
+                originalEmphasis
+                  .filter((term) =>
+                    text.includes(term)
+                  )
+                  .filter(
+                    (term, index, terms) =>
+                      terms.indexOf(term) === index
+                  )
+                  .slice(0, 2);
+
+              if (matchingEmphasis.length === 0) {
+                const fallbackTerm =
+                  text
+                    .split(/\s+/u)
+                    .filter(Boolean)
+                    .sort(
+                      (left, right) =>
+                        Array.from(right).length -
+                        Array.from(left).length
+                    )[0] ?? text;
+
+                matchingEmphasis.push(
+                  fallbackTerm
+                );
+              }
+
+              return {
+                text,
+                emphasisWords:
+                  matchingEmphasis
+              };
+            });
+        }
+      }
+
+      const firstSegment =
+        captionSegments[0];
+
+      return {
+        ...scene,
+        captionSegments,
+        narration:
+          captionSegments
+            .map((segment) => segment.text)
+            .join(" "),
+        caption:
+          firstSegment.text,
+        emphasisWords:
+          [...firstSegment.emphasisWords]
+      };
+    })
+  };
+}
+export const __storyboardGeneratorTestHelpers = {
+  normalizeGeneratedCaptionSegments,
+  splitCaptionText
+};
 function normalizeWordCount(storyboard) {
   const narration = storyboard.scenes
     .map((scene) => scene.narration)
@@ -551,13 +767,17 @@ export async function generateStoryboard({
       throw error;
     }
 
+    const generatedStoryboard =
+      durationMode === "auto"
+        ? parsedResult.storyboard
+        : parsedResult;
+
     const storyboard =
       normalizeWordCount(
-        durationMode === "auto"
-          ? parsedResult.storyboard
-          : parsedResult
+        normalizeGeneratedCaptionSegments(
+          generatedStoryboard
+        )
       );
-
     const validation =
       validateStoryboard(
         storyboard,

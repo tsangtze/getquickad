@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
 import {
-  runFfmpeg
+  runFfmpeg,
+  probeDuration
 } from "./mediaTools.mjs";
 
 const STYLE_VOICES = {
@@ -36,6 +37,69 @@ function countWords(text) {
     .length;
 }
 
+const MAX_SCENE_AUDIO_TEMPO = 1.21;
+
+function buildSceneAudioFilter({
+  inputIndex,
+  duration,
+  spokenDurationSeconds
+}) {
+  const safeDuration =
+    Number(duration);
+
+  const spokenDuration =
+    Number(spokenDurationSeconds);
+
+  if (
+    !Number.isFinite(safeDuration) ||
+    safeDuration <= 0
+  ) {
+    throw new Error(
+      "Scene audio duration must be positive."
+    );
+  }
+
+  const filters = [];
+
+  if (
+    Number.isFinite(spokenDuration) &&
+    spokenDuration > safeDuration
+  ) {
+    const tempo =
+      spokenDuration / safeDuration;
+
+    if (
+      tempo >
+      MAX_SCENE_AUDIO_TEMPO
+    ) {
+      const error =
+        new Error(
+          `Scene narration requires ${tempo.toFixed(3)}x audio tempo, exceeding the ${MAX_SCENE_AUDIO_TEMPO.toFixed(2)}x limit.`
+        );
+
+      error.code =
+        "NARRATION_SCENE_TOO_LONG";
+
+      throw error;
+    }
+
+    filters.push(
+      `atempo=${tempo.toFixed(6)}`
+    );
+  }
+
+  filters.push(
+    `apad=pad_dur=${safeDuration}`,
+    `atrim=duration=${safeDuration}`,
+    "asetpts=PTS-STARTPTS"
+  );
+
+  return (
+    `[${inputIndex}:a]` +
+    filters.join(",") +
+    `[sceneAudio${inputIndex}]`
+  );
+}
 function buildNarrationText(storyboard) {
   if (
     !Array.isArray(storyboard?.scenes) ||
@@ -244,11 +308,17 @@ export async function generateNarration({
         sceneAudioBuffer
       );
 
+      const spokenDurationSeconds =
+        await probeDuration(
+          sceneAudioPath
+        );
+
       sceneAudioPaths.push({
         path:
           sceneAudioPath,
         duration:
-          sceneDuration
+          sceneDuration,
+        spokenDurationSeconds
       });
     }
 
@@ -273,11 +343,12 @@ export async function generateNarration({
     const audioFilters =
       sceneAudioPaths.map(
         (sceneAudio, sceneIndex) =>
-          `[${sceneIndex}:a]` +
-          `apad=pad_dur=${sceneAudio.duration},` +
-          `atrim=duration=${sceneAudio.duration},` +
-          "asetpts=PTS-STARTPTS" +
-          `[sceneAudio${sceneIndex}]`
+          buildSceneAudioFilter({
+            inputIndex: sceneIndex,
+            duration: sceneAudio.duration,
+            spokenDurationSeconds:
+              sceneAudio.spokenDurationSeconds
+          })
       );
 
     const sceneAudioLabels =
@@ -381,9 +452,27 @@ export async function generateNarration({
       true,
     sceneCount:
       storyboard.scenes.length,
+    sceneTimings:
+      storyboard.scenes.map(
+        (scene, sceneIndex) => ({
+          sceneNumber:
+            scene.sceneNumber,
+          sceneDurationSeconds:
+            scene.endSeconds -
+            scene.startSeconds,
+          spokenDurationSeconds:
+            sceneAudioPaths[
+              sceneIndex
+            ].spokenDurationSeconds
+        })
+      ),
     durationSeconds:
       storyboard.totalDurationSeconds,
     disclosure:
       "This narration uses an AI-generated voice."
   };
 }
+export const __narrationGeneratorTestHelpers = {
+  buildSceneAudioFilter,
+  MAX_SCENE_AUDIO_TEMPO
+};

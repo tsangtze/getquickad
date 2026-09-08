@@ -806,24 +806,51 @@ function normalizeSceneTimeline({
       ).trim();
 
     if (callToAction) {
-      finalScene.caption =
+      const transferredCaption =
         callToAction.slice(0, 60);
 
-      const narration =
-        String(
-          finalScene.narration ?? ""
-        ).trim();
-
       if (
-        !narration
-          .toLowerCase()
-          .includes(
-            callToAction.toLowerCase()
-          )
+        Array.isArray(
+          finalScene.captionSegments
+        )
       ) {
+        const transferredEmphasis =
+          [transferredCaption];
+
+        finalScene.caption =
+          transferredCaption;
         finalScene.narration =
-          `${narration} ${callToAction}.`
-            .trim();
+          transferredCaption;
+        finalScene.emphasisWords =
+          [...transferredEmphasis];
+        finalScene.captionSegments = [
+          {
+            text:
+              transferredCaption,
+            emphasisWords:
+              [...transferredEmphasis]
+          }
+        ];
+      } else {
+        finalScene.caption =
+          transferredCaption;
+
+        const narration =
+          String(
+            finalScene.narration ?? ""
+          ).trim();
+
+        if (
+          !narration
+            .toLowerCase()
+            .includes(
+              callToAction.toLowerCase()
+            )
+        ) {
+          finalScene.narration =
+            `${narration} ${callToAction}.`
+              .trim();
+        }
       }
     }
   }
@@ -1356,6 +1383,41 @@ function createSceneReviewCard(scene) {
         captionInput.value;
       scene.narration =
         captionInput.value;
+
+      if (
+        Array.isArray(scene.captionSegments)
+      ) {
+        const editedCaption =
+          captionInput.value;
+
+        const previousEmphasis =
+          Array.isArray(scene.emphasisWords)
+            ? scene.emphasisWords
+            : [];
+
+        const preservedEmphasis =
+          previousEmphasis.filter(
+            (term) =>
+              editedCaption.includes(term)
+          );
+
+      if (preservedEmphasis.length > 0) {
+        scene.emphasisWords =
+          preservedEmphasis;
+
+        scene.captionSegments = [
+          {
+            text:
+              editedCaption,
+            emphasisWords:
+              [...preservedEmphasis]
+          }
+        ];
+      } else {
+        scene.emphasisWords = [];
+        delete scene.captionSegments;
+      }
+      }
 
 
       narrationText.textContent =

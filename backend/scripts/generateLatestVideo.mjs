@@ -37,6 +37,7 @@ for (const entry of entries) {
   const requiredFiles = [
     "project.json",
     "storyboard.json",
+    "narration.json",
     "narration.mp3"
   ];
 
@@ -99,6 +100,11 @@ const storyboardPath = path.join(
   "storyboard.json"
 );
 
+const narrationMetadataPath = path.join(
+  latestProject.directory,
+  "narration.json"
+);
+
 const project = JSON.parse(
   await fs.readFile(
     projectPath,
@@ -109,6 +115,13 @@ const project = JSON.parse(
 const storyboardRecord = JSON.parse(
   await fs.readFile(
     storyboardPath,
+    "utf8"
+  )
+);
+
+const narrationRecord = JSON.parse(
+  await fs.readFile(
+    narrationMetadataPath,
     "utf8"
   )
 );
@@ -149,7 +162,9 @@ try {
       storyboard:
         storyboardRecord.storyboard,
       projectDirectory:
-        latestProject.directory
+        latestProject.directory,
+      narrationMetadata:
+        narrationRecord.narration
     });
 
   const videoRecord = {

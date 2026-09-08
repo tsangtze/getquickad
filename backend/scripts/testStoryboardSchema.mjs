@@ -22,6 +22,12 @@ const validStoryboard = {
         "Great coffee should travel wherever your day takes you.",
       caption: "Great coffee. Anywhere.",
       emphasisWords: ["Great coffee", "Anywhere"],
+      captionSegments: [
+        {
+          text: "Great coffee. Anywhere.",
+          emphasisWords: ["Great coffee", "Anywhere"]
+        }
+      ],
       motion: "slow-zoom-in",
       transition: "cut"
     },
@@ -35,6 +41,12 @@ const validStoryboard = {
         "Meet the compact rechargeable coffee maker designed for life on the move.",
       caption: "Compact and rechargeable",
       emphasisWords: ["Compact", "rechargeable"],
+      captionSegments: [
+        {
+          text: "Compact and rechargeable",
+          emphasisWords: ["Compact", "rechargeable"]
+        }
+      ],
       motion: "slow-pan-right",
       transition: "slide"
     },
@@ -48,6 +60,12 @@ const validStoryboard = {
         "Brew a fresh cup at work, outdoors, or while traveling.",
       caption: "Fresh coffee on demand",
       emphasisWords: ["Fresh coffee", "demand"],
+      captionSegments: [
+        {
+          text: "Fresh coffee on demand",
+          emphasisWords: ["Fresh coffee", "demand"]
+        }
+      ],
       motion: "slow-zoom-out",
       transition: "fade"
     },
@@ -61,6 +79,12 @@ const validStoryboard = {
         "Simple controls make every cup quick and convenient.",
       caption: "Simple. Quick. Convenient.",
       emphasisWords: ["Quick", "Convenient"],
+      captionSegments: [
+        {
+          text: "Simple. Quick. Convenient.",
+          emphasisWords: ["Quick", "Convenient"]
+        }
+      ],
       motion: "slow-pan-left",
       transition: "dissolve"
     },
@@ -74,6 +98,12 @@ const validStoryboard = {
         "Get yours for seventy-nine dollars and enjoy better coffee anywhere.",
       caption: "Shop Now · $79",
       emphasisWords: ["Shop Now", "$79"],
+      captionSegments: [
+        {
+          text: "Shop Now · $79",
+          emphasisWords: ["Shop Now", "$79"]
+        }
+      ],
       motion: "slow-zoom-in",
       transition: "fade"
     }
@@ -83,6 +113,90 @@ const validStoryboard = {
     website: "mycoffee.com"
   }
 };
+
+// Synchronize the base fixture with the sequential-caption contract.
+const baseCaptionSegments = [
+  [
+    {
+      text: "Great coffee should travel",
+      emphasisWords: ["Great coffee", "travel"]
+    },
+    {
+      text: "wherever your day takes you.",
+      emphasisWords: ["your day"]
+    }
+  ],
+  [
+    {
+      text: "Meet the compact rechargeable coffee maker",
+      emphasisWords: ["compact", "rechargeable"]
+    },
+    {
+      text: "designed for life on the move.",
+      emphasisWords: ["life on the move"]
+    }
+  ],
+  [
+    {
+      text: "Brew a fresh cup at work,",
+      emphasisWords: ["fresh cup", "work"]
+    },
+    {
+      text: "outdoors, or while traveling.",
+      emphasisWords: ["outdoors", "traveling"]
+    }
+  ],
+  [
+    {
+      text: "Simple controls make every cup",
+      emphasisWords: ["Simple controls"]
+    },
+    {
+      text: "quick and convenient.",
+      emphasisWords: ["quick", "convenient"]
+    }
+  ],
+  [
+    {
+      text: "Get yours for seventy-nine dollars",
+      emphasisWords: ["seventy-nine dollars"]
+    },
+    {
+      text: "and enjoy better coffee anywhere.",
+      emphasisWords: ["better coffee", "anywhere"]
+    }
+  ]
+];
+
+validStoryboard.scenes.forEach(
+  (scene, index) => {
+    const captionSegments =
+      baseCaptionSegments[index];
+
+    scene.captionSegments =
+      captionSegments;
+
+    scene.narration =
+      captionSegments
+        .map((segment) => segment.text)
+        .join(" ");
+
+    scene.caption =
+      captionSegments[0].text;
+
+    scene.emphasisWords =
+      [...captionSegments[0].emphasisWords];
+  }
+);
+
+validStoryboard.narrationWordCount =
+  validStoryboard.scenes
+    .map((scene) => scene.narration)
+    .join(" ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
 
 const validResult =
   validateStoryboard(
@@ -147,6 +261,13 @@ oneEmphasisStoryboard.scenes[0].emphasisWords = [
   "Great coffee"
 ];
 
+// v1.1.8.27 positive-fixture synchronization
+oneEmphasisStoryboard.scenes[0]
+  .captionSegments[0]
+  .emphasisWords = [
+    "Great coffee"
+  ];
+
 const oneEmphasisResult =
   validateStoryboard(
     oneEmphasisStoryboard,
@@ -172,6 +293,18 @@ twoEmphasisStoryboard.scenes[0].emphasisWords = [
   "Great coffee",
   "Anywhere"
 ];
+
+twoEmphasisStoryboard.scenes[0].emphasisWords = [
+  "Great coffee",
+  "travel"
+];
+
+twoEmphasisStoryboard.scenes[0]
+  .captionSegments[0]
+  .emphasisWords = [
+    "Great coffee",
+    "travel"
+  ];
 
 const twoEmphasisResult =
   validateStoryboard(
@@ -340,6 +473,290 @@ console.log(
   "PASS: Legacy storyboard without emphasis accepted and normalized."
 );
 
+// --- v1.1.8.27 caption-segment tests ---
+
+const validSegmentStoryboard =
+  structuredClone(validStoryboard);
+
+validSegmentStoryboard.scenes[0].captionSegments = [
+  {
+    text: "Great coffee.",
+    emphasisWords: ["Great coffee"]
+  },
+  {
+    text: "Anywhere.",
+    emphasisWords: ["Anywhere"]
+  }
+];
+
+validSegmentStoryboard.scenes[0].narration =
+  "Great coffee. Anywhere.";
+
+validSegmentStoryboard.scenes[0].caption =
+  "Great coffee.";
+
+validSegmentStoryboard.scenes[0].emphasisWords = [
+  "Great coffee"
+];
+
+// Recalculate after changing the valid segmented scene narration.
+validSegmentStoryboard.narrationWordCount =
+  validSegmentStoryboard.scenes
+    .map((scene) => scene.narration)
+    .join(" ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+
+const validSegmentResult =
+  validateStoryboard(
+    validSegmentStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (!validSegmentResult.ok) {
+  throw new Error(
+    `Expected valid caption segments to pass: ${validSegmentResult.errors.join(" | ")}`
+  );
+}
+
+console.log(
+  "PASS: 1-3 caption segments accepted."
+);
+
+const missingSegmentStoryboard =
+  structuredClone(validStoryboard);
+
+delete missingSegmentStoryboard.scenes[0]
+  .captionSegments;
+
+const missingSegmentResult =
+  validateStoryboard(
+    missingSegmentStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (missingSegmentResult.ok) {
+  throw new Error(
+    "Expected missing captionSegments to fail in strict mode."
+  );
+}
+
+console.log(
+  "PASS: Missing captionSegments rejected by default."
+);
+
+const legacySegmentResult =
+  validateStoryboard(
+    missingSegmentStoryboard,
+    {
+      imageCount: 2,
+      allowLegacyMissingEmphasis: true
+    }
+  );
+
+if (!legacySegmentResult.ok) {
+  throw new Error(
+    `Expected legacy storyboard without captionSegments to pass: ${legacySegmentResult.errors.join(" | ")}`
+  );
+}
+
+console.log(
+  "PASS: Legacy storyboard without captionSegments accepted."
+);
+
+const tooManySegmentsStoryboard =
+  structuredClone(validStoryboard);
+
+tooManySegmentsStoryboard.scenes[0]
+  .captionSegments = [
+    {
+      text: "One",
+      emphasisWords: ["One"]
+    },
+    {
+      text: "Two",
+      emphasisWords: ["Two"]
+    },
+    {
+      text: "Three",
+      emphasisWords: ["Three"]
+    },
+    {
+      text: "Four",
+      emphasisWords: ["Four"]
+    }
+  ];
+
+const tooManySegmentsResult =
+  validateStoryboard(
+    tooManySegmentsStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (tooManySegmentsResult.ok) {
+  throw new Error(
+    "Expected more than 3 caption segments to fail."
+  );
+}
+
+console.log(
+  "PASS: More than 3 caption segments rejected."
+);
+
+const invalidSegmentEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+invalidSegmentEmphasisStoryboard.scenes[0]
+  .captionSegments = [
+    {
+      text: "Great coffee.",
+      emphasisWords: ["SALE"]
+    }
+  ];
+
+const invalidSegmentEmphasisResult =
+  validateStoryboard(
+    invalidSegmentEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (invalidSegmentEmphasisResult.ok) {
+  throw new Error(
+    "Expected caption-segment emphasis outside its text to fail."
+  );
+}
+
+console.log(
+  "PASS: Caption-segment emphasis must occur in segment text."
+);
+
+const longSegmentStoryboard =
+  structuredClone(validStoryboard);
+
+longSegmentStoryboard.scenes[0]
+  .captionSegments = [
+    {
+      text: "x".repeat(61),
+      emphasisWords: ["x"]
+    }
+  ];
+
+const longSegmentResult =
+  validateStoryboard(
+    longSegmentStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (longSegmentResult.ok) {
+  throw new Error(
+    "Expected caption segment over 60 characters to fail."
+  );
+}
+
+console.log(
+  "PASS: Caption segment over 60 characters rejected."
+);
+// --- v1.1.8.27 caption-segment consistency tests ---
+
+const mismatchedNarrationStoryboard =
+  structuredClone(validStoryboard);
+
+mismatchedNarrationStoryboard.scenes[0]
+  .captionSegments = [
+    {
+      text: "Great coffee.",
+      emphasisWords: ["Great coffee"]
+    },
+    {
+      text: "Anywhere.",
+      emphasisWords: ["Anywhere"]
+    }
+  ];
+
+mismatchedNarrationStoryboard.scenes[0]
+  .narration =
+    "Different spoken narration.";
+
+const mismatchedNarrationResult =
+  validateStoryboard(
+    mismatchedNarrationStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (mismatchedNarrationResult.ok) {
+  throw new Error(
+    "Expected narration differing from caption segments to fail."
+  );
+}
+
+console.log(
+  "PASS: Narration must equal ordered caption segments."
+);
+
+const mismatchedCaptionStoryboard =
+  structuredClone(validStoryboard);
+
+mismatchedCaptionStoryboard.scenes[0]
+  .caption =
+    "Different compatibility caption.";
+
+const mismatchedCaptionResult =
+  validateStoryboard(
+    mismatchedCaptionStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (mismatchedCaptionResult.ok) {
+  throw new Error(
+    "Expected compatibility caption differing from first segment to fail."
+  );
+}
+
+console.log(
+  "PASS: Compatibility caption must equal first segment."
+);
+
+const mismatchedCompatibilityEmphasisStoryboard =
+  structuredClone(validStoryboard);
+
+mismatchedCompatibilityEmphasisStoryboard.scenes[0]
+  .emphasisWords = [
+    "travel"
+  ];
+
+const mismatchedCompatibilityEmphasisResult =
+  validateStoryboard(
+    mismatchedCompatibilityEmphasisStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (mismatchedCompatibilityEmphasisResult.ok) {
+  throw new Error(
+    "Expected compatibility emphasis differing from first segment to fail."
+  );
+}
+
+console.log(
+  "PASS: Compatibility emphasis must equal first segment emphasis."
+);
 // --- v0.9.4 duration-limit boundary tests ---
 
 function storyboardWithDuration(seconds) {
@@ -559,8 +976,14 @@ function storyboardWithWordCount(seconds, wordCount) {
         .slice(wordIndex, wordIndex + count)
         .join(" ");
 
-    scene.caption = `Scene ${index + 1}`;
-    scene.emphasisWords = [`Scene ${index + 1}`];
+    scene.caption = text;
+    scene.emphasisWords = ["a"];
+    scene.captionSegments = [
+      {
+        text,
+        emphasisWords: ["a"]
+      }
+    ];
     scene.narration = text;
     wordIndex += count;
   });

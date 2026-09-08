@@ -30,6 +30,13 @@ export const TRANSITION_TYPES = [
   "dissolve"
 ];
 
+const CaptionSegmentSchema = z
+  .object({
+    text: z.string(),
+    emphasisWords: z.array(z.string()).min(1).max(2)
+  })
+  .strict();
+
 export const SceneSchema = z
   .object({
     sceneNumber: z.number().int(),
@@ -40,6 +47,7 @@ export const SceneSchema = z
     narration: z.string(),
     caption: z.string(),
     emphasisWords: z.array(z.string()).min(1).max(2),
+    captionSegments: z.array(CaptionSegmentSchema).min(1).max(3),
     motion: z.enum(MOTION_TYPES),
     transition: z.enum(TRANSITION_TYPES)
   })
@@ -66,7 +74,9 @@ export const StoryboardSchema = z
 const LegacySceneSchema =
   SceneSchema.extend({
     emphasisWords:
-      z.array(z.string()).max(2)
+      z.array(z.string()).max(2),
+    captionSegments:
+      z.array(CaptionSegmentSchema).max(3).optional()
   });
 
 const LegacyStoryboardSchema =
@@ -211,6 +221,81 @@ export function validateStoryboard(
       }
     }
 
+    if (Array.isArray(scene.captionSegments)) {
+      const segmentNarration =
+        scene.captionSegments
+          .map((segment) => segment.text)
+          .join(" ");
+
+      if (scene.narration !== segmentNarration) {
+        errors.push(
+          `Scene ${scene.sceneNumber} narration must exactly equal its caption segments joined in order.`
+        );
+      }
+
+      const firstSegment =
+        scene.captionSegments[0];
+
+      if (
+        firstSegment &&
+        scene.caption !== firstSegment.text
+      ) {
+        errors.push(
+          `Scene ${scene.sceneNumber} compatibility caption must exactly equal its first caption segment.`
+        );
+      }
+
+      const legacyMissingCompatibilityEmphasis =
+        allowLegacyMissingEmphasis &&
+        scene.emphasisWords.length === 0;
+
+      if (
+        !legacyMissingCompatibilityEmphasis &&
+        firstSegment &&
+        (
+          scene.emphasisWords.length !==
+            firstSegment.emphasisWords.length ||
+          scene.emphasisWords.some(
+            (term, index) =>
+              term !==
+              firstSegment.emphasisWords[index]
+          )
+        )
+      ) {
+        errors.push(
+          `Scene ${scene.sceneNumber} compatibility emphasisWords must exactly equal its first caption segment emphasisWords.`
+        );
+      }
+
+      for (
+        let segmentIndex = 0;
+        segmentIndex < scene.captionSegments.length;
+        segmentIndex += 1
+      ) {
+        const segment =
+          scene.captionSegments[segmentIndex];
+
+        if (
+          segment.text.length === 0 ||
+          segment.text.length > 60
+        ) {
+          errors.push(
+            `Scene ${scene.sceneNumber} caption segment ${segmentIndex + 1} must contain 1-60 characters.`
+          );
+        }
+
+        for (
+          const emphasisWord of
+          segment.emphasisWords
+        ) {
+          if (!segment.text.includes(emphasisWord)) {
+            errors.push(
+              `Scene ${scene.sceneNumber} caption segment ${segmentIndex + 1} emphasis term must appear exactly in its text: ${emphasisWord}`
+            );
+          }
+        }
+      }
+    }
 
     const sceneDurationSeconds =
       scene.endSeconds - scene.startSeconds;
