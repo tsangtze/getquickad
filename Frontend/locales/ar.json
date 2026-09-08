@@ -98,7 +98,7 @@
   "account.sign_in": "Sign in",
   "account.sign_out_unconfirmed": "Sign-out could not be confirmed. Close and reopen Account to check.",
   "account.signing_out": "Signing out...",
-  "account.note_signup": "Choose a unique QuickAd AI password of at least 12 characters. Confirm your email, then return here to sign in.",
+  "account.note_signup": "Choose a unique QuickAd AI password of at least 8 characters. Confirm your email, then return here to sign in.",
   "account.email_link_returned": "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.",
   "account.server_error": "Cannot reach the server. Close and try again.",
   "account.sign_out_failed": "Sign-out failed. Please try again.",

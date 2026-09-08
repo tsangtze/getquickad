@@ -120,7 +120,7 @@
   function setMode(signup) {
     signupMode = signup;
     passwordInput.value = "";
-    passwordInput.minLength = signup ? 12 : 1;
+    passwordInput.minLength = signup ? 8 : 1;
     passwordInput.autocomplete = signup
       ? "new-password"
       : "current-password";
@@ -129,7 +129,7 @@
       ? accountText("account.already_sign_in", "Already have an account? Sign in")
       : accountText("account.create_instead", "Create an account instead");
     note.textContent = signup
-      ? accountText("account.note_signup", "Choose a unique QuickAd AI password of at least 12 characters. Confirm your email, then return here to sign in.")
+      ? accountText("account.note_signup", "Choose a unique QuickAd AI password of at least 8 characters. Confirm your email, then return here to sign in.")
       : accountText("account.note_signin", "Use your QuickAd AI password, not your Gmail password. Signing in reloads this page and discards unsaved edits.");
   }
 

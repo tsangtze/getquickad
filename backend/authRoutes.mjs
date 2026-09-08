@@ -13,6 +13,17 @@ const refreshCookieName = "quickad_refresh";
 const persistentSessionMilliseconds =
   30 * 24 * 60 * 60 * 1000;
 
+const signupPasswordMinimumLength = 8;
+const signupPasswordMaximumLength = 1024;
+
+function validSignupPassword(password) {
+  return (
+    typeof password === "string" &&
+    password.length >= signupPasswordMinimumLength &&
+    password.length <= signupPasswordMaximumLength
+  );
+}
+
 function cookieOptions() {
   const origin = new URL(authConfiguration().applicationOrigin);
 
@@ -228,6 +239,12 @@ export async function requireUser(
   }
 }
 
+export const __signupPasswordPolicyTestHelpers = {
+  signupPasswordMinimumLength,
+  signupPasswordMaximumLength,
+  validSignupPassword
+};
+
 export const __persistentAuthTestHelpers = {
   accessCookieName,
   refreshCookieName,
@@ -320,14 +337,12 @@ export function createAuthRouter() {
       typeof email !== "string" ||
       email.length > 254 ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ||
-      typeof password !== "string" ||
-      password.length < 12 ||
-      password.length > 1024
+      !validSignupPassword(password)
     ) {
       return response.status(400).json({
         ok: false,
         code: "AUTH_SIGNUP_INVALID",
-        error: "Enter a valid email and a password of 12–1024 characters."
+        error: "Enter a valid email and a password of 8–1024 characters."
       });
     }
 
@@ -379,7 +394,7 @@ export function createAuthRouter() {
           return response.status(400).json({
             ok: false,
             code: "AUTH_WEAK_PASSWORD",
-            error: "Choose a stronger, unique password of at least 12 characters."
+            error: "Choose a stronger, unique password of at least 8 characters."
           });
         }
 

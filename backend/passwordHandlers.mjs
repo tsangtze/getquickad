@@ -59,8 +59,8 @@ export function createPasswordHandlers({ createAuthClient, authConfiguration, fe
     },
     async update(request, response) {
       const password = request.body?.password;
-      if (typeof password !== "string" || password.length < 12 || password.length > 1024) {
-        return response.status(400).json({ ok: false, code: "PASSWORD_INVALID", error: "Choose a unique password of 12–1024 characters." });
+      if (typeof password !== "string" || password.length < 8 || password.length > 1024) {
+        return response.status(400).json({ ok: false, code: "PASSWORD_INVALID", error: "Choose a unique password of 8–1024 characters." });
       }
       try {
         const user = await verifiedUser(request, response);
