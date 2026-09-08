@@ -135,7 +135,7 @@
   "account.sign_in": "Sign in",
   "account.sign_out_unconfirmed": "Sign-out could not be confirmed. Close and reopen Account to check.",
   "account.signing_out": "Signing out...",
-  "account.note_signup": "Choose a unique QuickAd AI password of at least 8 characters. Confirm your email, then return here to sign in.",
+  "account.note_signup": "Choose a unique QuickAd AI password. Confirm your email, then return here to sign in.",
   "account.email_link_returned": "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.",
   "account.server_error": "Cannot reach the server. Close and try again.",
   "account.sign_out_failed": "Sign-out failed. Please try again.",
@@ -394,5 +394,14 @@
   "scene.cta_uploading": "Uploading...",
   "scene.cta_invalid": "Please use a JPG, PNG, or WebP call-to-action image.",
   "scene.cta_upload_failed": "The call-to-action image could not be uploaded.",
-  "duration.help": "Let AI choose the best length, or select a maximum length yourself."
+  "duration.help": "Let AI choose the best length, or select a maximum length yourself.",
+  "account.resend_confirmation": "Resend confirmation email",
+  "account.resend_enter_email": "Enter your email address first.",
+  "account.resending_confirmation": "Requesting confirmation email...",
+  "account.api_confirmation_resent": "If this address has an unconfirmed account, a new confirmation email will be sent. Check your inbox and spam folder.",
+  "account.api_confirmation_invalid": "Enter a valid email address.",
+  "account.api_confirmation_unavailable": "Confirmation email service is temporarily unavailable. Please try again later.",
+  "account.show_password": "Show password",
+  "account.hide_password": "Hide password",
+  "account.password_requirement": "Use at least 8 characters."
 }

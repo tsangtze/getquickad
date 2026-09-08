@@ -39,6 +39,24 @@
   border-radius: 8px;
   font: inherit;
 }
+.qa-account-password-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.qa-account-password-toggle {
+  white-space: nowrap;
+}
+
+.qa-account-password-requirement {
+  margin: -4px 0 0;
+  color: #596579;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
 .qa-account-dialog button {
   min-height: 44px;
   padding: 10px 16px;

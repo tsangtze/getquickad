@@ -98,7 +98,7 @@
   "account.sign_in": "サインイン",
   "account.sign_out_unconfirmed": "サインアウトを確認できませんでした。アカウントを閉じて開き直し、確認してください。",
   "account.signing_out": "サインアウトしています...",
-  "account.note_signup": "8文字以上の固有のQuickAd AIパスワードを設定してください。メールを確認した後、ここに戻ってサインインしてください。",
+  "account.note_signup": "QuickAd AI専用のパスワードを設定してください。メールアドレスを確認した後、ここに戻ってサインインしてください。",
   "account.email_link_returned": "メール内のリンクから戻りました。QuickAd AIのパスワードでサインインしてください。パスワードを設定していない招待ユーザーは、パスワード設定手続きを行う必要があります。",
   "account.server_error": "サーバーに接続できません。閉じてからもう一度お試しください。",
   "account.sign_out_failed": "サインアウトに失敗しました。もう一度お試しください。",
@@ -394,5 +394,14 @@
   "quota.projects": "プロジェクト",
   "quota.video": "動画",
   "quota.videos": "動画",
-  "scene.video_ready": "動画の準備ができました"
+  "scene.video_ready": "動画の準備ができました",
+  "account.resend_confirmation": "確認メールを再送信",
+  "account.resend_enter_email": "まずメールアドレスを入力してください。",
+  "account.resending_confirmation": "確認メールをリクエストしています...",
+  "account.api_confirmation_resent": "このメールアドレスに未確認のアカウントがある場合、新しい確認メールが送信されます。受信トレイと迷惑メールフォルダを確認してください。",
+  "account.api_confirmation_invalid": "有効なメールアドレスを入力してください。",
+  "account.api_confirmation_unavailable": "確認メールサービスは一時的に利用できません。後でもう一度お試しください。",
+  "account.show_password": "パスワードを表示",
+  "account.hide_password": "パスワードを非表示",
+  "account.password_requirement": "8文字以上を使用してください。"
 }

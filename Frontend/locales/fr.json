@@ -98,7 +98,7 @@
   "account.sign_in": "Se connecter",
   "account.sign_out_unconfirmed": "La déconnexion n’a pas pu être confirmée. Fermez puis rouvrez Compte pour vérifier.",
   "account.signing_out": "Déconnexion...",
-  "account.note_signup": "Choisissez un mot de passe QuickAd AI unique d'au moins 8 caractères. Confirmez votre e-mail, puis revenez ici pour vous connecter.",
+  "account.note_signup": "Choisissez un mot de passe QuickAd AI unique. Confirmez votre adresse e-mail, puis revenez ici pour vous connecter.",
   "account.email_link_returned": "Vous êtes revenu depuis un lien reçu par e-mail. Connectez-vous avec votre mot de passe QuickAd AI. Les utilisateurs invités qui n’ont pas défini de mot de passe doivent suivre la procédure de création de mot de passe.",
   "account.server_error": "Impossible de joindre le serveur. Fermez et réessayez.",
   "account.sign_out_failed": "La déconnexion a échoué. Réessayez.",
@@ -409,5 +409,14 @@
   "quota.projects": "projets",
   "quota.video": "vidéo",
   "quota.videos": "vidéos",
-  "scene.video_ready": "Vidéo prête"
+  "scene.video_ready": "Vidéo prête",
+  "account.resend_confirmation": "Renvoyer l’e-mail de confirmation",
+  "account.resend_enter_email": "Saisissez d’abord votre adresse e-mail.",
+  "account.resending_confirmation": "Demande d’un e-mail de confirmation...",
+  "account.api_confirmation_resent": "Si cette adresse correspond à un compte non confirmé, un nouvel e-mail de confirmation sera envoyé. Vérifiez votre boîte de réception et votre dossier spam.",
+  "account.api_confirmation_invalid": "Saisissez une adresse e-mail valide.",
+  "account.api_confirmation_unavailable": "Le service d’e-mail de confirmation est temporairement indisponible. Réessayez plus tard.",
+  "account.show_password": "Afficher le mot de passe",
+  "account.hide_password": "Masquer le mot de passe",
+  "account.password_requirement": "Utilisez au moins 8 caractères."
 }

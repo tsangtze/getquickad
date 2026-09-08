@@ -98,7 +98,7 @@
   "account.sign_in": "Oturum aç",
   "account.sign_out_unconfirmed": "Oturum kapatma doğrulanamadı. Kontrol etmek için Hesap bölümünü kapatıp yeniden açın.",
   "account.signing_out": "Oturum kapatılıyor...",
-  "account.note_signup": "En az 8 karakterden oluşan benzersiz bir QuickAd AI parolası seçin. E-postanızı doğruladıktan sonra buraya dönüp oturum açın.",
+  "account.note_signup": "QuickAd AI için benzersiz bir parola seçin. E-postanızı doğrulayın, ardından oturum açmak için buraya dönün.",
   "account.email_link_returned": "Bir e-posta bağlantısından geri döndünüz. QuickAd AI parolanızla oturum açın. Parola belirlememiş davetli kullanıcıların parola oluşturma işlemini tamamlaması gerekir.",
   "account.server_error": "Sunucuya ulaşılamıyor. Kapatıp tekrar deneyin.",
   "account.sign_out_failed": "Oturum kapatma başarısız oldu. Lütfen tekrar deneyin.",
@@ -395,5 +395,14 @@
   "quota.projects": "projeler",
   "quota.video": "video",
   "quota.videos": "videolar",
-  "scene.video_ready": "Video hazır"
+  "scene.video_ready": "Video hazır",
+  "account.resend_confirmation": "Onay e-postasını yeniden gönder",
+  "account.resend_enter_email": "Önce e-posta adresinizi girin.",
+  "account.resending_confirmation": "Onay e-postası isteniyor...",
+  "account.api_confirmation_resent": "Bu adrese ait onaylanmamış bir hesap varsa yeni bir onay e-postası gönderilecektir. Gelen kutunuzu ve spam klasörünüzü kontrol edin.",
+  "account.api_confirmation_invalid": "Geçerli bir e-posta adresi girin.",
+  "account.api_confirmation_unavailable": "Onay e-postası hizmeti geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
+  "account.show_password": "Parolayı göster",
+  "account.hide_password": "Parolayı gizle",
+  "account.password_requirement": "En az 8 karakter kullanın."
 }

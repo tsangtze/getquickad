@@ -55,6 +55,28 @@
       busy = value;
       for (const control of document.querySelectorAll("input, button")) control.disabled = value;
     }
+    function setupPasswordVisibility() {
+      for (const button of document.querySelectorAll("[data-password-toggle]")) {
+        button.addEventListener("click", () => {
+          if (busy) return;
+
+          const input = byId(button.dataset.passwordToggle);
+          if (!input) return;
+
+          const showing = input.type === "text";
+          input.type = showing ? "password" : "text";
+          button.setAttribute("aria-pressed", String(!showing));
+          button.textContent = passwordText(
+            showing ? "account.show_password" : "account.hide_password",
+            showing ? "Show password" : "Hide password"
+          );
+          input.focus();
+        });
+      }
+    }
+
+    setupPasswordVisibility();
+
     function clearPasswords() {
       byId("password").value = "";
       byId("confirmation").value = "";

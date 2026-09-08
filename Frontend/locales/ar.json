@@ -98,7 +98,7 @@
   "account.sign_in": "Sign in",
   "account.sign_out_unconfirmed": "Sign-out could not be confirmed. Close and reopen Account to check.",
   "account.signing_out": "Signing out...",
-  "account.note_signup": "Choose a unique QuickAd AI password of at least 8 characters. Confirm your email, then return here to sign in.",
+  "account.note_signup": "اختر كلمة مرور فريدة لـ QuickAd AI. أكّد بريدك الإلكتروني، ثم عُد إلى هنا لتسجيل الدخول.",
   "account.email_link_returned": "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.",
   "account.server_error": "Cannot reach the server. Close and try again.",
   "account.sign_out_failed": "Sign-out failed. Please try again.",
@@ -142,5 +142,14 @@
   "cta_image.help": "حمّل صورتك، أو استخدم صورتنا الافتراضية.",
   "cta_image.choose": "اختر صورة",
   "cta_image.none": "لم يتم اختيار صورة",
-  "cta_image.invalid": "يرجى استخدام صورة CTA بتنسيق JPG أو PNG أو WebP."
+  "cta_image.invalid": "يرجى استخدام صورة CTA بتنسيق JPG أو PNG أو WebP.",
+  "account.resend_confirmation": "إعادة إرسال رسالة التأكيد",
+  "account.resend_enter_email": "أدخل عنوان بريدك الإلكتروني أولاً.",
+  "account.resending_confirmation": "جارٍ طلب رسالة التأكيد...",
+  "account.api_confirmation_resent": "إذا كان لهذا العنوان حساب غير مؤكد، فسيتم إرسال رسالة تأكيد جديدة. تحقق من صندوق الوارد ومجلد الرسائل غير المرغوب فيها.",
+  "account.api_confirmation_invalid": "أدخل عنوان بريد إلكتروني صالحًا.",
+  "account.api_confirmation_unavailable": "خدمة رسائل التأكيد غير متاحة مؤقتًا. يرجى المحاولة مرة أخرى لاحقًا.",
+  "account.show_password": "إظهار كلمة المرور",
+  "account.hide_password": "إخفاء كلمة المرور",
+  "account.password_requirement": "استخدم 8 أحرف على الأقل."
 }

@@ -98,7 +98,7 @@
   "account.sign_in": "登入",
   "account.sign_out_unconfirmed": "無法確認是否已登出。請關閉並重新開啟「帳戶」進行檢查。",
   "account.signing_out": "正在登出...",
-  "account.note_signup": "請為 QuickAd AI 設定一組至少 8 個字元且不與其他服務共用的密碼。確認電子郵件後，再回到這裡登入。",
+  "account.note_signup": "請選擇一個專用於 QuickAd AI 的密碼。確認電子郵件後，請返回此處登入。",
   "account.email_link_returned": "您已從電子郵件連結返回。請使用您的 QuickAd AI 密碼登入。尚未設定密碼的受邀使用者需要先完成密碼設定流程。",
   "account.server_error": "無法連線至伺服器。請關閉後再試一次。",
   "account.sign_out_failed": "登出失敗，請再試一次。",
@@ -395,5 +395,14 @@
   "quota.projects": "專案",
   "quota.video": "影片",
   "quota.videos": "影片",
-  "scene.video_ready": "影片已準備完成"
+  "scene.video_ready": "影片已準備完成",
+  "account.resend_confirmation": "重新傳送確認電子郵件",
+  "account.resend_enter_email": "請先輸入您的電子郵件地址。",
+  "account.resending_confirmation": "正在要求確認電子郵件...",
+  "account.api_confirmation_resent": "如果此電子郵件地址對應尚未確認的帳戶，系統將傳送新的確認電子郵件。請檢查收件匣和垃圾郵件資料夾。",
+  "account.api_confirmation_invalid": "請輸入有效的電子郵件地址。",
+  "account.api_confirmation_unavailable": "確認電子郵件服務暫時無法使用。請稍後再試。",
+  "account.show_password": "顯示密碼",
+  "account.hide_password": "隱藏密碼",
+  "account.password_requirement": "請使用至少 8 個字元。"
 }

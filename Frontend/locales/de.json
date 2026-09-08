@@ -98,7 +98,7 @@
   "account.sign_in": "Anmelden",
   "account.sign_out_unconfirmed": "Die Abmeldung konnte nicht bestätigt werden. Schließen und öffnen Sie Konto erneut, um dies zu prüfen.",
   "account.signing_out": "Abmeldung...",
-  "account.note_signup": "Wählen Sie ein eindeutiges QuickAd AI-Passwort mit mindestens 8 Zeichen. Bestätigen Sie Ihre E-Mail und kehren Sie dann hierher zurück, um sich anzumelden.",
+  "account.note_signup": "Wähle ein einzigartiges QuickAd AI-Passwort. Bestätige deine E-Mail-Adresse und kehre dann hierher zurück, um dich anzumelden.",
   "account.email_link_returned": "Sie sind über einen E-Mail-Link zurückgekehrt. Melden Sie sich mit Ihrem QuickAd-AI-Passwort an. Eingeladene Benutzer ohne festgelegtes Passwort müssen zuerst ein Passwort einrichten.",
   "account.server_error": "Der Server ist nicht erreichbar. Schließen Sie das Fenster und versuchen Sie es erneut.",
   "account.sign_out_failed": "Abmeldung fehlgeschlagen. Versuchen Sie es erneut.",
@@ -409,5 +409,14 @@
   "quota.projects": "Projekte",
   "quota.video": "Video",
   "quota.videos": "Videos",
-  "scene.video_ready": "Video fertig"
+  "scene.video_ready": "Video fertig",
+  "account.resend_confirmation": "Bestätigungs-E-Mail erneut senden",
+  "account.resend_enter_email": "Gib zuerst deine E-Mail-Adresse ein.",
+  "account.resending_confirmation": "Bestätigungs-E-Mail wird angefordert...",
+  "account.api_confirmation_resent": "Wenn für diese Adresse ein unbestätigtes Konto besteht, wird eine neue Bestätigungs-E-Mail gesendet. Prüfe deinen Posteingang und Spam-Ordner.",
+  "account.api_confirmation_invalid": "Gib eine gültige E-Mail-Adresse ein.",
+  "account.api_confirmation_unavailable": "Der Bestätigungs-E-Mail-Dienst ist vorübergehend nicht verfügbar. Bitte versuche es später erneut.",
+  "account.show_password": "Passwort anzeigen",
+  "account.hide_password": "Passwort ausblenden",
+  "account.password_requirement": "Verwende mindestens 8 Zeichen."
 }

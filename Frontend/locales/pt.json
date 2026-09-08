@@ -98,7 +98,7 @@
   "account.sign_in": "Entrar",
   "account.sign_out_unconfirmed": "Não foi possível confirmar a saída. Feche e reabra Conta para verificar.",
   "account.signing_out": "Saindo...",
-  "account.note_signup": "Escolha uma senha única do QuickAd AI com pelo menos 8 caracteres. Confirme seu email e volte aqui para entrar.",
+  "account.note_signup": "Escolha uma senha exclusiva para o QuickAd AI. Confirme seu e-mail e depois volte aqui para entrar.",
   "account.email_link_returned": "Você voltou de um link de email. Entre com sua senha do QuickAd AI. Usuários convidados que ainda não definiram uma senha precisam configurá-la.",
   "account.server_error": "Não foi possível conectar ao servidor. Feche e tente novamente.",
   "account.sign_out_failed": "Falha ao sair. Tente novamente.",
@@ -400,5 +400,14 @@
   "quota.projects": "projetos",
   "quota.video": "vídeo",
   "quota.videos": "vídeos",
-  "scene.video_ready": "Vídeo pronto"
+  "scene.video_ready": "Vídeo pronto",
+  "account.resend_confirmation": "Reenviar e-mail de confirmação",
+  "account.resend_enter_email": "Digite primeiro seu endereço de e-mail.",
+  "account.resending_confirmation": "Solicitando e-mail de confirmação...",
+  "account.api_confirmation_resent": "Se este endereço tiver uma conta não confirmada, um novo e-mail de confirmação será enviado. Verifique sua caixa de entrada e a pasta de spam.",
+  "account.api_confirmation_invalid": "Digite um endereço de e-mail válido.",
+  "account.api_confirmation_unavailable": "O serviço de e-mail de confirmação está temporariamente indisponível. Tente novamente mais tarde.",
+  "account.show_password": "Mostrar senha",
+  "account.hide_password": "Ocultar senha",
+  "account.password_requirement": "Use pelo menos 8 caracteres."
 }

@@ -178,7 +178,7 @@
   "account.sign_in": "Iniciar sesión",
   "account.sign_out_unconfirmed": "No se pudo confirmar el cierre de sesión. Cierra y vuelve a abrir Cuenta para comprobarlo.",
   "account.signing_out": "Cerrando sesión...",
-  "account.note_signup": "Elige una contraseña única de QuickAd AI de al menos 8 caracteres. Confirma tu correo y vuelve aquí para iniciar sesión.",
+  "account.note_signup": "Elige una contraseña única para QuickAd AI. Confirma tu correo electrónico y luego vuelve aquí para iniciar sesión.",
   "account.email_link_returned": "Volviste desde un enlace de correo. Inicia sesión con tu contraseña de QuickAd AI. Los usuarios invitados que aún no tengan contraseña necesitan configurarla.",
   "account.server_error": "No se puede conectar con el servidor. Cierra e inténtalo de nuevo.",
   "account.sign_out_failed": "No se pudo cerrar sesión. Inténtalo de nuevo.",
@@ -410,5 +410,14 @@
   "duration.help": "Deja que la IA elija la mejor duración o selecciona tú mismo una duración máxima.",
   "benefit.mp4": "MP4 listo para publicar",
   "benefit.prompts": "Sin instrucciones complicadas",
-  "benefit.timeline": "Sin editor de línea de tiempo"
+  "benefit.timeline": "Sin editor de línea de tiempo",
+  "account.resend_confirmation": "Reenviar correo de confirmación",
+  "account.resend_enter_email": "Primero introduce tu dirección de correo electrónico.",
+  "account.resending_confirmation": "Solicitando correo de confirmación...",
+  "account.api_confirmation_resent": "Si esta dirección tiene una cuenta sin confirmar, se enviará un nuevo correo de confirmación. Revisa tu bandeja de entrada y la carpeta de spam.",
+  "account.api_confirmation_invalid": "Introduce una dirección de correo electrónico válida.",
+  "account.api_confirmation_unavailable": "El servicio de correo de confirmación no está disponible temporalmente. Inténtalo de nuevo más tarde.",
+  "account.show_password": "Mostrar contraseña",
+  "account.hide_password": "Ocultar contraseña",
+  "account.password_requirement": "Usa al menos 8 caracteres."
 }

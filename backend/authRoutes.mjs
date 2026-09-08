@@ -329,6 +329,87 @@ export function createAuthRouter() {
     }
   });
 
+  const confirmationResendLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 5,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: {
+      ok: false,
+      code: "AUTH_CONFIRMATION_RATE_LIMIT",
+      error: "Please wait before requesting another confirmation email. Check your inbox and spam folder before trying again."
+    }
+  });
+
+  router.post("/resend-confirmation", confirmationResendLimiter, async (request, response) => {
+    const email = request.body?.email;
+
+    if (
+      typeof email !== "string" ||
+      email.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ) {
+      return response.status(400).json({
+        ok: false,
+        code: "AUTH_CONFIRMATION_INVALID",
+        error: "Enter a valid email address."
+      });
+    }
+
+    const acceptedMessage =
+      "If this address has an unconfirmed account, a new confirmation email will be sent. " +
+      "Check your inbox and spam folder.";
+
+    try {
+      const client = createAuthClient();
+      const origin = new URL(authConfiguration().applicationOrigin);
+
+      if (
+        process.env.NODE_ENV === "production" &&
+        origin.protocol !== "https:"
+      ) {
+        throw new Error("Production confirmation resend requires HTTPS.");
+      }
+
+      const { error } = await client.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: {
+          emailRedirectTo: `${origin.origin}/`
+        }
+      });
+
+      if (error?.status === 429) {
+        return response.status(429).json({
+          ok: false,
+          code: "AUTH_CONFIRMATION_RATE_LIMIT",
+          error: "Please wait before requesting another confirmation email. Check your inbox and spam folder before trying again."
+        });
+      }
+
+      if (error && (!error.status || error.status >= 500)) {
+        return response.status(503).json({
+          ok: false,
+          code: "AUTH_CONFIRMATION_UNAVAILABLE",
+          error: "Confirmation email service is temporarily unavailable. Please try again later."
+        });
+      }
+
+      // Keep ordinary account-state results neutral so this endpoint
+      // cannot disclose whether an address exists or is confirmed.
+      return response.status(202).json({
+        ok: true,
+        code: "AUTH_CONFIRMATION_RESENT",
+        message: acceptedMessage
+      });
+    } catch {
+      return response.status(503).json({
+        ok: false,
+        code: "AUTH_CONFIRMATION_UNAVAILABLE",
+        error: "Confirmation email service is temporarily unavailable. Please try again later."
+      });
+    }
+  });
   router.post("/signup", signupLimiter, async (request, response) => {
     const email = request.body?.email;
     const password = request.body?.password;

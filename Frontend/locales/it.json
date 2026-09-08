@@ -98,7 +98,7 @@
   "account.sign_in": "Accedi",
   "account.sign_out_unconfirmed": "Non è stato possibile confermare la disconnessione. Chiudi e riapri Account per verificare.",
   "account.signing_out": "Disconnessione...",
-  "account.note_signup": "Scegli una password QuickAd AI unica di almeno 8 caratteri. Conferma la tua e-mail, poi torna qui per accedere.",
+  "account.note_signup": "Scegli una password QuickAd AI univoca. Conferma la tua e-mail, quindi torna qui per accedere.",
   "account.email_link_returned": "Sei tornato da un link ricevuto via e-mail. Accedi con la password di QuickAd AI. Gli utenti invitati che non hanno impostato una password devono completare la procedura di configurazione della password.",
   "account.server_error": "Impossibile raggiungere il server. Chiudi e riprova.",
   "account.sign_out_failed": "Disconnessione non riuscita. Riprova.",
@@ -409,5 +409,14 @@
   "quota.projects": "progetti",
   "quota.video": "video",
   "quota.videos": "video",
-  "scene.video_ready": "Video pronto"
+  "scene.video_ready": "Video pronto",
+  "account.resend_confirmation": "Invia di nuovo l’e-mail di conferma",
+  "account.resend_enter_email": "Inserisci prima il tuo indirizzo e-mail.",
+  "account.resending_confirmation": "Richiesta dell’e-mail di conferma...",
+  "account.api_confirmation_resent": "Se a questo indirizzo è associato un account non confermato, verrà inviata una nuova e-mail di conferma. Controlla la posta in arrivo e la cartella spam.",
+  "account.api_confirmation_invalid": "Inserisci un indirizzo e-mail valido.",
+  "account.api_confirmation_unavailable": "Il servizio e-mail di conferma è temporaneamente non disponibile. Riprova più tardi.",
+  "account.show_password": "Mostra password",
+  "account.hide_password": "Nascondi password",
+  "account.password_requirement": "Usa almeno 8 caratteri."
 }

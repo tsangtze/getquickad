@@ -45,6 +45,9 @@
       AUTH_SIGNUP_RATE_LIMIT: "account.api_signup_rate_limit",
       AUTH_SIGNUP_INVALID: "account.api_signup_invalid",
       AUTH_CONFIRMATION_SENT: "account.api_confirmation_sent",
+      AUTH_CONFIRMATION_RESENT: "account.api_confirmation_resent",
+      AUTH_CONFIRMATION_INVALID: "account.api_confirmation_invalid",
+      AUTH_CONFIRMATION_UNAVAILABLE: "account.api_confirmation_unavailable",
       AUTH_CONFIRMATION_RATE_LIMIT: "account.api_confirmation_rate_limit",
       AUTH_WEAK_PASSWORD: "account.api_weak_password",
       AUTH_SIGNUP_FAILED: "account.api_signup_failed",
@@ -83,10 +86,19 @@
       <input id="qa-account-email" name="email" type="email"
         autocomplete="username" maxlength="254" required>
       <label for="qa-account-password" data-i18n="account.password">Password</label>
-      <input id="qa-account-password" name="password" type="password"
-        autocomplete="current-password" maxlength="1024" required>
+      <div class="qa-account-password-row">
+        <input id="qa-account-password" name="password" type="password"
+          autocomplete="current-password" maxlength="1024" required>
+        <button type="button" class="qa-account-password-toggle"
+          aria-controls="qa-account-password"
+          aria-pressed="false"
+          data-i18n="account.show_password">Show password</button>
+      </div>
+      <p class="qa-account-password-requirement" hidden
+        data-i18n="account.password_requirement">Use at least 8 characters.</p>
       <button type="submit" class="qa-account-primary" data-i18n="account.sign_in">Sign in</button>
       <button type="button" class="qa-account-mode" data-i18n="account.create_instead">Create an account instead</button>
+      <button type="button" class="qa-account-resend" data-i18n="account.resend_confirmation">Resend confirmation email</button>
       <a href="/password.html" data-i18n="account.forgot">Forgot password or need to set one?</a>
       <p class="qa-account-note">
         Use your QuickAd AI test account.
@@ -114,6 +126,9 @@
   let busy = false;
   let signupMode = false;
   const modeButton = dialog.querySelector(".qa-account-mode");
+  const resendButton = dialog.querySelector(".qa-account-resend");
+  const passwordToggle = dialog.querySelector(".qa-account-password-toggle");
+  const passwordRequirement = dialog.querySelector(".qa-account-password-requirement");
   const submitButton = loginForm.querySelector('[type="submit"]');
   const note = dialog.querySelector(".qa-account-note");
 
@@ -124,6 +139,11 @@
     passwordInput.autocomplete = signup
       ? "new-password"
       : "current-password";
+    passwordInput.type = "password";
+    passwordToggle.setAttribute("aria-pressed", "false");
+    passwordToggle.textContent = accountText("account.show_password", "Show password");
+    passwordRequirement.hidden = !signup;
+    resendButton.hidden = signup;
     submitButton.textContent = signup ? accountText("account.create", "Create account") : accountText("account.sign_in", "Sign in");
     modeButton.textContent = signup
       ? accountText("account.already_sign_in", "Already have an account? Sign in")
@@ -134,6 +154,19 @@
   }
 
   setMode(false);
+
+  passwordToggle.addEventListener("click", () => {
+    if (busy) return;
+
+    const showing = passwordInput.type === "text";
+    passwordInput.type = showing ? "password" : "text";
+    passwordToggle.setAttribute("aria-pressed", String(!showing));
+    passwordToggle.textContent = accountText(
+      showing ? "account.show_password" : "account.hide_password",
+      showing ? "Show password" : "Hide password"
+    );
+    passwordInput.focus();
+  });
 
   modeButton.addEventListener("click", () => {
     if (busy) return;
@@ -229,6 +262,54 @@
     passwordInput.value = "";
   });
 
+  resendButton.addEventListener("click", async () => {
+    if (busy) return;
+
+    const email = emailInput.value.trim();
+
+    if (!email || !emailInput.checkValidity()) {
+      status.textContent = accountText(
+        "account.resend_enter_email",
+        "Enter a valid email address first."
+      );
+      emailInput.focus();
+      return;
+    }
+
+    setBusy(true);
+    status.textContent = accountText(
+      "account.resending_confirmation",
+      "Requesting a new confirmation email..."
+    );
+
+    try {
+      const { response, data } = await request(
+        "resend-confirmation",
+        { email }
+      );
+
+      if (response.status === 202 && data.ok) {
+        status.textContent = accountApiText(
+          data,
+          "account.api_confirmation_resent",
+          "If this address has an unconfirmed account, a new confirmation email will be sent. Check your inbox and spam folder."
+        );
+      } else {
+        status.textContent = accountApiText(
+          data,
+          "account.request_failed",
+          "The request failed. Please try again."
+        );
+      }
+    } catch {
+      status.textContent = accountText(
+        "account.request_unconfirmed",
+        "The request could not be confirmed. Check your email or reopen Account before retrying."
+      );
+    } finally {
+      setBusy(false);
+    }
+  });
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (busy || !loginForm.reportValidity()) return;

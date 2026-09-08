@@ -98,7 +98,7 @@
   "account.sign_in": "साइन इन करें",
   "account.sign_out_unconfirmed": "साइन आउट की पुष्टि नहीं हो सकी। जाँचने के लिए खाता बंद करके फिर खोलें।",
   "account.signing_out": "साइन आउट किया जा रहा है...",
-  "account.note_signup": "कम से कम 8 अक्षरों का एक अलग QuickAd AI पासवर्ड चुनें। अपने ईमेल की पुष्टि करें, फिर साइन इन करने के लिए यहाँ लौटें।",
+  "account.note_signup": "QuickAd AI के लिए एक अलग पासवर्ड चुनें। अपना ईमेल सत्यापित करें, फिर साइन इन करने के लिए यहाँ वापस आएँ।",
   "account.email_link_returned": "आप ईमेल लिंक से वापस आए हैं। अपने QuickAd AI पासवर्ड से साइन इन करें। जिन आमंत्रित उपयोगकर्ताओं ने पासवर्ड सेट नहीं किया है, उन्हें पासवर्ड सेटअप प्रक्रिया पूरी करनी होगी।",
   "account.server_error": "सर्वर से संपर्क नहीं हो पा रहा है। बंद करें और फिर प्रयास करें।",
   "account.sign_out_failed": "साइन आउट विफल रहा। कृपया पुनः प्रयास करें।",
@@ -395,5 +395,14 @@
   "quota.projects": "प्रोजेक्ट",
   "quota.video": "वीडियो",
   "quota.videos": "वीडियो",
-  "scene.video_ready": "वीडियो तैयार है"
+  "scene.video_ready": "वीडियो तैयार है",
+  "account.resend_confirmation": "पुष्टिकरण ईमेल फिर से भेजें",
+  "account.resend_enter_email": "पहले अपना ईमेल पता दर्ज करें।",
+  "account.resending_confirmation": "पुष्टिकरण ईमेल का अनुरोध किया जा रहा है...",
+  "account.api_confirmation_resent": "यदि इस पते पर कोई अपुष्ट खाता है, तो एक नया पुष्टिकरण ईमेल भेजा जाएगा। अपना इनबॉक्स और स्पैम फ़ोल्डर देखें।",
+  "account.api_confirmation_invalid": "एक मान्य ईमेल पता दर्ज करें।",
+  "account.api_confirmation_unavailable": "पुष्टिकरण ईमेल सेवा अस्थायी रूप से उपलब्ध नहीं है। कृपया बाद में फिर प्रयास करें।",
+  "account.show_password": "पासवर्ड दिखाएँ",
+  "account.hide_password": "पासवर्ड छिपाएँ",
+  "account.password_requirement": "कम से कम 8 अक्षरों का उपयोग करें।"
 }
