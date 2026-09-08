@@ -98,7 +98,10 @@
       setBusy(true);
       status.textContent = passwordText("password.requesting", "Requesting password email...");
       try {
-        const { response, data } = await api("recover", { email: byId("email").value.trim() });
+        const { response, data } = await api("recover", {
+          email: byId("email").value.trim(),
+          language: window.QuickAdI18n?.currentLang || "en"
+        });
         status.textContent = response.status === 202 && data.ok
           ? passwordApiText(
               data,

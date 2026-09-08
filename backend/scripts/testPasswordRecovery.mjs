@@ -34,7 +34,40 @@ test("recovery does not disclose account-specific or email cooldown outcomes", a
     assert.equal(r.statusCode, 202);
     if (expected) assert.deepEqual(r.body, expected); else expected = r.body;
   }
-  assert.equal(f.calls[0][2].redirectTo, "http://localhost:4100/password.html");
+  assert.equal(f.calls[0][2].redirectTo, "http://localhost:4100/password.html?lang=en");
+});
+test("recovery carries supported language in redirect", async () => {
+  const f = fixture(), r = f.response();
+
+  await f.handlers.recover({
+    body: {
+      email: "owner@example.com",
+      language: "zh"
+    }
+  }, r);
+
+  assert.equal(r.statusCode, 202);
+  assert.equal(
+    f.calls.find(c => c[0] === "recover")[2].redirectTo,
+    "http://localhost:4100/password.html?lang=zh"
+  );
+});
+
+test("recovery falls back to English for unsupported language", async () => {
+  const f = fixture(), r = f.response();
+
+  await f.handlers.recover({
+    body: {
+      email: "owner@example.com",
+      language: "invalid-language"
+    }
+  }, r);
+
+  assert.equal(r.statusCode, 202);
+  assert.equal(
+    f.calls.find(c => c[0] === "recover")[2].redirectTo,
+    "http://localhost:4100/password.html?lang=en"
+  );
 });
 test("upstream outage is not reported as an email sent", async () => {
   const f = fixture(), r = f.response(); f.state.recoverError = { status: 503 };
@@ -210,11 +243,14 @@ test("expired token at submit returns to requesting a fresh link", async () => {
   assert.equal(b.element("update-panel").hidden, true);
   assert.equal(b.element("request-panel").hidden, false);
 });
-test("request form submits only the account email", async () => {
+test("request form submits account email and selected language", async () => {
   const b = browserFixture("", [{ status: 202, body: { ok: true, code: "PASSWORD_EMAIL_ACCEPTED", message: "Check your inbox." } }]);
   await b.ready(); b.element("email").value = " owner@example.com ";
   await b.submit("request-form");
-  assert.deepEqual(b.calls.find(c => c[0] === "fetch")[2], { email: "owner@example.com" });
+  assert.deepEqual(b.calls.find(c => c[0] === "fetch")[2], {
+    email: "owner@example.com",
+    language: "en"
+  });
   assert.equal(b.element("status").textContent, "The request could not be confirmed. Check your inbox before requesting another email.");
 });
 test("root page redirects invite/recovery fragments before existing login code", () => {

@@ -4,6 +4,14 @@ export function createPasswordHandlers({ createAuthClient, authConfiguration, fe
   const invalidLink = { ok: false, code: "PASSWORD_INVALID_LINK", error: "This link is invalid or expired. Request a new password email below." };
   const unavailable = { ok: false, code: "PASSWORD_UNAVAILABLE", error: "Password service is temporarily unavailable. Please try again later." };
   const validEmail = value => typeof value === "string" && value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const recoveryEmailLanguages = new Set([
+    "en", "es", "pt", "fr", "de", "it",
+    "ja", "ko", "zh", "zh-TW", "tr", "hi"
+  ]);
+  const recoveryEmailLanguage = value =>
+    typeof value === "string" && recoveryEmailLanguages.has(value)
+      ? value
+      : "en";
   const validToken = value => typeof value === "string" && value.length > 0 && value.length <= 8192 && !/\s/.test(value);
 
   async function verifiedUser(request, response) {
@@ -36,8 +44,12 @@ export function createPasswordHandlers({ createAuthClient, authConfiguration, fe
             (process.env.NODE_ENV === "production" && origin.protocol !== "https:")) {
           return response.status(503).json(unavailable);
         }
+        const language = recoveryEmailLanguage(request.body?.language);
+        const redirect = new URL("/password.html", origin);
+        redirect.searchParams.set("lang", language);
+
         const { error } = await createAuthClient().auth.resetPasswordForEmail(
-          request.body.email.trim(), { redirectTo: `${origin.origin}/password.html` }
+          request.body.email.trim(), { redirectTo: redirect.toString() }
         );
         // Keep account-specific outcomes and cooldowns indistinguishable.
         if (error && !(error.status >= 400 && error.status < 500)) {
