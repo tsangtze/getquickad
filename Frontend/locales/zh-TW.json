@@ -313,7 +313,7 @@
   "account.api_signup_unavailable": "註冊功能暫時無法使用。請稍後再試一次。",
   "account.api_login_invalid": "請輸入您的電子郵件和密碼。",
   "account.api_login_failed": "登入失敗。請檢查您的資料和電子郵件確認狀態。",
-  "password.api_email_accepted": "如果此地址符合資格，系統會傳送密碼電子郵件。請檢查您的收件匣和垃圾郵件資料夾，並使用最新的連結。先前的要求可能已經傳送過一封。",
+  "password.api_email_accepted": "密碼郵件已傳送。請檢查您的收件匣和垃圾郵件資料夾，並使用最新的連結。",
   "password.api_invalid_link": "此連結無效或已過期。請在下方重新申請密碼電子郵件。",
   "password.api_unavailable": "密碼服務暫時無法使用。請稍後再試一次。",
   "password.api_email_invalid": "請輸入有效的電子郵件地址。",

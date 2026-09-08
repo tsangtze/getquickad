@@ -310,7 +310,7 @@
   "account.api_signup_unavailable": "Kayıt geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
   "account.api_login_invalid": "E-posta adresinizi ve parolanızı girin.",
   "account.api_login_failed": "Oturum açılamadı. Bilgilerinizi ve e-posta onayını kontrol edin.",
-  "password.api_email_accepted": "Bu adres uygunsa bir parola e-postası gönderilecektir. Gelen kutunuzu ve spam klasörünüzü kontrol edin ve en yeni bağlantıyı kullanın. Önceki bir istek zaten bir e-posta göndermiş olabilir.",
+  "password.api_email_accepted": "Şifre e-postası gönderildi. Gelen kutunuzu ve spam klasörünüzü kontrol edin ve en yeni bağlantıyı kullanın.",
   "password.api_invalid_link": "Bu bağlantı geçersiz veya süresi dolmuş. Aşağıdan yeni bir parola e-postası isteyin.",
   "password.api_unavailable": "Parola hizmeti geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
   "password.api_email_invalid": "Geçerli bir e-posta adresi girin.",

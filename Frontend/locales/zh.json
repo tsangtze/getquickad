@@ -312,7 +312,7 @@
   "account.api_signup_unavailable": "注册暂时不可用。请稍后再试。",
   "account.api_login_invalid": "请输入电子邮件和密码。",
   "account.api_login_failed": "登录失败。请检查你的信息和电子邮件确认状态。",
-  "password.api_email_accepted": "如果此地址符合条件，我们将发送密码邮件。请检查收件箱和垃圾邮件文件夹，并使用最新的链接。之前的请求可能已经发送过邮件。",
+  "password.api_email_accepted": "密码邮件已发送。请检查您的收件箱和垃圾邮件文件夹，并使用最新的链接。",
   "password.api_invalid_link": "此链接无效或已过期。请在下方重新申请密码邮件。",
   "password.api_unavailable": "密码服务暂时不可用。请稍后重试。",
   "password.api_email_invalid": "请输入有效的电子邮件地址。",

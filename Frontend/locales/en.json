@@ -322,7 +322,7 @@
   "account.api_signup_unavailable": "Signup is temporarily unavailable. Please try again later.",
   "account.api_login_invalid": "Enter your email and password.",
   "account.api_login_failed": "Sign-in failed. Check your details and email confirmation.",
-  "password.api_email_accepted": "If this address is eligible, a password email will be sent. Check your inbox and spam folder, and use the newest link. A previous request may already have sent one.",
+  "password.api_email_accepted": "Password email sent. Check your inbox and spam folder, and use the newest link.",
   "password.api_invalid_link": "This link is invalid or expired. Request a new password email below.",
   "password.api_unavailable": "Password service is temporarily unavailable. Please try again later.",
   "password.api_email_invalid": "Enter a valid email address.",

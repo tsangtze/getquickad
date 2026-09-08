@@ -315,7 +315,7 @@
   "account.api_signup_unavailable": "O registo está temporariamente indisponível. Tente novamente mais tarde.",
   "account.api_login_invalid": "Introduza o seu email e palavra-passe.",
   "account.api_login_failed": "Falha ao iniciar sessão. Verifique os seus dados e a confirmação do email.",
-  "password.api_email_accepted": "Se este endereço for elegível, será enviado um e-mail de senha. Verifique sua caixa de entrada e a pasta de spam e use o link mais recente. Uma solicitação anterior talvez já tenha enviado um.",
+  "password.api_email_accepted": "E-mail de senha enviado. Verifique sua caixa de entrada e a pasta de spam e use o link mais recente.",
   "password.api_invalid_link": "Este link é inválido ou expirou. Solicite um novo e-mail de senha abaixo.",
   "password.api_unavailable": "O serviço de senha está temporariamente indisponível. Tente novamente mais tarde.",
   "password.api_email_invalid": "Digite um endereço de e-mail válido.",

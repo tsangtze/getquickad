@@ -324,7 +324,7 @@
   "account.api_signup_unavailable": "Die Registrierung ist vorübergehend nicht verfügbar. Bitte versuche es später erneut.",
   "account.api_login_invalid": "Gib deine E-Mail-Adresse und dein Passwort ein.",
   "account.api_login_failed": "Die Anmeldung ist fehlgeschlagen. Prüfe deine Angaben und die E-Mail-Bestätigung.",
-  "password.api_email_accepted": "Wenn diese Adresse berechtigt ist, wird eine Passwort-E-Mail gesendet. Prüfe deinen Posteingang und Spam-Ordner und verwende den neuesten Link. Möglicherweise wurde durch eine frühere Anfrage bereits eine E-Mail gesendet.",
+  "password.api_email_accepted": "Passwort-E-Mail gesendet. Prüfe deinen Posteingang und Spam-Ordner und verwende den neuesten Link.",
   "password.api_invalid_link": "Dieser Link ist ungültig oder abgelaufen. Fordere unten eine neue Passwort-E-Mail an.",
   "password.api_unavailable": "Der Passwortdienst ist vorübergehend nicht verfügbar. Versuche es später erneut.",
   "password.api_email_invalid": "Gib eine gültige E-Mail-Adresse ein.",

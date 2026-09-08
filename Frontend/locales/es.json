@@ -335,7 +335,7 @@
   "account.api_signup_unavailable": "El registro no está disponible temporalmente. Inténtalo de nuevo más tarde.",
   "account.api_login_invalid": "Introduce tu correo electrónico y contraseña.",
   "account.api_login_failed": "No se pudo iniciar sesión. Comprueba tus datos y la confirmación de tu correo.",
-  "password.api_email_accepted": "Si esta dirección cumple los requisitos, se enviará un correo para restablecer la contraseña. Revisa tu bandeja de entrada y la carpeta de spam, y usa el enlace más reciente. Es posible que una solicitud anterior ya haya enviado uno.",
+  "password.api_email_accepted": "Correo de contraseña enviado. Revisa tu bandeja de entrada y la carpeta de spam, y usa el enlace más reciente.",
   "password.api_invalid_link": "Este enlace no es válido o ha caducado. Solicita un nuevo correo de contraseña a continuación.",
   "password.api_unavailable": "El servicio de contraseñas no está disponible temporalmente. Inténtalo de nuevo más tarde.",
   "password.api_email_invalid": "Introduce una dirección de correo electrónico válida.",

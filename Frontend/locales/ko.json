@@ -309,7 +309,7 @@
   "account.api_signup_unavailable": "가입을 일시적으로 사용할 수 없습니다. 나중에 다시 시도해 주세요.",
   "account.api_login_invalid": "이메일과 비밀번호를 입력해 주세요.",
   "account.api_login_failed": "로그인에 실패했습니다. 입력 정보와 이메일 확인 상태를 확인해 주세요.",
-  "password.api_email_accepted": "이 주소가 대상인 경우 비밀번호 이메일이 전송됩니다. 받은편지함과 스팸 폴더를 확인하고 가장 최근 링크를 사용하세요. 이전 요청으로 이미 이메일이 전송되었을 수 있습니다.",
+  "password.api_email_accepted": "비밀번호 이메일을 보냈습니다. 받은편지함과 스팸 폴더를 확인하고 가장 최근의 링크를 사용하세요.",
   "password.api_invalid_link": "이 링크는 유효하지 않거나 만료되었습니다. 아래에서 새 비밀번호 이메일을 요청하세요.",
   "password.api_unavailable": "비밀번호 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도하세요.",
   "password.api_email_invalid": "유효한 이메일 주소를 입력하세요.",

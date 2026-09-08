@@ -324,7 +324,7 @@
   "account.api_signup_unavailable": "L’inscription est temporairement indisponible. Réessayez plus tard.",
   "account.api_login_invalid": "Saisissez votre e-mail et votre mot de passe.",
   "account.api_login_failed": "Échec de la connexion. Vérifiez vos informations et la confirmation de votre e-mail.",
-  "password.api_email_accepted": "Si cette adresse est éligible, un e-mail de mot de passe sera envoyé. Vérifiez votre boîte de réception et vos courriers indésirables, puis utilisez le lien le plus récent. Une demande précédente a peut-être déjà envoyé un e-mail.",
+  "password.api_email_accepted": "E-mail de mot de passe envoyé. Vérifiez votre boîte de réception et votre dossier spam, puis utilisez le lien le plus récent.",
   "password.api_invalid_link": "Ce lien est invalide ou a expiré. Demandez un nouvel e-mail de mot de passe ci-dessous.",
   "password.api_unavailable": "Le service de mot de passe est temporairement indisponible. Réessayez plus tard.",
   "password.api_email_invalid": "Saisissez une adresse e-mail valide.",

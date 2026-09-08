@@ -324,7 +324,7 @@
   "account.api_signup_unavailable": "La registrazione è temporaneamente non disponibile. Riprova più tardi.",
   "account.api_login_invalid": "Inserisci email e password.",
   "account.api_login_failed": "Accesso non riuscito. Controlla i dati e la conferma dell’email.",
-  "password.api_email_accepted": "Se questo indirizzo è idoneo, verrà inviata un’e-mail per la password. Controlla la posta in arrivo e la cartella spam e usa il link più recente. Una richiesta precedente potrebbe averne già inviata una.",
+  "password.api_email_accepted": "E-mail per la password inviata. Controlla la posta in arrivo e la cartella spam e usa il link più recente.",
   "password.api_invalid_link": "Questo link non è valido o è scaduto. Richiedi una nuova e-mail per la password qui sotto.",
   "password.api_unavailable": "Il servizio password è temporaneamente non disponibile. Riprova più tardi.",
   "password.api_email_invalid": "Inserisci un indirizzo e-mail valido.",
