@@ -16,6 +16,30 @@ const persistentSessionMilliseconds =
 const signupPasswordMinimumLength = 8;
 const signupPasswordMaximumLength = 1024;
 
+const signupEmailLanguages = new Set([
+  "en",
+  "es",
+  "pt",
+  "fr",
+  "de",
+  "it",
+  "ja",
+  "ko",
+  "zh",
+  "zh-TW",
+  "tr",
+  "hi"
+]);
+
+function signupEmailLanguage(value) {
+  return (
+    typeof value === "string" &&
+    signupEmailLanguages.has(value)
+  )
+    ? value
+    : "en";
+}
+
 function validSignupPassword(password) {
   return (
     typeof password === "string" &&
@@ -413,6 +437,8 @@ export function createAuthRouter() {
   router.post("/signup", signupLimiter, async (request, response) => {
     const email = request.body?.email;
     const password = request.body?.password;
+    const language =
+      signupEmailLanguage(request.body?.language);
 
     if (
       typeof email !== "string" ||
@@ -446,7 +472,10 @@ export function createAuthRouter() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${origin.origin}/`
+          emailRedirectTo: `${origin.origin}/`,
+          data: {
+            language
+          }
         }
       });
 

@@ -320,10 +320,20 @@
       : accountText("account.signing_in", "Signing in...");
 
     try {
-      const { response, data } = await request(signupMode ? "signup" : "login", {
+      const authPayload = {
         email: emailInput.value.trim(),
         password: passwordInput.value
-      });
+      };
+
+      if (signupMode) {
+        authPayload.language =
+          window.QuickAdI18n?.currentLang || "en";
+      }
+
+      const { response, data } = await request(
+        signupMode ? "signup" : "login",
+        authPayload
+      );
 
       if (signupMode && response.status === 202 && data.ok) {
         setMode(false);
