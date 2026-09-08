@@ -66,14 +66,25 @@ test("password update uses verified user bearer credentials and clears browser c
   const f = fixture(), r = f.response();
   await f.handlers.update({ body: { accessToken: token, password, email: "other@example.com" } }, r);
   assert.equal(r.body.ok, true);
-  assert.deepEqual(f.calls.map(c => c[0]), ["verify", "put", "clear"]);
+  assert.deepEqual(f.calls.map(c => c[0]), ["verify", "put", "clear", "clear"]);
   const put = f.calls[1];
   assert.equal(put[1], "https://example.supabase.co/auth/v1/user");
   assert.equal(put[2].headers.Authorization, `Bearer ${token}`);
   assert.deepEqual(JSON.parse(put[2].body), { password });
   assert(!JSON.stringify(r.body).includes(token));
   assert(!JSON.stringify(r.body).includes(password));
-  assert.equal(f.calls[2][1], "quickad_access");
+  const clearedCookies =
+    f.calls
+      .filter((call) => call[0] === "clear")
+      .map((call) => call[1]);
+
+  assert.deepEqual(
+    clearedCookies,
+    [
+      "quickad_access",
+      "quickad_refresh"
+    ]
+  );
 });
 test("weak or same passwords are actionable, while failed updates clear no cookie", async () => {
   const f = fixture(); f.state.putStatus = 422;

@@ -91,9 +91,22 @@ export function createPasswordHandlers({ createAuthClient, authConfiguration, fe
         if (data.id !== user.id) return response.status(503).json(unavailable);
         // Do not create a login session or return credentials here.
         const appOrigin = new URL(config.applicationOrigin);
-        response.clearCookie("quickad_access", {
-          httpOnly: true, secure: appOrigin.protocol === "https:", sameSite: "lax", path: "/"
-        });
+        const loginCookieOptions = {
+          httpOnly: true,
+          secure: appOrigin.protocol === "https:",
+          sameSite: "lax",
+          path: "/"
+        };
+
+        response.clearCookie(
+          "quickad_access",
+          loginCookieOptions
+        );
+
+        response.clearCookie(
+          "quickad_refresh",
+          loginCookieOptions
+        );
         return response.json({ ok: true, code: "PASSWORD_SAVED", message: "Password saved. Return to QuickAd AI and sign in with your new password." });
       } catch {
         return response.status(503).json({ ok: false, code: "PASSWORD_CHANGE_UNCERTAIN", error: "The password change could not be confirmed. Try signing in with your new password before requesting another link." });

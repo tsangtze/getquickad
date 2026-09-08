@@ -7,7 +7,11 @@ import {
   createAuthClient
 } from "./authService.mjs";
 
-const cookieName = "quickad_access";
+const accessCookieName = "quickad_access";
+const refreshCookieName = "quickad_refresh";
+
+const persistentSessionMilliseconds =
+  30 * 24 * 60 * 60 * 1000;
 
 function cookieOptions() {
   const origin = new URL(authConfiguration().applicationOrigin);
@@ -27,8 +31,64 @@ function cookieOptions() {
   };
 }
 
+function writeLogin(response, session) {
+  if (
+    typeof session?.access_token !== "string" ||
+    !session.access_token ||
+    typeof session?.refresh_token !== "string" ||
+    !session.refresh_token
+  ) {
+    throw new Error("Invalid authentication session.");
+  }
+
+  const expiresAt =
+    Number(session.expires_at);
+
+  const nowSeconds =
+    Math.floor(Date.now() / 1000);
+
+  const accessLifetimeMilliseconds =
+    (expiresAt - nowSeconds) * 1000;
+
+  if (
+    !Number.isFinite(expiresAt) ||
+    !Number.isFinite(accessLifetimeMilliseconds) ||
+    accessLifetimeMilliseconds <= 0
+  ) {
+    throw new Error("Invalid authentication session expiry.");
+  }
+
+  response.cookie(
+    accessCookieName,
+    session.access_token,
+    {
+      ...cookieOptions(),
+      maxAge: accessLifetimeMilliseconds
+    }
+  );
+
+  response.cookie(
+    refreshCookieName,
+    session.refresh_token,
+    {
+      ...cookieOptions(),
+      maxAge: persistentSessionMilliseconds
+    }
+  );
+}
+
 function clearLogin(response) {
-  response.clearCookie(cookieName, cookieOptions());
+  const options = cookieOptions();
+
+  response.clearCookie(
+    accessCookieName,
+    options
+  );
+
+  response.clearCookie(
+    refreshCookieName,
+    options
+  );
 }
 
 function publicUser(user) {
@@ -38,12 +98,29 @@ function publicUser(user) {
   };
 }
 
-export async function requireUser(request, response, next) {
+export async function requireUser(
+  request,
+  response,
+  next,
+  authClientFactory = createAuthClient
+) {
   response.set("Cache-Control", "no-store");
 
-  const token = request.cookies?.[cookieName];
+  const accessToken =
+    request.cookies?.[accessCookieName];
 
-  if (typeof token !== "string" || !token) {
+  const refreshToken =
+    request.cookies?.[refreshCookieName];
+
+  const hasAccessToken =
+    typeof accessToken === "string" &&
+    Boolean(accessToken);
+
+  const hasRefreshToken =
+    typeof refreshToken === "string" &&
+    Boolean(refreshToken);
+
+  if (!hasAccessToken && !hasRefreshToken) {
     return response.status(401).json({
       ok: false,
       code: "AUTH_SIGN_IN_REQUIRED",
@@ -52,13 +129,60 @@ export async function requireUser(request, response, next) {
   }
 
   try {
-    const client = createAuthClient();
-    const { data, error } = await client.auth.getUser(token);
+    const client = authClientFactory();
 
-    if (error) {
-      if (error.status === 400 || error.status === 401 ||
-          error.status === 403) {
+    if (hasAccessToken) {
+      const {
+        data,
+        error
+      } = await client.auth.getUser(accessToken);
+
+      if (!error && data.user) {
+        request.authUser =
+          publicUser(data.user);
+
+        return next();
+      }
+
+      if (
+        error &&
+        error.status !== 400 &&
+        error.status !== 401 &&
+        error.status !== 403
+      ) {
+        return response.status(503).json({
+          ok: false,
+          code: "AUTH_UNAVAILABLE",
+          error: "Authentication is temporarily unavailable."
+        });
+      }
+    }
+
+    if (!hasRefreshToken) {
+      clearLogin(response);
+
+      return response.status(401).json({
+        ok: false,
+        code: "AUTH_SESSION_EXPIRED",
+        error: "Your session has expired. Please sign in again."
+      });
+    }
+
+    const {
+      data: refreshData,
+      error: refreshError
+    } = await client.auth.refreshSession({
+      refresh_token: refreshToken
+    });
+
+    if (refreshError) {
+      if (
+        refreshError.status === 400 ||
+        refreshError.status === 401 ||
+        refreshError.status === 403
+      ) {
         clearLogin(response);
+
         return response.status(401).json({
           ok: false,
           code: "AUTH_SESSION_EXPIRED",
@@ -73,25 +197,44 @@ export async function requireUser(request, response, next) {
       });
     }
 
-    if (!data.user) {
+    if (
+      !refreshData.session ||
+      !refreshData.user
+    ) {
       clearLogin(response);
+
       return response.status(401).json({
         ok: false,
-        code: "AUTH_SIGN_IN_REQUIRED",
-        error: "Please sign in again."
+        code: "AUTH_SESSION_EXPIRED",
+        error: "Your session has expired. Please sign in again."
       });
     }
 
-    request.authUser = publicUser(data.user);
-    next();
+    writeLogin(
+      response,
+      refreshData.session
+    );
+
+    request.authUser =
+      publicUser(refreshData.user);
+
+    return next();
   } catch {
-    response.status(503).json({
+    return response.status(503).json({
       ok: false,
       code: "AUTH_UNAVAILABLE",
       error: "Authentication is temporarily unavailable."
     });
   }
 }
+
+export const __persistentAuthTestHelpers = {
+  accessCookieName,
+  refreshCookieName,
+  persistentSessionMilliseconds,
+  writeLogin,
+  clearLogin
+};
 
 export function createAuthRouter() {
   const router = express.Router();
@@ -317,17 +460,10 @@ export function createAuthRouter() {
         });
       }
 
-      const remainingSeconds =
-        data.session.expires_at - Math.floor(Date.now() / 1000);
-
-      if (!Number.isFinite(remainingSeconds) || remainingSeconds <= 0) {
-        throw new Error("Invalid session expiry.");
-      }
-
-      response.cookie(cookieName, data.session.access_token, {
-        ...cookieOptions(),
-        maxAge: remainingSeconds * 1000
-      });
+      writeLogin(
+        response,
+        data.session
+      );
 
       response.json({
         ok: true,
