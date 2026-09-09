@@ -2973,7 +2973,7 @@ form.addEventListener("submit", async (event) => {
     successDetails.textContent =
       uiText("result.project_prefix", `Project ${shortProjectId} • `, { id: shortProjectId }) +
       `"${result.storyboard.title}" • ` +
-      `${sceneCount} scenes • ` +
+      uiText("result.scenes_prefix", `${sceneCount} scenes • `, { count: sceneCount }) +
       uiText("video.duration_seconds", `${result.storyboard.totalDurationSeconds} seconds`, { seconds: result.storyboard.totalDurationSeconds });
     const successNext =
       document.createElement("span");
