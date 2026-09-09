@@ -34,7 +34,9 @@ import {
 } from "./videoRenderer.mjs";
 import { r2Client, R2_BUCKET } from "./r2Client.mjs";
 import {
-  canStorePaidRecoverableVideo
+  canStorePaidRecoverableVideo,
+  listRecoverableVideos,
+  deleteProjectR2Objects
 } from "./cleanup.mjs";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
@@ -1107,6 +1109,88 @@ export async function createProjectRouter({
 
 
   router.get(
+    "/videos/recoverable",
+    async (request, response, next) => {
+      try {
+        const recoverable =
+          await listRecoverableVideos(
+            projectRoot,
+            request.authUser.id
+          );
+
+        const videos =
+          recoverable.map(
+            ({
+              project,
+              readyAt,
+              expiresAt
+            }) => {
+              const firstImage =
+                Array.isArray(
+                  project.assets?.productImages
+                )
+                  ? project.assets.productImages[0]
+                  : null;
+
+              const storedName =
+                String(
+                  firstImage?.storedName ?? ""
+                );
+
+              const projectId =
+                String(project.id);
+
+              const title =
+                String(
+                  project.title ??
+                  project.productName ??
+                  project.name ??
+                  project.description ??
+                  "QuickAd Video"
+                ).trim() ||
+                "QuickAd Video";
+
+              return {
+                projectId,
+                title,
+                readyAt:
+                  new Date(
+                    readyAt
+                  ).toISOString(),
+                expiresAt:
+                  new Date(
+                    expiresAt
+                  ).toISOString(),
+                thumbnailUrl:
+                  storedName
+                    ? `/api/projects/${encodeURIComponent(
+                        projectId
+                      )}/assets/${encodeURIComponent(
+                        storedName
+                      )}`
+                    : null,
+                watchUrl:
+                  `/api/projects/${encodeURIComponent(
+                    projectId
+                  )}/video`,
+                downloadUrl:
+                  `/api/projects/${encodeURIComponent(
+                    projectId
+                  )}/video?download=1`
+              };
+            }
+          );
+
+        response.json({
+          ok: true,
+          videos
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+  router.get(
     "/:projectId/assets/:storedName",
     async (request, response) => {
       const projectId =
@@ -1363,6 +1447,92 @@ export async function createProjectRouter({
         next(error);
       }
     })
+  );
+  router.delete(
+    "/:projectId/video",
+    async (request, response, next) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      const projectDirectory =
+        path.join(
+          projectsDirectory,
+          projectId
+        );
+
+      try {
+        const project =
+          JSON.parse(
+            await fs.readFile(
+              path.join(
+                projectDirectory,
+                "project.json"
+              ),
+              "utf8"
+            )
+          );
+
+        if (
+          project?.id !== projectId ||
+          project?.ownerId !== request.authUser.id
+        ) {
+          return response.status(404).json({
+            ok: false,
+            code: "PROJECT_NOT_FOUND",
+            error: "Project not found."
+          });
+        }
+
+        const readyAt =
+          Date.parse(project.video?.readyAt);
+
+        const expiresAt =
+          Date.parse(project.video?.expiresAt);
+
+        if (
+          project.status !== "video_ready" ||
+          !project.video ||
+          !Number.isFinite(readyAt) ||
+          !Number.isFinite(expiresAt) ||
+          expiresAt <= Date.now()
+        ) {
+          return response.status(409).json({
+            ok: false,
+            code: "VIDEO_NOT_RECOVERABLE",
+            error:
+              "This video is not available for recovery."
+          });
+        }
+
+        await deleteProjectR2Objects(
+          request.authUser.id,
+          projectId
+        );
+
+        await fs.rm(
+          projectDirectory,
+          {
+            recursive: true,
+            force: true
+          }
+        );
+
+        return response.status(200).json({
+          ok: true,
+          deletedProjectId: projectId
+        });
+      } catch (error) {
+        if (error?.code === "ENOENT") {
+          return response.status(404).json({
+            ok: false,
+            code: "PROJECT_NOT_FOUND",
+            error: "Project not found."
+          });
+        }
+
+        next(error);
+      }
+    }
   );
   router.get(
     "/:projectId/video",

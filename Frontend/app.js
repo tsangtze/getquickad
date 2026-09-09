@@ -179,6 +179,592 @@ const ALLOWED_TYPES = new Set([
   "image/webp"
 ]);
 
+const createVideoNav =
+  document.querySelector("#create-video-nav");
+
+const myVideosNav =
+  document.querySelector("#my-videos-nav");
+
+const createView =
+  document.querySelector("#create-view");
+
+const myVideosView =
+  document.querySelector("#my-videos-view");
+
+const myVideosContent =
+  document.querySelector("#my-videos-content");
+
+let myVideosLoadPromise = null;
+
+function formatRecoveryTimeRemaining(expiresAt) {
+  const expiration =
+    new Date(expiresAt);
+
+  if (Number.isNaN(expiration.getTime())) {
+    return null;
+  }
+
+  const remainingMs =
+    expiration.getTime() - Date.now();
+
+  if (remainingMs <= 0) {
+    return { expired: true, hours: 0, minutes: 0 };
+  }
+
+  const totalMinutes =
+    Math.ceil(remainingMs / 60000);
+
+  const hours =
+    Math.floor(totalMinutes / 60);
+
+  const minutes =
+    totalMinutes % 60;
+
+  return { expired: false, hours, minutes };
+}
+
+function renderRecoverableVideos(videos) {
+  if (!myVideosContent) {
+    return;
+  }
+
+  myVideosContent.replaceChildren();
+
+  if (!Array.isArray(videos) || videos.length === 0) {
+    const empty =
+      document.createElement("p");
+
+    empty.id = "my-videos-placeholder";
+    empty.textContent =
+      uiText("videos.empty", "You do not have any videos available for recovery.");
+
+    myVideosContent.append(empty);
+    return;
+  }
+
+  const list =
+    document.createElement("div");
+
+  list.id = "my-videos-list";
+
+  for (const video of videos) {
+    const item =
+      document.createElement("article");
+
+    item.className = "my-video-item";
+    item.dataset.projectId =
+      String(video.projectId ?? "");
+
+    const thumbnail =
+      document.createElement("div");
+
+    thumbnail.className =
+      "my-video-thumbnail";
+
+    const thumbnailUrl =
+      String(video.thumbnailUrl ?? "").trim();
+
+    if (thumbnailUrl) {
+      const image =
+        document.createElement("img");
+
+      image.src = thumbnailUrl;
+      image.alt = "";
+      image.loading = "lazy";
+
+      image.addEventListener(
+        "error",
+        () => {
+          image.remove();
+
+          const fallback =
+            document.createElement("span");
+
+          fallback.className =
+            "my-video-thumbnail-fallback";
+
+          fallback.textContent =
+            "QuickAd AI";
+
+          thumbnail.append(fallback);
+        },
+        {
+          once: true
+        }
+      );
+
+      thumbnail.append(image);
+    } else {
+      const fallback =
+        document.createElement("span");
+
+      fallback.className =
+        "my-video-thumbnail-fallback";
+
+      fallback.textContent =
+        "QuickAd AI";
+
+      thumbnail.append(fallback);
+    }
+
+    const details =
+      document.createElement("div");
+
+    details.className =
+      "my-video-details";
+
+    const title =
+      document.createElement("h2");
+
+    title.className =
+      "my-video-title";
+
+    title.textContent =
+      String(video.title ?? "").trim() ||
+      "QuickAd Video";
+
+    const created =
+      document.createElement("p");
+
+    created.className =
+      "my-video-meta";
+
+    const readyAt =
+      new Date(video.readyAt);
+
+    created.textContent =
+      Number.isNaN(readyAt.getTime())
+        ? uiText("videos.created", "Created")
+        : uiText("videos.created_at", "Created: {date}", { date: readyAt.toLocaleString() });
+
+    const expires =
+      document.createElement("p");
+
+    expires.className =
+      "my-video-meta";
+
+    const recoveryTime =
+      formatRecoveryTimeRemaining(
+        video.expiresAt
+      );
+
+    expires.textContent =
+      recoveryTime === null
+        ? uiText(
+            "videos.expiration_unavailable",
+            "Recovery expiration unavailable"
+          )
+        : recoveryTime.expired
+          ? uiText("videos.expired", "Expired")
+          : uiText(
+              "videos.available_for",
+              "Available for: {hours}h {minutes}m",
+              {
+                hours: recoveryTime.hours,
+                minutes: recoveryTime.minutes
+              }
+            );
+
+    const actions =
+      document.createElement("div");
+
+    actions.className =
+      "my-video-actions";
+
+    const watchUrl =
+      String(video.watchUrl ?? "").trim();
+
+    if (watchUrl) {
+      const watch =
+        document.createElement("a");
+
+      watch.className =
+        "my-video-action";
+
+      watch.href = watchUrl;
+      watch.target = "_blank";
+      watch.rel = "noopener";
+      watch.textContent = uiText("result.watch", "Watch Video");
+
+      actions.append(watch);
+    }
+
+    const downloadUrl =
+      String(video.downloadUrl ?? "").trim();
+
+    if (downloadUrl) {
+      const download =
+        document.createElement("a");
+
+      download.className =
+        "my-video-action";
+
+      download.href = downloadUrl;
+      download.textContent =
+        uiText("result.download", "Download MP4");
+
+      actions.append(download);
+    }
+
+    const projectId =
+      String(video.projectId ?? "").trim();
+
+    if (projectId) {
+      const deleteButton =
+        document.createElement("button");
+
+      deleteButton.type = "button";
+      deleteButton.className =
+        "my-video-action my-video-delete";
+      deleteButton.textContent =
+        uiText("videos.delete", "Delete");
+
+      deleteButton.addEventListener(
+        "click",
+        () => {
+          void deleteRecoverableVideo(
+            projectId,
+            title.textContent
+          );
+        }
+      );
+
+      actions.append(deleteButton);
+    }
+
+    details.append(
+      title,
+      created,
+      expires,
+      actions
+    );
+
+    item.append(
+      thumbnail,
+      details
+    );
+
+    list.append(item);
+  }
+
+  myVideosContent.append(list);
+}
+
+async function deleteRecoverableVideo(projectId, title) {
+  const id = String(projectId ?? "").trim();
+
+  if (!id) {
+    return;
+  }
+
+  const videoTitle =
+    String(title ?? "").trim() ||
+    uiText(
+      "videos.this_video",
+      "this video"
+    );
+
+  const confirmed =
+    window.confirm(
+      uiText(
+        "videos.delete_confirm",
+        `Delete "{title}"?
+
+This video will be permanently deleted and cannot be recovered.
+
+Deleting it does not refund credits or restore a free video.`,
+        { title: videoTitle }
+      )
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const response =
+      await fetch(
+        `/api/projects/${encodeURIComponent(id)}/video`,
+        {
+          method: "DELETE",
+          credentials: "same-origin",
+          cache: "no-store"
+        }
+      );
+
+    const payload =
+      await response.json().catch(() => null);
+
+    if (!response.ok || !payload?.ok) {
+      throw new Error(
+        payload?.error ||
+          uiText("videos.delete_failed", "Unable to delete this video.")
+      );
+    }
+
+    await loadRecoverableVideos();
+  } catch (error) {
+    console.error(
+      "Unable to delete recoverable video:",
+      error
+    );
+
+    window.alert(
+      error?.message ||
+        uiText("videos.delete_retry", "Unable to delete this video. Please try again.")
+    );
+  }
+}
+
+async function loadRecoverableVideos() {
+  if (!myVideosContent) {
+    return;
+  }
+
+  myVideosContent.replaceChildren();
+
+  const loading =
+    document.createElement("p");
+
+  loading.id = "my-videos-placeholder";
+  loading.textContent =
+    "Loading your videos...";
+
+  myVideosContent.append(loading);
+
+  try {
+    const response =
+      await fetch(
+        "/api/projects/videos/recoverable",
+        {
+          credentials: "same-origin",
+          cache: "no-store"
+        }
+      );
+
+    const payload =
+      await response.json().catch(
+        () => null
+      );
+
+    if (
+      !response.ok ||
+      !payload?.ok ||
+      !Array.isArray(payload.videos)
+    ) {
+      throw new Error(
+        payload?.error ||
+          "Unable to load your videos."
+      );
+    }
+
+    renderRecoverableVideos(
+      payload.videos
+    );
+  } catch (error) {
+    console.error(
+      "Unable to load recoverable videos:",
+      error
+    );
+
+    myVideosContent.replaceChildren();
+
+    const failure =
+      document.createElement("p");
+
+    failure.id = "my-videos-placeholder";
+    failure.textContent =
+      "Unable to load your videos. Please try again.";
+
+    myVideosContent.append(failure);
+  }
+}
+
+function ensureRecoverableVideosLoaded() {
+  if (!myVideosLoadPromise) {
+    myVideosLoadPromise =
+      loadRecoverableVideos()
+        .finally(() => {
+          myVideosLoadPromise = null;
+        });
+  }
+
+  return myVideosLoadPromise;
+}
+
+function showCreateVideoView({
+  updateHistory = true
+} = {}) {
+  if (!createView || !myVideosView) {
+    return;
+  }
+
+  createView.hidden = false;
+  myVideosView.hidden = true;
+
+  createVideoNav?.classList.add("active");
+  myVideosNav?.classList.remove("active");
+
+  if (
+    updateHistory &&
+    window.location.hash === "#my-videos"
+  ) {
+    window.history.pushState(
+      null,
+      "",
+      window.location.pathname +
+        window.location.search
+    );
+  }
+}
+
+function showMyVideosView({
+  updateHistory = true
+} = {}) {
+  if (!createView || !myVideosView) {
+    return;
+  }
+
+  createView.hidden = true;
+  myVideosView.hidden = false;
+
+  createVideoNav?.classList.remove("active");
+  myVideosNav?.classList.add("active");
+
+  void ensureRecoverableVideosLoaded();
+
+  if (
+    updateHistory &&
+    window.location.hash !== "#my-videos"
+  ) {
+    window.history.pushState(
+      null,
+      "",
+      "#my-videos"
+    );
+  }
+}
+
+createVideoNav?.addEventListener(
+  "click",
+  event => {
+    if (
+      window.location.pathname === "/" ||
+      window.location.pathname === "/index.html"
+    ) {
+      event.preventDefault();
+      showCreateVideoView();
+    }
+  }
+);
+
+myVideosNav?.addEventListener(
+  "click",
+  event => {
+    event.preventDefault();
+    showMyVideosView();
+  }
+);
+
+window.addEventListener(
+  "popstate",
+  () => {
+    if (window.location.hash === "#my-videos") {
+      showMyVideosView({
+        updateHistory: false
+      });
+      return;
+    }
+
+    showCreateVideoView({
+      updateHistory: false
+    });
+  }
+);
+
+if (window.location.hash === "#my-videos") {
+  showMyVideosView({
+    updateHistory: false
+  });
+}
+
+const videoRecoveryLimitDialog =
+  document.querySelector(
+    "#video-recovery-limit-dialog"
+  );
+
+const videoRecoveryLimitTitle =
+  document.querySelector(
+    "#video-recovery-limit-title"
+  );
+
+const videoRecoveryLimitMessage =
+  document.querySelector(
+    "#video-recovery-limit-message"
+  );
+
+const videoRecoveryLimitCancel =
+  document.querySelector(
+    "#video-recovery-limit-cancel"
+  );
+
+const videoRecoveryLimitManage =
+  document.querySelector(
+    "#video-recovery-limit-manage"
+  );
+
+function showVideoRecoveryLimitDialog(limit = 10) {
+  const safeLimit =
+    Number.isFinite(Number(limit)) &&
+    Number(limit) > 0
+      ? Number(limit)
+      : 10;
+
+  if (
+    !videoRecoveryLimitDialog ||
+    typeof videoRecoveryLimitDialog.showModal !==
+      "function"
+  ) {
+    return;
+  }
+
+  if (videoRecoveryLimitTitle) {
+    videoRecoveryLimitTitle.textContent =
+      uiText(
+        "videos.limit_title",
+        "Video storage limit reached"
+      );
+  }
+
+  if (videoRecoveryLimitMessage) {
+    videoRecoveryLimitMessage.textContent =
+      uiText(
+        "videos.limit_message",
+        "You already have {limit} videos available for recovery. Delete one video from My Videos before creating another.",
+        { limit: safeLimit }
+      );
+  }
+
+  if (!videoRecoveryLimitDialog.open) {
+    videoRecoveryLimitDialog.showModal();
+  }
+}
+
+videoRecoveryLimitCancel?.addEventListener(
+  "click",
+  () => {
+    videoRecoveryLimitDialog?.close();
+  }
+);
+
+videoRecoveryLimitManage?.addEventListener(
+  "click",
+  () => {
+    videoRecoveryLimitDialog?.close();
+    showMyVideosView();
+  }
+);
+
 const form = document.querySelector("#video-form");
 const imageInput = document.querySelector("#product-images");
 const logoInput = document.querySelector("#product-logo");
@@ -1887,6 +2473,18 @@ finalVideoButton.addEventListener(
         await response.json();
 
       if (!response.ok || !result.ok) {
+        if (
+          result?.code ===
+          "VIDEO_RECOVERY_LIMIT_REACHED"
+        ) {
+          const limit =
+            Number(result?.recovery?.limit) ||
+            10;
+
+          showVideoRecoveryLimitDialog(limit);
+          return;
+        }
+
         throw new Error(
           localizedApiError(result) ||
           uiText(

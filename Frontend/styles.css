@@ -1980,3 +1980,205 @@ input::placeholder {
     border-radius: 19px;
   }
 }
+
+/* My Videos */
+#my-videos-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.my-video-item {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.my-video-thumbnail {
+  position: relative;
+  display: flex;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.my-video-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.my-video-thumbnail-fallback {
+  padding: 20px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.my-video-details {
+  padding: 18px;
+}
+
+.my-video-title {
+  margin: 0 0 10px;
+  font-size: 19px;
+  line-height: 1.3;
+}
+
+.my-video-meta {
+  margin: 4px 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.my-video-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.my-video-action {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.my-video-action:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.my-video-delete {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.my-video-delete:hover {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+@media (max-width: 700px) {
+  #my-videos-list {
+    grid-template-columns: 1fr;
+  }
+}
+/* Recovery limit dialog */
+
+.quickad-dialog {
+  width: min(520px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  color: #202235;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(30, 32, 55, 0.24);
+}
+
+.quickad-dialog::backdrop {
+  background: rgba(28, 30, 48, 0.5);
+  backdrop-filter: blur(3px);
+}
+
+.quickad-dialog-panel {
+  padding: 28px;
+}
+
+.quickad-dialog-panel h2 {
+  margin: 0;
+  color: #202235;
+  font-size: 1.35rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.quickad-dialog-panel p {
+  margin: 14px 0 0;
+  color: #62677a;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.quickad-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.quickad-dialog-button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.quickad-dialog-button:hover {
+  transform: translateY(-1px);
+}
+
+.quickad-dialog-button:focus-visible {
+  outline: 3px solid rgba(102, 86, 255, 0.24);
+  outline-offset: 2px;
+}
+
+.quickad-dialog-button-secondary {
+  border-color: #dfe3ec;
+  color: #45495b;
+  background: #ffffff;
+}
+
+.quickad-dialog-button-secondary:hover {
+  border-color: #cbd1dd;
+  background: #f7f8fb;
+}
+
+.quickad-dialog-button-primary {
+  border-color: #6656ff;
+  color: #ffffff;
+  background: #6656ff;
+}
+
+.quickad-dialog-button-primary:hover {
+  border-color: #5142df;
+  background: #5142df;
+}
+
+@media (max-width: 520px) {
+  .quickad-dialog-panel {
+    padding: 22px;
+  }
+
+  .quickad-dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .quickad-dialog-button {
+    width: 100%;
+  }
+}

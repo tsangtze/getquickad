@@ -23,13 +23,14 @@
     </a>
 
     <nav class="site-nav" aria-label="Main navigation" data-i18n-aria-label="nav.main">
-      <a class="active" href="/" data-i18n="nav.create">Create Video</a>
+      <a id="create-video-nav" class="active" href="/" data-i18n="nav.create">Create Video</a>
+      <a id="my-videos-nav" href="#my-videos" data-i18n="nav.videos">My Videos</a>
       <a href="/billing.html" data-i18n="nav.billing">Billing</a>
       <div id="lang-switcher" style="position:relative;display:inline-block"><button id="lang-current" type="button" style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:14px">🌐 English</button><div id="lang-dropdown" style="display:none;position:absolute;right:0;top:36px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:9999"><button data-lang="en" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇺🇸 English</button><button data-lang="es" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇲🇽 Español</button><button data-lang="pt" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇧🇷 Português</button><button data-lang="fr" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇫🇷 Français</button><button data-lang="de" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇩🇪 Deutsch</button><button data-lang="it" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">🇮🇹 Italiano</button><button data-lang="ja" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">JP 日本語</button><button data-lang="ko" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">KR 한국어</button><button data-lang="zh" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">CN 简体中文</button><button data-lang="zh-TW" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">TW 繁體中文</button><button data-lang="tr" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">TR Türkçe</button><button data-lang="hi" style="display:flex;width:100%;padding:10px 14px;border:0;background:transparent;cursor:pointer">IN हिन्दी</button></div></div><button class="account-button" type="button" data-i18n="nav.account">Account</button>
     </nav>
   </header>
 
-  <main class="page-shell">
+  <main id="create-view" class="page-shell">
     <section class="intro">
       <div>
         <p class="eyebrow" data-i18n="intro.eyebrow">Photos in. Ad out.</p>
@@ -524,6 +525,69 @@
     </section>
   </main>
 
+  <main
+    id="my-videos-view"
+    class="page-shell"
+    hidden
+    aria-labelledby="my-videos-heading"
+  >
+    <section class="intro">
+      <div>
+        <p class="eyebrow" data-i18n="videos.eyebrow">Your finished videos</p>
+        <h1 id="my-videos-heading" data-i18n="videos.title">My Videos</h1>
+        <p class="intro-copy" data-i18n="videos.intro">
+          Watch, download, or delete videos that are still available for recovery.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="my-videos-content"
+      aria-live="polite"
+    >
+      <p id="my-videos-placeholder" data-i18n="videos.placeholder">
+        Your recoverable videos will appear here.
+      </p>
+    </section>
+  </main>
+
+  <dialog
+    id="video-recovery-limit-dialog"
+    class="quickad-dialog"
+    aria-labelledby="video-recovery-limit-title"
+    aria-describedby="video-recovery-limit-message"
+  >
+    <div class="quickad-dialog-panel">
+      <h2 id="video-recovery-limit-title" data-i18n="videos.limit_title">
+        Video storage limit reached
+      </h2>
+
+      <p id="video-recovery-limit-message" data-i18n="videos.limit_message">
+        You already have 10 videos available for recovery.
+        Delete one video from My Videos before creating another.
+      </p>
+
+      <div class="quickad-dialog-actions">
+        <button
+          id="video-recovery-limit-cancel"
+          class="quickad-dialog-button quickad-dialog-button-secondary"
+          data-i18n="videos.cancel"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="video-recovery-limit-manage"
+          class="quickad-dialog-button quickad-dialog-button-primary"
+          data-i18n="videos.manage"
+          type="button"
+        >
+          Manage My Videos
+        </button>
+      </div>
+    </div>
+  </dialog>
   <footer class="site-footer">
     <span>QuickAd AI</span>
     <span data-i18n="footer.promise">Give us your photos. We give you the finished ad.</span>

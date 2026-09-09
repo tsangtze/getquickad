@@ -7,7 +7,8 @@ import crypto from "node:crypto";
 import {
   PAID_RECOVERABLE_VIDEO_LIMIT,
   countPaidRecoverableVideos,
-  canStorePaidRecoverableVideo
+  canStorePaidRecoverableVideo,
+  listRecoverableVideos
 } from "../cleanup.mjs";
 
 const now =
@@ -260,6 +261,58 @@ for (
   }
 }
 
+  // Version 1.1.8.39: My Videos must use the same recovery
+  // definition as the paid storage cap.
+  const recoverableVideos =
+    await listRecoverableVideos(
+      root,
+      ownerId,
+      { now }
+    );
+
+  assert.equal(
+    recoverableVideos.length,
+    9,
+    "Expected exactly 9 recoverable videos after the selected video was manually deleted."
+  );
+
+  assert.ok(
+    recoverableVideos.every(
+      ({ project, readyAt, expiresAt }) =>
+        project.ownerId === ownerId &&
+        project.status === "video_ready" &&
+        Number.isFinite(readyAt) &&
+        Number.isFinite(expiresAt) &&
+        expiresAt > now
+    ),
+    "Every listed video must belong to the requested owner and remain inside its recovery window."
+  );
+
+
+  assert.ok(
+    recoverableVideos.every(
+      ({ expiresAt }) =>
+        expiresAt > now
+    ),
+    "Expired videos must never appear in My Videos."
+  );
+
+  for (
+    let index = 1;
+    index < recoverableVideos.length;
+    index += 1
+  ) {
+    assert.ok(
+      recoverableVideos[index - 1].readyAt >=
+        recoverableVideos[index].readyAt,
+      "Recoverable videos must be sorted newest first."
+    );
+  }
+
+  console.log(
+    "PASS: Version 1.1.8.39 recoverable video list tests"
+  );
+
 await fs.rm(
   root,
   {
@@ -267,6 +320,8 @@ await fs.rm(
     force: true
   }
 );
+
+
 
 console.log(
   "PASS: Version 1.1.8.38 non-destructive paid recoverable video limit tests"

@@ -91,7 +91,7 @@ export async function deleteProjectR2Objects(
 
 export const PAID_RECOVERABLE_VIDEO_LIMIT = 10;
 
-export async function countPaidRecoverableVideos(
+export async function listRecoverableVideos(
   projectRoot,
   ownerId,
   {
@@ -110,13 +110,13 @@ export async function countPaidRecoverableVideos(
       });
   } catch (error) {
     if (error?.code === "ENOENT") {
-      return 0;
+      return [];
     }
 
     throw error;
   }
 
-  let count = 0;
+  const videos = [];
 
   for (const projectDir of projectDirs) {
     if (
@@ -162,18 +162,43 @@ export async function countPaidRecoverableVideos(
         continue;
       }
 
-      count += 1;
+      videos.push({
+        project,
+        readyAt,
+        expiresAt
+      });
     } catch (error) {
       console.warn(
-        `[cleanup] Skipping recovery-cap candidate ${projectDir.name}:`,
+        `[cleanup] Skipping recoverable-video candidate ${projectDir.name}:`,
         error?.message ?? error
       );
     }
   }
 
-  return count;
+  videos.sort(
+    (a, b) =>
+      b.readyAt - a.readyAt
+  );
+
+  return videos;
 }
 
+export async function countPaidRecoverableVideos(
+  projectRoot,
+  ownerId,
+  {
+    now = Date.now()
+  } = {}
+) {
+  const videos =
+    await listRecoverableVideos(
+      projectRoot,
+      ownerId,
+      { now }
+    );
+
+  return videos.length;
+}
 export async function canStorePaidRecoverableVideo(
   projectRoot,
   ownerId,
