@@ -12,9 +12,24 @@ const SUPPORTED_LANGS = {
   tr: { name: "Türkçe", flag: "TR" },
   hi: { name: "हिन्दी", flag: "IN" }
 };
-let currentLang = localStorage.getItem('quickad_lang');
+function getLanguageFromPath(){
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+
+  if(path === '/') return null;
+
+  const lang = path.slice(1);
+
+  return SUPPORTED_LANGS[lang] ? lang : null;
+}
+
+const pathLang = getLanguageFromPath();
+let currentLang = pathLang || localStorage.getItem('quickad_lang');
 let translations = {};
 let englishTranslations = {};
+
+if(pathLang){
+  localStorage.setItem('quickad_lang', pathLang);
+}
 
 function detectBrowserLang(){
   const browserLangs = Array.isArray(navigator.languages) && navigator.languages.length
