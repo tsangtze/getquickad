@@ -87,11 +87,29 @@ const projectRouter = await createProjectRouter({
 
 app.use("/api/projects", projectRouter);
 
-app.get("/", (_request, response) => {
+const localizedHomePaths = [
+  "/en/",
+  "/es/",
+  "/pt/",
+  "/fr/",
+  "/de/",
+  "/it/",
+  "/ja/",
+  "/ko/",
+  "/zh/",
+  "/zh-TW/",
+  "/tr/",
+  "/hi/"
+];
+
+function sendHomePage(_request, response) {
   response.sendFile(
     path.join(frontendPath, "index.html")
   );
-});
+}
+
+app.get("/", sendHomePage);
+app.get(localizedHomePaths, sendHomePage);
 
 app.use("/api", (_request, response) => {
   response.status(404).json({
