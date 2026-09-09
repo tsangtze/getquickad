@@ -1981,6 +1981,42 @@ input::placeholder {
   }
 }
 
+/* Version 1.1.8.40: keep the real-phone header inside the viewport. */
+@media (max-width: 580px) {
+  .site-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .site-nav {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto;
+    gap: 8px;
+  }
+
+  #lang-switcher {
+    min-width: 0;
+    margin-left: 0;
+  }
+
+  #lang-current {
+    max-width: 100%;
+    padding: 8px 10px !important;
+  }
+
+  .site-nav > .account-button {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .site-nav > a {
+    min-width: 0;
+  }
+}
 /* My Videos */
 #my-videos-list {
   display: grid;
