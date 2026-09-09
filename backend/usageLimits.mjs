@@ -558,6 +558,101 @@ export async function recordSuccessfulFinalVideo(
     }
   );
 }
+export async function rollbackSuccessfulFinalVideo(
+  projectRoot,
+  userId,
+  {
+    planId,
+    creditCost = 0
+  } = {}
+) {
+  return withUserUsageMutationLock(
+    projectRoot,
+    userId,
+    async () => {
+      const dir = usersDir(projectRoot);
+
+      await fs.mkdir(
+        dir,
+        { recursive: true }
+      );
+
+      const file =
+        userFile(projectRoot, userId);
+
+      const current =
+        JSON.parse(
+          await fs.readFile(
+            file,
+            "utf8"
+          )
+        );
+
+      const recordedPlanId =
+        normalizePlanId(planId);
+
+      const currentPlanId =
+        normalizePlanId(current.planId);
+
+      if (currentPlanId !== recordedPlanId) {
+        const error =
+          new Error(
+            "Final video accounting rollback plan no longer matches current usage."
+          );
+
+        error.code =
+          "FINAL_VIDEO_ROLLBACK_PLAN_MISMATCH";
+
+        throw error;
+      }
+
+      const now =
+        new Date().toISOString();
+
+      const next = {
+        ...current,
+
+        finalVideoCount:
+          Number(current.finalVideoCount) || 0,
+
+        monthlyCreditsUsed:
+          Number(current.monthlyCreditsUsed) || 0,
+
+        updatedAt:
+          now
+      };
+
+      if (recordedPlanId === PLAN_IDS.FREE) {
+        next.finalVideoCount =
+          Math.max(
+            0,
+            next.finalVideoCount - 1
+          );
+      } else {
+        const rollbackCreditCost =
+          Math.max(
+            0,
+            Number(creditCost) || 0
+          );
+
+        next.monthlyCreditsUsed =
+          Math.max(
+            0,
+            next.monthlyCreditsUsed -
+              rollbackCreditCost
+          );
+      }
+
+      await fs.writeFile(
+        file,
+        JSON.stringify(next, null, 2),
+        "utf8"
+      );
+
+      return next;
+    }
+  );
+}
 export function canGenerateVideoPlan(usage) {
   const planId =
     normalizePlanId(usage?.planId);

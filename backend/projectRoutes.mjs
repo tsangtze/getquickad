@@ -2,6 +2,7 @@ import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
 import {
   getPlan,
   recordSuccessfulFinalVideo,
+  rollbackSuccessfulFinalVideo,
   canGenerateFinalVideo,
   canGenerateVideoPlan,
   recordSuccessfulVideoPlan,
@@ -32,6 +33,9 @@ import {
   uploadToR2
 } from "./videoRenderer.mjs";
 import { r2Client, R2_BUCKET } from "./r2Client.mjs";
+import {
+  canStorePaidRecoverableVideo
+} from "./cleanup.mjs";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 
@@ -526,6 +530,38 @@ export async function createProjectRouter({
       activeProjectCreates.delete(userId);
     }
   };
+  // Serialize final video generation per user so recovery-cap checks
+  // cannot race across different projects owned by the same user.
+  const activeUserFinalizations = new Set();
+
+  const withUserFinalizeLock =
+    (handler) =>
+    async (request, response, next) => {
+      const userId =
+        String(request.authUser?.id ?? "");
+
+      if (activeUserFinalizations.has(userId)) {
+        return response.status(409).json({
+          ok: false,
+          code: "VIDEO_FINALIZE_BUSY",
+          error:
+            "Another video is already being generated. Please wait until it finishes."
+        });
+      }
+
+      activeUserFinalizations.add(userId);
+
+      try {
+        return await handler(
+          request,
+          response,
+          next
+        );
+      } finally {
+        activeUserFinalizations.delete(userId);
+      }
+    };
+
   // Authentication runs before any upload or project handler.
   router.use(cookieParser());
   router.use((_request, response, next) => {
@@ -1425,7 +1461,8 @@ export async function createProjectRouter({
 
   router.post(
     "/:projectId/finalize",
-    withProjectLock(async (request, response) => {
+    withUserFinalizeLock(
+      withProjectLock(async (request, response) => {
       const projectId =
         String(request.params.projectId ?? "");
 
@@ -1785,6 +1822,39 @@ export async function createProjectRouter({
         const isFreeRerender =
           videoCheck.freeRerender;
 
+        const currentPlan =
+          getPlan(usage.planId);
+
+        if (
+          currentPlan.id !== "free" &&
+          !isFreeRerender
+        ) {
+          const recoveryCapacity =
+            await canStorePaidRecoverableVideo(
+              projectRoot,
+              request.authUser.id
+            );
+
+          if (!recoveryCapacity.ok) {
+            response.status(409).json({
+              ok: false,
+              code:
+                "VIDEO_RECOVERY_LIMIT_REACHED",
+              error:
+                `You already have ${recoveryCapacity.limit} videos available for recovery. Delete one video from My Videos before creating another.`,
+              recovery: {
+                count:
+                  recoveryCapacity.count,
+                limit:
+                  recoveryCapacity.limit,
+                remaining:
+                  recoveryCapacity.remaining
+              }
+            });
+            return;
+          }
+        }
+
         const approvedAt =
           new Date().toISOString();
 
@@ -1900,17 +1970,13 @@ export async function createProjectRouter({
           });
 
         // --- R2: upload final MP4 to Cloudflare ---
-        try {
-          const localVideoPath = path.join(projectDirectory, "video.mp4");
-          const r2Key = `videos/${request.authUser.id}/${projectId}/final-${Date.now()}.mp4`;
-          const r2Url = await uploadToR2(localVideoPath, r2Key);
-          video.r2Key = r2Key;
-          video.r2Url = r2Url;
-          video.url = r2Url; // override local url
-          console.log(`Uploaded to R2: ${r2Url}`);
-        } catch (r2Err) {
-          console.error("R2 upload failed, keeping local:", r2Err);
-        }
+        const localVideoPath = path.join(projectDirectory, "video.mp4");
+        const r2Key = `videos/${request.authUser.id}/${projectId}/final-${Date.now()}.mp4`;
+        const r2Url = await uploadToR2(localVideoPath, r2Key);
+        video.r2Key = r2Key;
+        video.r2Url = r2Url;
+        video.url = r2Url; // override local url
+        console.log(`Uploaded to R2: ${r2Url}`);
 
         await fs.writeFile(
           path.join(
@@ -1931,6 +1997,9 @@ export async function createProjectRouter({
         // Record usage before exposing the project as video_ready.
         // Free users consume one lifetime video.
         // Paid users consume credits based on the selected duration tier.
+        let completedPlanId = null;
+        let completedUsageResult = null;
+
         if (!isFreeRerender) {
           const usageResult =
             await recordSuccessfulFinalVideo(
@@ -1938,6 +2007,12 @@ export async function createProjectRouter({
               request.authUser.id,
               selectedMaxDurationSeconds
             );
+
+          completedPlanId =
+            usageResult.planId;
+
+          completedUsageResult =
+            usageResult;
 
           console.log(
             "Recorded final video usage:",
@@ -1952,17 +2027,76 @@ export async function createProjectRouter({
           );
         }
 
+        const videoReadyAt =
+          new Date();
+
+        video.readyAt =
+          videoReadyAt.toISOString();
+
+        video.expiresAt =
+          new Date(
+            videoReadyAt.getTime() +
+              36 * 60 * 60 * 1000
+          ).toISOString();
+
         project.status =
           "video_ready";
 
         project.video = video;
         delete project.generationError;
 
-        await fs.writeFile(
-          projectPath,
-          JSON.stringify(project, null, 2),
-          "utf8"
-        );
+        try {
+          await fs.writeFile(
+            projectPath,
+            JSON.stringify(project, null, 2),
+            "utf8"
+          );
+        } catch (persistError) {
+          if (completedUsageResult) {
+            try {
+              await rollbackSuccessfulFinalVideo(
+                projectRoot,
+                request.authUser.id,
+                {
+                  planId:
+                    completedUsageResult.planId,
+                  creditCost:
+                    completedUsageResult.creditCost
+                }
+              );
+
+              console.warn(
+                "Rolled back final video usage after video_ready persistence failure:",
+                {
+                  userId: request.authUser.id,
+                  projectId,
+                  planId:
+                    completedUsageResult.planId,
+                  creditCost:
+                    completedUsageResult.creditCost
+                }
+              );
+            } catch (rollbackError) {
+              console.error(
+                "CRITICAL: Failed to roll back final video usage after video_ready persistence failure:",
+                {
+                  userId: request.authUser.id,
+                  projectId,
+                  planId:
+                    completedUsageResult.planId,
+                  creditCost:
+                    completedUsageResult.creditCost,
+                  error:
+                    rollbackError?.message ??
+                    rollbackError
+                }
+              );
+            }
+          }
+
+          throw persistError;
+        }
+
 
 
         response.status(201).json({
@@ -2023,7 +2157,8 @@ export async function createProjectRouter({
             generationStage
         });
       }
-    })
+      })
+    )
   );
 
   return router;

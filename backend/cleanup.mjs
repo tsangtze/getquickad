@@ -16,6 +16,11 @@ export const TEMP_PROJECT_RETENTION_HOURS = 24;
 export const TEMP_PROJECT_RETENTION_MS =
   TEMP_PROJECT_RETENTION_HOURS * 60 * 60 * 1000;
 
+export const FINISHED_VIDEO_RETENTION_HOURS = 36;
+
+export const FINISHED_VIDEO_RETENTION_MS =
+  FINISHED_VIDEO_RETENTION_HOURS * 60 * 60 * 1000;
+
 const PROJECT_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -84,6 +89,115 @@ export async function deleteProjectR2Objects(
   }
 }
 
+export const PAID_RECOVERABLE_VIDEO_LIMIT = 10;
+
+export async function countPaidRecoverableVideos(
+  projectRoot,
+  ownerId,
+  {
+    now = Date.now()
+  } = {}
+) {
+  const projectsRoot =
+    path.join(projectRoot, "projects");
+
+  let projectDirs;
+
+  try {
+    projectDirs =
+      await fs.readdir(projectsRoot, {
+        withFileTypes: true
+      });
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return 0;
+    }
+
+    throw error;
+  }
+
+  let count = 0;
+
+  for (const projectDir of projectDirs) {
+    if (
+      !projectDir.isDirectory() ||
+      !PROJECT_ID_PATTERN.test(projectDir.name)
+    ) {
+      continue;
+    }
+
+    try {
+      const raw =
+        await fs.readFile(
+          path.join(
+            projectsRoot,
+            projectDir.name,
+            "project.json"
+          ),
+          "utf8"
+        );
+
+      const project =
+        JSON.parse(raw);
+
+      if (
+        project?.id !== projectDir.name ||
+        project?.ownerId !== ownerId ||
+        project?.status !== "video_ready"
+      ) {
+        continue;
+      }
+
+      const readyAt =
+        Date.parse(project.video?.readyAt);
+
+      const expiresAt =
+        Date.parse(project.video?.expiresAt);
+
+      if (
+        !Number.isFinite(readyAt) ||
+        !Number.isFinite(expiresAt) ||
+        expiresAt <= now
+      ) {
+        continue;
+      }
+
+      count += 1;
+    } catch (error) {
+      console.warn(
+        `[cleanup] Skipping recovery-cap candidate ${projectDir.name}:`,
+        error?.message ?? error
+      );
+    }
+  }
+
+  return count;
+}
+
+export async function canStorePaidRecoverableVideo(
+  projectRoot,
+  ownerId,
+  {
+    limit = PAID_RECOVERABLE_VIDEO_LIMIT,
+    now = Date.now()
+  } = {}
+) {
+  const count =
+    await countPaidRecoverableVideos(
+      projectRoot,
+      ownerId,
+      { now }
+    );
+
+  return {
+    ok: count < limit,
+    count,
+    limit,
+    remaining:
+      Math.max(0, limit - count)
+  };
+}
+
 export async function cleanupExpiredProjects(
   projectRoot,
   {
@@ -145,7 +259,26 @@ export async function cleanupExpiredProjects(
 
         const age = now - createdAt;
 
-        if (age <= TEMP_PROJECT_RETENTION_MS) {
+        if (project.status === "video_ready") {
+          const expiresAt =
+            Date.parse(project.video?.expiresAt);
+
+          if (
+            Number.isFinite(expiresAt) &&
+            now <= expiresAt
+          ) {
+            continue;
+          }
+
+          if (
+            !Number.isFinite(expiresAt) &&
+            age <= TEMP_PROJECT_RETENTION_MS
+          ) {
+            continue;
+          }
+        } else if (
+          age <= TEMP_PROJECT_RETENTION_MS
+        ) {
           continue;
         }
 
