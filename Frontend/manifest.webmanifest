@@ -1,0 +1,22 @@
+{
+  "name": "QuickAd AI",
+  "short_name": "QuickAd AI",
+  "description": "Turn product photos into ready-to-post promotional videos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f7fb",
+  "theme_color": "#635bff",
+  "icons": [
+    {
+      "src": "/icons/quickad-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/quickad-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
