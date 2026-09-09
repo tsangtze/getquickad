@@ -2283,8 +2283,23 @@ function renderVideoPlanReview(
   storyboard,
   savedImageUrls = null
 ) {
+  const currentMusicChoice =
+    window.quickAdMusic.value;
+  const currentMusicVolume =
+    window.quickAdMusic.volume;
+
   clearReviewImageUrls();
-  window.quickAdMusic.restore(project.storyboard?.musicChoice ?? "none", project.status === "video_ready", project.storyboard?.musicVolume);
+
+  const savedMusicChoice =
+    project.storyboard?.musicChoice;
+  const savedMusicVolume =
+    project.storyboard?.musicVolume;
+
+  window.quickAdMusic.restore(
+    savedMusicChoice ?? currentMusicChoice,
+    project.status === "video_ready",
+    savedMusicVolume ?? currentMusicVolume
+  );
 
   reviewImageUrls =
     Array.isArray(savedImageUrls)
