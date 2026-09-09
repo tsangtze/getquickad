@@ -422,5 +422,6 @@
   "videos.limit_message": "복구할 수 있는 동영상이 이미 {limit}개 있습니다. 새 동영상을 만들기 전에 내 동영상에서 동영상 하나를 삭제하세요.",
   "videos.cancel": "취소",
   "videos.manage": "내 동영상 관리",
-  "videos.this_video": "이 동영상"
+  "videos.this_video": "이 동영상",
+  "brand.localized_name": "빠른 광고 AI"
 }

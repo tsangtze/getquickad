@@ -422,5 +422,6 @@
   "videos.limit_message": "復元可能な動画がすでに {limit} 本あります。新しい動画を作成する前に、「マイ動画」から動画を1本削除してください。",
   "videos.cancel": "キャンセル",
   "videos.manage": "マイ動画を管理",
-  "videos.this_video": "この動画"
+  "videos.this_video": "この動画",
+  "brand.localized_name": "クイック広告 AI"
 }

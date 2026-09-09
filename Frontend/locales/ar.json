@@ -170,5 +170,6 @@
   "videos.limit_message": "لديك بالفعل {limit} مقاطع فيديو متاحة للاسترداد. احذف مقطع فيديو واحدًا من فيديوهاتي قبل إنشاء فيديو جديد.",
   "videos.cancel": "إلغاء",
   "videos.manage": "إدارة فيديوهاتي",
-  "videos.this_video": "هذا الفيديو"
+  "videos.this_video": "هذا الفيديو",
+  "brand.localized_name": "إعلان سريع AI"
 }

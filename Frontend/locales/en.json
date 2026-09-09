@@ -422,5 +422,6 @@
   "videos.limit_message": "You already have {limit} videos available for recovery. Delete one video from My Videos before creating another.",
   "videos.cancel": "Cancel",
   "videos.manage": "Manage My Videos",
-  "videos.this_video": "this video"
+  "videos.this_video": "this video",
+  "brand.localized_name": "QuickAd AI"
 }

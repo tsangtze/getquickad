@@ -437,5 +437,6 @@
   "videos.limit_message": "Hai già {limit} video disponibili per il recupero. Elimina un video da I miei video prima di crearne un altro.",
   "videos.cancel": "Annulla",
   "videos.manage": "Gestisci I miei video",
-  "videos.this_video": "questo video"
+  "videos.this_video": "questo video",
+  "brand.localized_name": "Pubblicità Rapida AI"
 }
