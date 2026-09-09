@@ -2640,6 +2640,7 @@ finalVideoButton.addEventListener(
       );
 
       planStatus.textContent =
+        String(error?.message || "").trim() ||
         uiText(
           "api.final_video_generation_failed",
           "The final video could not be created. Please try again."
@@ -3380,6 +3381,18 @@ function localizedApiError(result) {
       key: "api.project_busy",
       fallback:
         "This project is busy. Please wait until processing finishes."
+    },
+
+    PROJECT_CREATE_BUSY: {
+      key: "api.project_busy",
+      fallback:
+        "Another project is already being created. Please wait until it finishes."
+    },
+
+    VIDEO_FINALIZE_BUSY: {
+      key: "api.project_busy",
+      fallback:
+        "Another video is already being generated. Please wait until it finishes."
     },
 
     APP_ORIGIN_MISCONFIGURED: {
