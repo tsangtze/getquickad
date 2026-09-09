@@ -437,5 +437,6 @@
   "videos.limit_message": "Du hast bereits {limit} Videos, die wiederhergestellt werden können. Lösche ein Video unter Meine Videos, bevor du ein neues erstellst.",
   "videos.cancel": "Abbrechen",
   "videos.manage": "Meine Videos verwalten",
-  "videos.this_video": "dieses Video"
+  "videos.this_video": "dieses Video",
+  "brand.localized_name": "Schnellwerbung AI"
 }

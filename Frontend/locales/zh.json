@@ -422,5 +422,6 @@
   "videos.limit_message": "您已经有 {limit} 个可恢复的视频。创建新视频之前，请先从“我的视频”中删除一个视频。",
   "videos.cancel": "取消",
   "videos.manage": "管理我的视频",
-  "videos.this_video": "此视频"
+  "videos.this_video": "此视频",
+  "brand.localized_name": "快速广告 AI"
 }

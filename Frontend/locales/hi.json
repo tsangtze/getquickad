@@ -423,5 +423,6 @@
   "videos.limit_message": "आपके पास पहले से {limit} वीडियो पुनर्प्राप्ति के लिए उपलब्ध हैं। नया वीडियो बनाने से पहले मेरे वीडियो से एक वीडियो हटाएँ।",
   "videos.cancel": "रद्द करें",
   "videos.manage": "मेरे वीडियो प्रबंधित करें",
-  "videos.this_video": "यह वीडियो"
+  "videos.this_video": "यह वीडियो",
+  "brand.localized_name": "त्वरित विज्ञापन AI"
 }

@@ -87,6 +87,30 @@ a {
 .brand strong {
   color: var(--primary);
 }
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.brand-name {
+  white-space: nowrap;
+}
+
+.brand-localized {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.brand-localized:empty {
+  display: none;
+}
 
 .brand-mark {
   display: block;

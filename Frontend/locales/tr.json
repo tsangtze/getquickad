@@ -423,5 +423,6 @@
   "videos.limit_message": "Kurtarılabilir durumda zaten {limit} videonuz var. Yeni bir video oluşturmadan önce Videolarım bölümünden bir video silin.",
   "videos.cancel": "İptal",
   "videos.manage": "Videolarımı Yönet",
-  "videos.this_video": "bu video"
+  "videos.this_video": "bu video",
+  "brand.localized_name": "Hızlı Reklam AI"
 }

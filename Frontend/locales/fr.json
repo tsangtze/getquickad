@@ -437,5 +437,6 @@
   "videos.limit_message": "Vous avez déjà {limit} vidéos disponibles pour récupération. Supprimez une vidéo de Mes vidéos avant d'en créer une autre.",
   "videos.cancel": "Annuler",
   "videos.manage": "Gérer Mes vidéos",
-  "videos.this_video": "cette vidéo"
+  "videos.this_video": "cette vidéo",
+  "brand.localized_name": "Pub Rapide AI"
 }

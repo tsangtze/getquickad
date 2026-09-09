@@ -428,5 +428,6 @@
   "videos.limit_message": "Você já tem {limit} vídeos disponíveis para recuperação. Exclua um vídeo de Meus vídeos antes de criar outro.",
   "videos.cancel": "Cancelar",
   "videos.manage": "Gerenciar Meus vídeos",
-  "videos.this_video": "este vídeo"
+  "videos.this_video": "este vídeo",
+  "brand.localized_name": "Anúncio Rápido AI"
 }

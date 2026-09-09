@@ -423,5 +423,6 @@
   "videos.limit_message": "您已經有 {limit} 部可復原的影片。建立新影片之前，請先從「我的影片」中刪除一部影片。",
   "videos.cancel": "取消",
   "videos.manage": "管理我的影片",
-  "videos.this_video": "此影片"
+  "videos.this_video": "此影片",
+  "brand.localized_name": "快速廣告 AI"
 }
