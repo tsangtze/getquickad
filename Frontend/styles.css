@@ -89,13 +89,12 @@ a {
 }
 
 .brand-mark {
-  display: grid;
+  display: block;
   width: 38px;
   height: 38px;
-  place-items: center;
+  flex: 0 0 38px;
   border-radius: 12px;
-  color: white;
-  background: linear-gradient(145deg, #756dff, #4d45e6);
+  object-fit: cover;
   box-shadow: 0 8px 20px rgba(99, 91, 255, 0.27);
 }
 
