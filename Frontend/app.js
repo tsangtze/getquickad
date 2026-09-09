@@ -2174,9 +2174,15 @@ form.addEventListener("submit", async (event) => {
     createButton.innerHTML;
 
   try {
-    syncImageInput();
-
     const projectData = new FormData(form);
+
+    // Submit the original File objects directly instead of
+    // depending on a reconstructed FileList on mobile browsers.
+    projectData.delete("productImages");
+
+    selectedImages.forEach((file) => {
+      projectData.append("productImages", file, file.name);
+    });
 
     projectData.set(
       "maxDurationSeconds",
