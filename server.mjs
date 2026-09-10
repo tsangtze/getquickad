@@ -118,73 +118,73 @@ const seoByLanguage = {
   en: {
     title: "AI Product Video Generator | QuickAd AI",
     description:
-      "Turn product photos into ready-to-post promotional videos with AI narration, captions, music, and multiple styles."
+      "Turn product photos into ready-to-post social media and short-form promotional videos with AI narration, captions, music, and multiple styles."
   },
   es: {
     title:
       "Generador de Videos de Producto con IA | QuickAd AI",
     description:
-      "Convierte fotos de productos en videos promocionales listos para publicar con narración por IA, subtítulos, música y múltiples estilos."
+      "Convierte fotos de productos en videos promocionales para redes sociales y formatos cortos, listos para publicar con narración por IA, subtítulos, música y múltiples estilos."
   },
   pt: {
     title:
       "Gerador de Vídeos de Produto com IA | QuickAd AI",
     description:
-      "Transforme fotos de produtos em vídeos promocionais prontos para publicar com narração por IA, legendas, música e vários estilos."
+      "Transforme fotos de produtos em vídeos promocionais para redes sociais e formatos curtos, prontos para publicar com narração por IA, legendas, música e vários estilos."
   },
   fr: {
     title:
       "Générateur de Vidéos Produit par IA | QuickAd AI",
     description:
-      "Transformez vos photos de produits en vidéos promotionnelles prêtes à publier avec narration IA, sous-titres, musique et plusieurs styles."
+      "Transformez vos photos de produits en vidéos promotionnelles pour les réseaux sociaux et les formats courts, avec narration IA, sous-titres, musique et plusieurs styles."
   },
   de: {
     title:
       "KI-Produktvideo-Generator | QuickAd AI",
     description:
-      "Verwandeln Sie Produktfotos in veröffentlichungsfertige Werbevideos mit KI-Sprachausgabe, Untertiteln, Musik und verschiedenen Stilen."
+      "Verwandeln Sie Produktfotos in Social-Media- und Kurzformat-Werbevideos mit KI-Sprachausgabe, Untertiteln, Musik und verschiedenen Stilen."
   },
   it: {
     title:
       "Generatore AI di Video Prodotto | QuickAd AI",
     description:
-      "Trasforma le foto dei prodotti in video promozionali pronti da pubblicare con narrazione AI, sottotitoli, musica e diversi stili."
+      "Trasforma le foto dei prodotti in video promozionali per social media e formati brevi con narrazione AI, sottotitoli, musica e diversi stili."
   },
   ja: {
     title:
       "AI商品動画ジェネレーター | QuickAd AI",
     description:
-      "商品写真から、AIナレーション、字幕、音楽、複数のスタイルを備えた投稿可能なプロモーション動画を作成できます。"
+      "商品写真から、SNSやショート動画向けのプロモーション動画をAIナレーション、字幕、音楽、複数のスタイル付きで作成できます。"
   },
   ko: {
     title:
       "AI 제품 비디오 생성기 | QuickAd AI",
     description:
-      "제품 사진을 AI 내레이션, 자막, 음악, 다양한 스타일이 포함된 게시 준비 완료 프로모션 동영상으로 만들어 보세요."
+      "제품 사진을 소셜 미디어와 숏폼용 프로모션 영상으로 만들어 보세요. AI 내레이션, 자막, 음악, 다양한 스타일을 지원합니다."
   },
   zh: {
     title:
       "AI 产品视频生成器 | QuickAd AI",
     description:
-      "将产品照片制作成可直接发布的推广视频，并添加 AI 旁白、字幕、音乐和多种风格。"
+      "将产品照片制作成适合社交媒体和短视频推广的竖屏视频，并添加 AI 旁白、字幕、音乐和多种风格。"
   },
   "zh-TW": {
     title:
       "AI 產品影片產生器 | QuickAd AI",
     description:
-      "將產品照片製作成可直接發布的宣傳影片，並加入 AI 旁白、字幕、音樂和多種風格。"
+      "將產品照片製作成適合社群媒體和短影音推廣的直式影片，並加入 AI 旁白、字幕、音樂和多種風格。"
   },
   tr: {
     title:
       "Yapay Zekâ Ürün Videosu Oluşturucu | QuickAd AI",
     description:
-      "Ürün fotoğraflarını yapay zekâ anlatımı, altyazılar, müzik ve çeşitli stillerle yayınlamaya hazır tanıtım videolarına dönüştürün."
+      "Ürün fotoğraflarını sosyal medya ve kısa format için yapay zekâ anlatımı, altyazılar, müzik ve çeşitli stiller içeren tanıtım videolarına dönüştürün."
   },
   hi: {
     title:
       "AI प्रोडक्ट वीडियो जनरेटर | QuickAd AI",
     description:
-      "प्रोडक्ट फ़ोटो को AI नैरेशन, कैप्शन, संगीत और कई स्टाइल के साथ पोस्ट करने के लिए तैयार प्रमोशनल वीडियो में बदलें।"
+      "प्रोडक्ट फ़ोटो को सोशल मीडिया और शॉर्ट-फॉर्म प्रमोशनल वीडियो में बदलें, जिनमें AI नैरेशन, कैप्शन, संगीत और कई स्टाइल शामिल हों।"
   }
 };
 
