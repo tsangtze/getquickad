@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="Create ready-to-post product videos with QuickAd AI."
+  >
+  <title>QuickAd AI</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/quickad-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/quickad-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/quickad-180.png">
+
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="seo-landing-page">
+  <header class="site-header">
+    <a
+      class="brand"
+      href="{{HOME_URL}}"
+      aria-label="{{HOME_ARIA_LABEL}}"
+    >
+      <img
+        class="brand-mark"
+        src="/icons/quickad-192.png"
+        alt=""
+        aria-hidden="true"
+      >
+      <span class="brand-text">
+        <span class="brand-name">QuickAd <strong>AI</strong></span>
+        <span class="brand-localized">{{BRAND_LOCALIZED}}</span>
+      </span>
+    </a>
+
+    <nav class="site-nav seo-landing-nav" aria-label="{{NAV_ARIA_LABEL}}">
+      <label class="seo-landing-language">
+        <span class="sr-only">{{LANGUAGE_ARIA_LABEL}}</span>
+        <select
+          class="seo-landing-language-select"
+          aria-label="{{LANGUAGE_ARIA_LABEL}}"
+          onchange="if (this.value) window.location.href = this.value"
+        >
+          {{LANGUAGE_OPTIONS}}
+        </select>
+      </label>
+
+      <a href="{{HOME_URL}}">{{CREATE_VIDEO_LABEL}}</a>
+    </nav>
+  </header>
+
+  <main class="page-shell seo-landing-main">
+    <section class="intro seo-landing-hero">
+      <div>
+        <p class="eyebrow">{{EYEBROW}}</p>
+        <h1>{{H1}}</h1>
+        <p class="intro-copy">{{INTRO_COPY}}</p>
+
+        <p class="seo-landing-actions">
+          <a class="primary-button" href="{{CREATE_URL}}">
+            {{PRIMARY_CTA}}
+          </a>
+        </p>
+      </div>
+
+      <div class="video-summary" aria-label="{{OUTPUT_ARIA_LABEL}}">
+        <span class="video-summary-badge">
+          <span class="video-summary-icon" aria-hidden="true">📱</span>
+          <span>9:16</span>
+        </span>
+        <span class="video-summary-badge">
+          <span class="video-summary-icon" aria-hidden="true">⏱️</span>
+          <span>{{DURATION_LABEL}}</span>
+        </span>
+        <span class="video-summary-badge">
+          <span class="video-summary-icon" aria-hidden="true">🎬</span>
+          <span>MP4</span>
+        </span>
+      </div>
+    </section>
+
+    <section class="seo-landing-section">
+      <h2>{{BENEFITS_HEADING}}</h2>
+      <p>{{BENEFITS_COPY}}</p>
+
+      <ul class="seo-landing-feature-list">
+        <li>{{FEATURE_1}}</li>
+        <li>{{FEATURE_2}}</li>
+        <li>{{FEATURE_3}}</li>
+        <li>{{FEATURE_4}}</li>
+      </ul>
+    </section>
+
+    <section class="seo-landing-section">
+      <h2>{{HOW_HEADING}}</h2>
+
+      <ol class="seo-landing-steps">
+        <li>{{STEP_1}}</li>
+        <li>{{STEP_2}}</li>
+        <li>{{STEP_3}}</li>
+      </ol>
+    </section>
+
+    <section class="seo-landing-section">
+      <h2>{{USE_CASES_HEADING}}</h2>
+      <p>{{USE_CASES_COPY}}</p>
+    </section>
+
+    <section class="seo-landing-section seo-landing-related">
+      <h2>{{RELATED_HEADING}}</h2>
+
+      <nav aria-label="{{RELATED_ARIA_LABEL}}">
+        {{RELATED_LINKS}}
+      </nav>
+    </section>
+
+    <section class="seo-landing-section seo-landing-final-cta">
+      <h2>{{FINAL_CTA_HEADING}}</h2>
+      <p>{{FINAL_CTA_COPY}}</p>
+
+      <a class="primary-button" href="{{CREATE_URL}}">
+        {{PRIMARY_CTA}}
+      </a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>QuickAd AI</span>
+    <span>{{FOOTER_PROMISE}}</span>
+  </footer>
+</body>
+</html>

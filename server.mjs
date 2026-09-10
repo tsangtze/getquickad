@@ -1,4 +1,15 @@
 import { createAuthRouter } from "./backend/authRoutes.mjs";
+import {
+  SEO_LANDING_INTENTS,
+  SEO_LANDING_ROUTES,
+  findSeoLandingRoute,
+  getSeoLandingAlternates,
+  getSeoLandingContent,
+  getSeoLandingPath
+} from "./backend/seoLandingPages.mjs";
+import {
+  getSeoLandingUi
+} from "./backend/seoLandingUi.mjs";
 import { createBillingRouter } from "./backend/billingRoutes.mjs";
 import { createStripeWebhookHandler } from "./backend/stripeWebhook.mjs";
 import path from "node:path";
@@ -253,7 +264,14 @@ function buildHomeHtml({
   const alternateLinks =
     buildAlternateLinks();
 
+  const homeSeoLinks =
+    buildHomeSeoLandingLinks(language);
+
   return html
+    .replace(
+      "{{HOME_SEO_LINKS}}",
+      homeSeoLinks
+    )
     .replace(
       '<html lang="en">',
       `<html lang="${escapeHtmlAttribute(language)}">`
@@ -274,6 +292,377 @@ function buildHomeHtml({
     );
 }
 
+function buildSeoLandingAlternateLinks(intent) {
+  const links =
+    getSeoLandingAlternates(intent).map(
+      ({ language, path: alternatePath }) => {
+        const href =
+          escapeHtmlAttribute(
+            `${seoOrigin}${alternatePath}`
+          );
+
+        return (
+          `  <link rel="alternate" ` +
+          `hreflang="${escapeHtmlAttribute(language)}" ` +
+          `href="${href}">`
+        );
+      }
+    );
+
+  const englishPath =
+    getSeoLandingPath("en", intent);
+
+  if (englishPath) {
+    links.push(
+      `  <link rel="alternate" hreflang="x-default" ` +
+      `href="${escapeHtmlAttribute(`${seoOrigin}${englishPath}`)}">`
+    );
+  }
+
+  return links.join("\n");
+}
+
+function replaceLandingPlaceholder(
+  html,
+  placeholder,
+  value
+) {
+  return html.replaceAll(
+    `{{${placeholder}}}`,
+    escapeHtmlAttribute(value ?? "")
+  );
+}
+
+function buildSeoLandingLanguageOptions({
+  language,
+  intent
+}) {
+  const labels = {
+    en: "English",
+    es: "Español",
+    pt: "Português",
+    fr: "Français",
+    de: "Deutsch",
+    it: "Italiano",
+    ja: "日本語",
+    ko: "한국어",
+    zh: "简体中文",
+    "zh-TW": "繁體中文",
+    tr: "Türkçe",
+    hi: "हिन्दी"
+  };
+
+  return getSeoLandingAlternates(intent)
+    .map(
+      ({
+        language: optionLanguage,
+        path: optionPath
+      }) => {
+        const selected =
+          optionLanguage === language
+            ? " selected"
+            : "";
+
+        return (
+          `<option value="${escapeHtmlAttribute(optionPath)}"` +
+          `${selected}>` +
+          `${escapeHtmlAttribute(
+            labels[optionLanguage] ||
+            optionLanguage
+          )}` +
+          `</option>`
+        );
+      }
+    )
+    .join("\n");
+}
+function getSeoLandingLinkLabels(language) {
+  const labels = {
+    en: {
+      photoToVideo: "Product photo to video",
+      adVideo: "AI ad video generator",
+      ecommerceVideo: "Ecommerce video generator"
+    },
+    es: {
+      photoToVideo: "Foto de producto a vídeo",
+      adVideo: "Vídeos publicitarios con IA",
+      ecommerceVideo: "Vídeos para ecommerce"
+    },
+    pt: {
+      photoToVideo: "Foto de produto para vídeo",
+      adVideo: "Anúncios em vídeo com IA",
+      ecommerceVideo: "Vídeos para e-commerce"
+    },
+    fr: {
+      photoToVideo: "Photo produit en vidéo",
+      adVideo: "Vidéos publicitaires IA",
+      ecommerceVideo: "Vidéos e-commerce"
+    },
+    de: {
+      photoToVideo: "Produktfoto in Video",
+      adVideo: "KI-Werbevideos",
+      ecommerceVideo: "E-Commerce-Videos"
+    },
+    it: {
+      photoToVideo: "Foto prodotto in video",
+      adVideo: "Video pubblicitari AI",
+      ecommerceVideo: "Video per e-commerce"
+    },
+    ja: {
+      photoToVideo: "商品写真から動画",
+      adVideo: "AI広告動画",
+      ecommerceVideo: "EC商品動画"
+    },
+    ko: {
+      photoToVideo: "제품 사진으로 영상 만들기",
+      adVideo: "AI 광고 영상",
+      ecommerceVideo: "이커머스 상품 영상"
+    },
+    zh: {
+      photoToVideo: "产品照片转视频",
+      adVideo: "AI 广告视频",
+      ecommerceVideo: "电商产品视频"
+    },
+    "zh-TW": {
+      photoToVideo: "商品照轉影片",
+      adVideo: "AI 廣告影片",
+      ecommerceVideo: "電商產品影片"
+    },
+    tr: {
+      photoToVideo: "Ürün fotoğrafını videoya dönüştürme",
+      adVideo: "Yapay zekâ reklam videosu",
+      ecommerceVideo: "E-ticaret videosu"
+    },
+    hi: {
+      photoToVideo: "प्रोडक्ट फोटो से वीडियो",
+      adVideo: "AI विज्ञापन वीडियो",
+      ecommerceVideo: "ई-कॉमर्स वीडियो"
+    }
+  };
+
+  return labels[language] || labels.en;
+}
+
+function buildHomeSeoLandingLinks(language) {
+  const languageLabels =
+    getSeoLandingLinkLabels(language);
+
+  const links = SEO_LANDING_INTENTS
+    .map(intent => {
+      const href =
+        getSeoLandingPath(
+          language,
+          intent
+        );
+
+      if (!href) {
+        return "";
+      }
+
+      return (
+        `<a href="${escapeHtmlAttribute(href)}">` +
+        `${escapeHtmlAttribute(languageLabels[intent])}` +
+        `</a>`
+      );
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  const ariaLabel =
+    getSeoLandingUi(language)?.relatedAria ||
+    "QuickAd AI tools";
+
+  return (
+    `<nav class="home-seo-links" ` +
+    `aria-label="${escapeHtmlAttribute(ariaLabel)}">` +
+    links +
+    `</nav>`
+  );
+}
+
+function buildSeoLandingRelatedLinks({
+  language,
+  intent
+}) {
+  const languageLabels =
+    getSeoLandingLinkLabels(language);
+
+  return Object.keys(languageLabels)
+    .filter(relatedIntent => relatedIntent !== intent)
+    .map(relatedIntent => {
+      const href =
+        getSeoLandingPath(
+          language,
+          relatedIntent
+        );
+
+      return (
+        `<a href="${escapeHtmlAttribute(href)}">` +
+        `${escapeHtmlAttribute(languageLabels[relatedIntent])}` +
+        `</a>`
+      );
+    })
+    .join("\n");
+}
+
+function buildSeoLandingHtml({
+  html,
+  language,
+  intent,
+  content
+}) {
+  const ui =
+    getSeoLandingUi(language);
+
+  if (!ui) {
+    return null;
+  }
+
+  const canonicalPath =
+    getSeoLandingPath(language, intent);
+
+  if (!canonicalPath) {
+    return null;
+  }
+
+  const canonicalUrl =
+    `${seoOrigin}${canonicalPath}`;
+
+  const homeUrl =
+    `/${language}/`;
+
+  const replacements = {
+    HOME_URL: homeUrl,
+    HOME_ARIA_LABEL: "QuickAd AI",
+    BRAND_LOCALIZED: ui.brandLocalized,
+    NAV_ARIA_LABEL: "QuickAd AI",
+    LANGUAGE_ARIA_LABEL: "Language",
+    CREATE_VIDEO_LABEL: ui.createVideo,
+    EYEBROW: content.eyebrow,
+    H1: content.h1,
+    INTRO_COPY: content.intro,
+    CREATE_URL: homeUrl,
+    PRIMARY_CTA: ui.createVideo,
+    OUTPUT_ARIA_LABEL: ui.outputAria,
+    DURATION_LABEL: ui.duration,
+    BENEFITS_HEADING: content.benefitsHeading,
+    BENEFITS_COPY: content.benefitsCopy,
+    FEATURE_1: content.features[0],
+    FEATURE_2: content.features[1],
+    FEATURE_3: content.features[2],
+    FEATURE_4: content.features[3],
+    HOW_HEADING: content.howHeading,
+    STEP_1: content.steps[0],
+    STEP_2: content.steps[1],
+    STEP_3: content.steps[2],
+    USE_CASES_HEADING: content.useCasesHeading,
+    USE_CASES_COPY: content.useCasesCopy,
+    RELATED_HEADING: ui.relatedHeading,
+    RELATED_ARIA_LABEL: ui.relatedAria,
+    FINAL_CTA_HEADING: content.h1,
+    FINAL_CTA_COPY: content.intro,
+    FOOTER_PROMISE: ui.footerPromise
+  };
+
+  let rendered = html
+    .replace(
+      '<html lang="en">',
+      `<html lang="${escapeHtmlAttribute(language)}">`
+    )
+    .replace(
+      /<meta\s+name="description"[\s\S]*?>/i,
+      `<meta name="description" content="${escapeHtmlAttribute(content.description)}">`
+    )
+    .replace(
+      /<title>[\s\S]*?<\/title>/i,
+      `<title>${escapeHtmlAttribute(content.title)}</title>`
+    )
+    .replace(
+      "</head>",
+      (
+        `  <link rel="canonical" href="${escapeHtmlAttribute(canonicalUrl)}">\n` +
+        `${buildSeoLandingAlternateLinks(intent)}\n` +
+        `</head>`
+      )
+    );
+
+  for (const [placeholder, value] of Object.entries(
+    replacements
+  )) {
+    rendered =
+      replaceLandingPlaceholder(
+        rendered,
+        placeholder,
+        value
+      );
+  }
+
+  rendered = rendered.replace(
+    "{{LANGUAGE_OPTIONS}}",
+    buildSeoLandingLanguageOptions({
+      language,
+      intent
+    })
+  );
+
+  rendered = rendered.replace(
+    "{{RELATED_LINKS}}",
+    buildSeoLandingRelatedLinks({
+      language,
+      intent
+    })
+  );
+
+  return rendered;
+}
+
+function sendSeoLandingPage(
+  request,
+  response,
+  next
+) {
+  const route =
+    findSeoLandingRoute(request.path);
+
+  if (!route) {
+    next();
+    return;
+  }
+
+  const content =
+    getSeoLandingContent(
+      route.language,
+      route.intent
+    );
+
+  if (!content) {
+    next();
+    return;
+  }
+
+  const templatePath =
+    path.join(frontendPath, "landing.html");
+
+  const html =
+    fs.readFileSync(templatePath, "utf8");
+
+  const rendered =
+    buildSeoLandingHtml({
+      html,
+      language: route.language,
+      intent: route.intent,
+      content
+    });
+
+  if (!rendered) {
+    next();
+    return;
+  }
+
+  response
+    .type("html")
+    .send(rendered);
+}
 function sendHomePage(request, response) {
   const indexPath =
     path.join(frontendPath, "index.html");
@@ -325,6 +714,63 @@ app.get(
 
 app.get("/", sendHomePage);
 app.get(localizedHomePaths, sendHomePage);
+const seoLandingPaths = Object.keys(SEO_LANDING_ROUTES)
+  .flatMap(language =>
+    SEO_LANDING_INTENTS.map(intent =>
+      getSeoLandingPath(language, intent)
+    )
+  )
+  .filter(Boolean);
+
+if (
+  seoLandingPaths.length !== 36 ||
+  new Set(seoLandingPaths).size !== 36
+) {
+  throw new Error(
+    "SEO landing route registration must contain 36 unique paths."
+  );
+}
+
+const seoLandingPathsWithoutTrailingSlash =
+  seoLandingPaths.map(path =>
+    path.endsWith("/")
+      ? path.slice(0, -1)
+      : path
+  );
+
+if (
+  seoLandingPathsWithoutTrailingSlash.length !== 36 ||
+  new Set(seoLandingPathsWithoutTrailingSlash).size !== 36
+) {
+  throw new Error(
+    "SEO landing no-slash registration must contain 36 unique paths."
+  );
+}
+
+app.get(
+  seoLandingPathsWithoutTrailingSlash,
+  (request, response, next) => {
+    if (request.path.endsWith("/")) {
+      next();
+      return;
+    }
+
+    const queryIndex =
+      request.originalUrl.indexOf("?");
+
+    const redirectTarget =
+      queryIndex === -1
+        ? `${request.originalUrl}/`
+        : `${request.originalUrl.slice(0, queryIndex)}/${request.originalUrl.slice(queryIndex)}`;
+
+    response.redirect(
+      301,
+      redirectTarget
+    );
+  }
+);
+
+app.get(seoLandingPaths, sendSeoLandingPage);
 
 app.use("/api", (_request, response) => {
   response.status(404).json({
