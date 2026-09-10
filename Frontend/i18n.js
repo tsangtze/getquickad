@@ -128,9 +128,23 @@ function applyTranslations(){
 }
 function setLanguage(lang){
   if(!SUPPORTED_LANGS[lang]) return;
-  currentLang=lang;
+
   localStorage.setItem('quickad_lang',lang);
+
+  const targetPath = `/${lang}/`;
+  const targetUrl =
+    targetPath +
+    window.location.search +
+    window.location.hash;
+
+  if(window.location.pathname !== targetPath){
+    window.location.assign(targetUrl);
+    return;
+  }
+
+  currentLang=lang;
   loadTranslations(lang);
+
   const drop=document.getElementById('lang-dropdown');
   if(drop) drop.style.display='none';
 }
@@ -159,5 +173,5 @@ function initLang(){
   loadTranslations(currentLang);
 }
 document.addEventListener('DOMContentLoaded', initLang);
-window.QuickAdI18n={t,setLanguage,applyTranslations,get currentLang(){return currentLang}};
+window.QuickAdI18n={t,setLanguage,applyTranslations,supportedLangs:SUPPORTED_LANGS,get currentLang(){return currentLang}};
 

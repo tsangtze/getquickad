@@ -223,6 +223,8 @@ function formatRecoveryTimeRemaining(expiresAt) {
   return { expired: false, hours, minutes };
 }
 
+let latestRecoverableVideos = null;
+
 function renderRecoverableVideos(videos) {
   if (!myVideosContent) {
     return;
@@ -558,8 +560,11 @@ async function loadRecoverableVideos() {
       );
     }
 
+    latestRecoverableVideos =
+      payload.videos;
+
     renderRecoverableVideos(
-      payload.videos
+      latestRecoverableVideos
     );
   } catch (error) {
     console.error(
@@ -640,18 +645,33 @@ function showMyVideosView({
     window.history.pushState(
       null,
       "",
-      "#my-videos"
+      window.location.pathname +
+        window.location.search +
+        "#my-videos"
     );
   }
+}
+
+function isCreateVideoPath(pathname) {
+  if (
+    pathname === "/" ||
+    pathname === "/index.html"
+  ) {
+    return true;
+  }
+
+  const normalized =
+    pathname.replace(/^\/|\/$/g, "");
+
+  return Boolean(
+    window.QuickAdI18n?.supportedLangs?.[normalized]
+  );
 }
 
 createVideoNav?.addEventListener(
   "click",
   event => {
-    if (
-      window.location.pathname === "/" ||
-      window.location.pathname === "/index.html"
-    ) {
+    if (isCreateVideoPath(window.location.pathname)) {
       event.preventDefault();
       showCreateVideoView();
     }
@@ -3354,6 +3374,15 @@ window.addEventListener('load', ()=>{ setTimeout(updateQuota, 1000); });
 
 window.addEventListener("quickad:languagechange", () => {
   renderImagePreviews();
+
+  if (
+    !myVideosView?.hidden &&
+    Array.isArray(latestRecoverableVideos)
+  ) {
+    renderRecoverableVideos(
+      latestRecoverableVideos
+    );
+  }
 
   const ctaImage = ctaImageInput?.files?.[0];
 
