@@ -2606,7 +2606,7 @@ function renderPlanBrandingReview(project) {
   websiteLabelText.textContent =
     uiText(
       "review.branding_website",
-      "Website"
+      "Website or address"
     );
 
   const websiteInput =
@@ -2622,11 +2622,10 @@ function renderPlanBrandingReview(project) {
   websiteInput.placeholder =
     uiText(
       "review.branding_website_placeholder",
-      "https://example.com"
+      "Website, store address, social page, or other contact information"
     );
 
-  websiteInput.autocomplete = "url";
-  websiteInput.inputMode = "url";
+  websiteInput.autocomplete = "off";
 
   websiteLabel.append(
     websiteLabelText,
