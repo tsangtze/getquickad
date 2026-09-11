@@ -267,6 +267,13 @@ function buildHomeHtml({
   const homeSeoLinks =
     buildHomeSeoLandingLinks(language);
 
+  const structuredData =
+    buildQuickAdStructuredData({
+      language,
+      canonicalUrl,
+      description: seo.description
+    });
+
   return html
     .replace(
       "{{HOME_SEO_LINKS}}",
@@ -288,10 +295,43 @@ function buildHomeHtml({
       "</title>",
       `</title>\n` +
         `  <link rel="canonical" href="${canonical}">\n` +
-        `${alternateLinks}`
+        `${alternateLinks}` +
+        `  <script type="application/ld+json">${structuredData}</script>`
     );
 }
 
+function buildQuickAdStructuredData({
+  language,
+  canonicalUrl,
+  description
+}) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "QuickAd AI",
+    url: canonicalUrl,
+    description,
+    applicationCategory: "MultimediaApplication",
+    inLanguage: language,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD"
+    },
+    featureList: [
+      "Turn product photos into promotional videos",
+      "AI narration",
+      "Video captions",
+      "Background music",
+      "Vertical 9:16 video",
+      "MP4 video output",
+      "Videos up to 60 seconds"
+    ]
+  };
+
+  return JSON.stringify(structuredData)
+    .replace(/</g, "\\u003c");
+}
 function buildSeoLandingAlternateLinks(intent) {
   const links =
     getSeoLandingAlternates(intent).map(
@@ -531,6 +571,13 @@ function buildSeoLandingHtml({
   const homeUrl =
     `/${language}/`;
 
+  const structuredData =
+    buildQuickAdStructuredData({
+      language,
+      canonicalUrl,
+      description: content.description
+    });
+
   const replacements = {
     HOME_URL: homeUrl,
     HOME_ARIA_LABEL: "QuickAd AI",
@@ -582,6 +629,7 @@ function buildSeoLandingHtml({
       (
         `  <link rel="canonical" href="${escapeHtmlAttribute(canonicalUrl)}">\n` +
         `${buildSeoLandingAlternateLinks(intent)}\n` +
+        `  <script type="application/ld+json">${structuredData}</script>\n` +
         `</head>`
       )
     );
