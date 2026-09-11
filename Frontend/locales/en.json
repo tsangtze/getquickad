@@ -434,5 +434,6 @@
   "review.branding_website_placeholder": "https://example.com",
   "review.branding_save": "Save",
   "review.branding_remove": "Remove",
-  "review.branding_update_failed": "Could not update video branding."
+  "review.branding_update_failed": "Could not update video branding.",
+  "review.branding_saved": "✓ Saved"
 }

@@ -435,5 +435,6 @@
   "review.branding_website_placeholder": "https://example.com",
   "review.branding_save": "सेव करें",
   "review.branding_remove": "हटाएं",
-  "review.branding_update_failed": "वीडियो ब्रांडिंग अपडेट नहीं हो सकी।"
+  "review.branding_update_failed": "वीडियो ब्रांडिंग अपडेट नहीं हो सकी।",
+  "review.branding_saved": "✓ सेव हो गया"
 }
