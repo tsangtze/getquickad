@@ -424,5 +424,16 @@
   "videos.cancel": "रद्द करें",
   "videos.manage": "मेरे वीडियो प्रबंधित करें",
   "videos.this_video": "यह वीडियो",
-  "brand.localized_name": "त्वरित विज्ञापन AI"
+  "brand.localized_name": "त्वरित विज्ञापन AI",
+  "review.branding_title": "वीडियो ब्रांडिंग",
+  "review.branding_desc": "ये विवरण आपके अंतिम वीडियो में दिखाई देंगे।",
+  "review.branding_logo": "प्रोडक्ट लोगो",
+  "review.branding_logo_alt": "अपलोड किया गया प्रोडक्ट लोगो",
+  "review.branding_logo_none": "कोई प्रोडक्ट लोगो नहीं",
+  "review.branding_logo_replace": "बदलें",
+  "review.branding_website": "वेबसाइट",
+  "review.branding_website_placeholder": "https://example.com",
+  "review.branding_save": "सेव करें",
+  "review.branding_remove": "हटाएं",
+  "review.branding_update_failed": "वीडियो ब्रांडिंग अपडेट नहीं हो सकी।"
 }

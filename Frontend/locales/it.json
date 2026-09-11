@@ -438,5 +438,16 @@
   "videos.cancel": "Annulla",
   "videos.manage": "Gestisci I miei video",
   "videos.this_video": "questo video",
-  "brand.localized_name": "Pubblicità Rapida AI"
+  "brand.localized_name": "Pubblicità Rapida AI",
+  "review.branding_title": "Branding del video",
+  "review.branding_desc": "Questi dettagli appariranno nel video finale.",
+  "review.branding_logo": "Logo del prodotto",
+  "review.branding_logo_alt": "Logo del prodotto caricato",
+  "review.branding_logo_none": "Nessun logo del prodotto",
+  "review.branding_logo_replace": "Sostituisci",
+  "review.branding_website": "Sito web",
+  "review.branding_website_placeholder": "https://esempio.it",
+  "review.branding_save": "Salva",
+  "review.branding_remove": "Rimuovi",
+  "review.branding_update_failed": "Impossibile aggiornare il branding del video."
 }

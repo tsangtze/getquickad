@@ -438,5 +438,16 @@
   "videos.cancel": "Abbrechen",
   "videos.manage": "Meine Videos verwalten",
   "videos.this_video": "dieses Video",
-  "brand.localized_name": "Schnellwerbung AI"
+  "brand.localized_name": "Schnellwerbung AI",
+  "review.branding_title": "Video-Branding",
+  "review.branding_desc": "Diese Angaben erscheinen in deinem fertigen Video.",
+  "review.branding_logo": "Produktlogo",
+  "review.branding_logo_alt": "Hochgeladenes Produktlogo",
+  "review.branding_logo_none": "Kein Produktlogo",
+  "review.branding_logo_replace": "Ersetzen",
+  "review.branding_website": "Website",
+  "review.branding_website_placeholder": "https://beispiel.de",
+  "review.branding_save": "Speichern",
+  "review.branding_remove": "Entfernen",
+  "review.branding_update_failed": "Das Video-Branding konnte nicht aktualisiert werden."
 }

@@ -423,5 +423,16 @@
   "videos.cancel": "取消",
   "videos.manage": "管理我的视频",
   "videos.this_video": "此视频",
-  "brand.localized_name": "快速广告 AI"
+  "brand.localized_name": "快速广告 AI",
+  "review.branding_title": "视频品牌设置",
+  "review.branding_desc": "这些信息将显示在最终视频中。",
+  "review.branding_logo": "产品标志",
+  "review.branding_logo_alt": "已上传的产品标志",
+  "review.branding_logo_none": "无产品标志",
+  "review.branding_logo_replace": "替换",
+  "review.branding_website": "网站",
+  "review.branding_website_placeholder": "https://example.com",
+  "review.branding_save": "保存",
+  "review.branding_remove": "移除",
+  "review.branding_update_failed": "无法更新视频品牌设置。"
 }

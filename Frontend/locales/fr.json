@@ -438,5 +438,16 @@
   "videos.cancel": "Annuler",
   "videos.manage": "Gérer Mes vidéos",
   "videos.this_video": "cette vidéo",
-  "brand.localized_name": "Pub Rapide AI"
+  "brand.localized_name": "Pub Rapide AI",
+  "review.branding_title": "Identité visuelle de la vidéo",
+  "review.branding_desc": "Ces informations apparaîtront dans votre vidéo finale.",
+  "review.branding_logo": "Logo du produit",
+  "review.branding_logo_alt": "Logo du produit importé",
+  "review.branding_logo_none": "Aucun logo de produit",
+  "review.branding_logo_replace": "Remplacer",
+  "review.branding_website": "Site web",
+  "review.branding_website_placeholder": "https://exemple.com",
+  "review.branding_save": "Enregistrer",
+  "review.branding_remove": "Supprimer",
+  "review.branding_update_failed": "Impossible de mettre à jour l'identité visuelle de la vidéo."
 }

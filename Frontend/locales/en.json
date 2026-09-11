@@ -423,5 +423,16 @@
   "videos.cancel": "Cancel",
   "videos.manage": "Manage My Videos",
   "videos.this_video": "this video",
-  "brand.localized_name": "QuickAd AI"
+  "brand.localized_name": "QuickAd AI",
+  "review.branding_title": "Video branding",
+  "review.branding_desc": "These details will appear in your final video.",
+  "review.branding_logo": "Product logo",
+  "review.branding_logo_alt": "Uploaded product logo",
+  "review.branding_logo_none": "No product logo",
+  "review.branding_logo_replace": "Replace",
+  "review.branding_website": "Website",
+  "review.branding_website_placeholder": "https://example.com",
+  "review.branding_save": "Save",
+  "review.branding_remove": "Remove",
+  "review.branding_update_failed": "Could not update video branding."
 }

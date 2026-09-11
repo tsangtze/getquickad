@@ -2638,3 +2638,150 @@ input::placeholder {
   font-weight: 400;
   text-decoration: none;
 }
+/* Version 1.1.9.9: branding confirmation in video-plan review. */
+.plan-branding-review {
+  display: grid;
+  gap: 13px;
+  padding: 16px;
+  border: 1px solid #dde4f0;
+  border-radius: 14px;
+  background: #f8f9fd;
+}
+
+.plan-branding-review[hidden] {
+  display: none;
+}
+
+.plan-branding-heading strong,
+.plan-branding-heading small,
+.plan-branding-item strong,
+.plan-branding-item small {
+  display: block;
+}
+
+.plan-branding-heading small,
+.plan-branding-item small {
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.plan-branding-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.plan-branding-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e1e6ef;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.plan-branding-item strong {
+  overflow-wrap: anywhere;
+}
+
+.plan-branding-logo {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  border: 1px solid #e1e6ef;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .plan-branding-content {
+    grid-template-columns: 1fr;
+  }
+}
+/* Version 1.1.9.9: editable branding controls. */
+.plan-branding-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.plan-branding-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-branding-button {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid #cfd7e6;
+  border-radius: 9px;
+  background: #ffffff;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.plan-branding-button:hover:not(:disabled) {
+  background: #f4f6fb;
+}
+
+.plan-branding-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.plan-branding-remove {
+  color: #b42318;
+}
+
+.plan-branding-website-main {
+  width: 100%;
+}
+
+.plan-branding-website-label {
+  display: block;
+  width: 100%;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.plan-branding-website-label > span {
+  display: block;
+}
+
+.plan-branding-website-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-top: 5px;
+  padding: 9px 10px;
+  border: 1px solid #cfd7e6;
+  border-radius: 9px;
+  background: #ffffff;
+  color: inherit;
+  font: inherit;
+}
+
+.plan-branding-website-input:focus {
+  outline: 2px solid rgba(99, 91, 255, 0.2);
+  border-color: #635bff;
+}
+
+@media (max-width: 720px) {
+  .plan-branding-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .plan-branding-actions {
+    justify-content: flex-start;
+  }
+}

@@ -170,7 +170,7 @@ function createUploadMiddleware(tempDirectory) {
   ]);
 }
 
-function createCtaUploadMiddleware(tempDirectory) {
+function createReviewImageUploadMiddleware(tempDirectory, fieldName) {
   const storage = multer.diskStorage({
     destination: (_request, _file, callback) => {
       callback(null, tempDirectory);
@@ -206,7 +206,7 @@ function createCtaUploadMiddleware(tempDirectory) {
 
       callback(null, true);
     }
-  }).single("ctaImage");
+  }).single(fieldName);
 }
 
 function allUploadedFiles(request) {
@@ -771,7 +771,16 @@ export async function createProjectRouter({
     createUploadMiddleware(tempDirectory);
 
   const uploadCtaImage =
-    createCtaUploadMiddleware(tempDirectory);
+    createReviewImageUploadMiddleware(
+      tempDirectory,
+      "ctaImage"
+    );
+
+  const uploadProductLogo =
+    createReviewImageUploadMiddleware(
+      tempDirectory,
+      "productLogo"
+    );
 
 
   router.post(
@@ -1303,6 +1312,283 @@ export async function createProjectRouter({
         });
       }
     }
+  );
+
+  router.post(
+    "/:projectId/product-logo",
+    uploadProductLogo,
+    withProjectLock(async (request, response, next) => {
+      const uploadedFile = request.file;
+      let movedPath = "";
+
+      if (!uploadedFile) {
+        response.status(400).json({
+          ok: false,
+          code: "PRODUCT_LOGO_REQUIRED",
+          error: "Choose a product logo to upload."
+        });
+        return;
+      }
+
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      const projectDirectory = path.join(
+        projectsDirectory,
+        projectId
+      );
+
+      const projectPath = path.join(
+        projectDirectory,
+        "project.json"
+      );
+
+      try {
+        const project = JSON.parse(
+          await fs.readFile(projectPath, "utf8")
+        );
+
+        if (project.status !== "storyboard_ready") {
+          await removeFiles([uploadedFile]);
+
+          response.status(409).json({
+            ok: false,
+            code: "PRODUCT_LOGO_REVIEW_ONLY",
+            error:
+              "The product logo can only be changed while reviewing the video plan."
+          });
+          return;
+        }
+
+        const extension =
+          ALLOWED_MIME_TYPES.get(
+            uploadedFile.mimetype
+          );
+
+        if (!extension) {
+          await removeFiles([uploadedFile]);
+
+          response.status(400).json({
+            ok: false,
+            code: "PROJECT_LOGO_INVALID_TYPE",
+            error:
+              "Use a JPEG, PNG, or WebP logo."
+          });
+          return;
+        }
+
+        const previousStoredName =
+          String(
+            project.assets?.productLogo?.storedName ??
+              ""
+          );
+
+        const storedName =
+          `logo-${crypto.randomUUID()}${extension}`;
+
+        const destinationPath =
+          path.join(
+            projectDirectory,
+            storedName
+          );
+
+        await fs.rename(
+          uploadedFile.path,
+          destinationPath
+        );
+
+        movedPath = destinationPath;
+
+        project.assets ??= {};
+
+        project.assets.productLogo = {
+          originalName: uploadedFile.originalname,
+          storedName,
+          mimeType: uploadedFile.mimetype,
+          size: uploadedFile.size
+        };
+
+        await fs.writeFile(
+          projectPath,
+          JSON.stringify(
+            project,
+            null,
+            2
+          )
+        );
+
+        if (
+          previousStoredName &&
+          previousStoredName !== storedName
+        ) {
+          await fs.rm(
+            path.join(
+              projectDirectory,
+              path.basename(previousStoredName)
+            ),
+            { force: true }
+          ).catch(() => {});
+        }
+
+        response.status(200).json({
+          ok: true,
+          productLogo:
+            project.assets.productLogo,
+          productLogoUrl:
+            `/api/projects/${projectId}/assets/${storedName}`
+        });
+      } catch (error) {
+        await removeFiles([uploadedFile]);
+
+        if (movedPath) {
+          await fs.rm(
+            movedPath,
+            { force: true }
+          ).catch(() => {});
+        }
+
+        next(error);
+      }
+    })
+  );
+
+  router.delete(
+    "/:projectId/product-logo",
+    withProjectLock(async (request, response, next) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      const projectDirectory = path.join(
+        projectsDirectory,
+        projectId
+      );
+
+      const projectPath = path.join(
+        projectDirectory,
+        "project.json"
+      );
+
+      try {
+        const project = JSON.parse(
+          await fs.readFile(projectPath, "utf8")
+        );
+
+        if (project.status !== "storyboard_ready") {
+          response.status(409).json({
+            ok: false,
+            code: "PRODUCT_LOGO_REVIEW_ONLY",
+            error:
+              "The product logo can only be removed while reviewing the video plan."
+          });
+          return;
+        }
+
+        const previousStoredName =
+          String(
+            project.assets?.productLogo?.storedName ??
+              ""
+          );
+
+        project.assets ??= {};
+        delete project.assets.productLogo;
+
+        await fs.writeFile(
+          projectPath,
+          JSON.stringify(
+            project,
+            null,
+            2
+          )
+        );
+
+        if (previousStoredName) {
+          await fs.rm(
+            path.join(
+              projectDirectory,
+              path.basename(previousStoredName)
+            ),
+            { force: true }
+          ).catch(() => {});
+        }
+
+        response.status(200).json({
+          ok: true,
+          productLogo: null
+        });
+      } catch (error) {
+        next(error);
+      }
+    })
+  );
+
+  router.patch(
+    "/:projectId/website",
+    withProjectLock(async (request, response, next) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      const projectDirectory = path.join(
+        projectsDirectory,
+        projectId
+      );
+
+      const projectPath = path.join(
+        projectDirectory,
+        "project.json"
+      );
+
+      try {
+        const project = JSON.parse(
+          await fs.readFile(projectPath, "utf8")
+        );
+
+        if (project.status !== "storyboard_ready") {
+          response.status(409).json({
+            ok: false,
+            code: "PROJECT_WEBSITE_REVIEW_ONLY",
+            error:
+              "The website can only be changed while reviewing the video plan."
+          });
+          return;
+        }
+
+        const websiteResult =
+          normalizeWebsite(
+            request.body?.website
+          );
+
+        if (websiteResult.error) {
+          response.status(400).json({
+            ok: false,
+            code:
+              websiteResult.code ||
+              "PROJECT_WEBSITE_INVALID",
+            error:
+              websiteResult.error
+          });
+          return;
+        }
+
+        project.website =
+          websiteResult.website;
+
+        await fs.writeFile(
+          projectPath,
+          JSON.stringify(
+            project,
+            null,
+            2
+          )
+        );
+
+        response.status(200).json({
+          ok: true,
+          website: project.website
+        });
+      } catch (error) {
+        next(error);
+      }
+    })
   );
 
   router.post(
