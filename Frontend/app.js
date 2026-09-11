@@ -802,6 +802,8 @@ const logoPreview = document.querySelector("#logo-preview");
 const logoPreviewImage = document.querySelector("#logo-preview-image");
 const ctaImagePreview = document.querySelector("#cta-image-preview");
 const ctaImagePreviewImage = document.querySelector("#cta-image-preview-image");
+const removeLogoButton = document.querySelector("#remove-logo");
+const removeCtaImageButton = document.querySelector("#remove-cta-image");
 const description = document.querySelector("#productDesc");
 
 function resizeProductDescription() {
@@ -1117,6 +1119,27 @@ imageInput.addEventListener("change", () => {
 
 uploadZone.addEventListener("drop", (event) => {
   addImages(event.dataTransfer.files);
+});
+
+removeLogoButton?.addEventListener("click", () => {
+  logoInput.value = "";
+  logoName.textContent = "";
+  logoPreview.hidden = true;
+  logoPreviewImage.removeAttribute("src");
+  logoPreviewImage.alt = "";
+  setUploadError();
+});
+
+removeCtaImageButton?.addEventListener("click", () => {
+  ctaImageInput.value = "";
+  ctaImageName.textContent = uiText(
+    "cta_image.none",
+    "No image selected"
+  );
+  ctaImagePreview.hidden = true;
+  ctaImagePreviewImage.removeAttribute("src");
+  ctaImagePreviewImage.alt = "";
+  setUploadError();
 });
 
 logoInput.addEventListener("change", () => {
