@@ -2674,6 +2674,35 @@ function renderPlanBrandingReview(project) {
   removeWebsiteButton.hidden =
     !website;
 
+  const websiteSavedStatus =
+    document.createElement("span");
+
+  websiteSavedStatus.className =
+    "plan-branding-saved-status";
+
+  websiteSavedStatus.textContent =
+    uiText(
+      "review.branding_saved",
+      "✓ Saved"
+    );
+
+  websiteSavedStatus.hidden = true;
+
+  const showWebsiteEditingState = () => {
+    saveWebsiteButton.disabled = false;
+    removeWebsiteButton.disabled = false;
+    websiteInput.disabled = false;
+    saveWebsiteButton.hidden = false;
+    removeWebsiteButton.hidden = !project.website;
+    websiteSavedStatus.hidden = true;
+  };
+
+  const showWebsiteSavedState = () => {
+    saveWebsiteButton.hidden = true;
+    removeWebsiteButton.hidden = true;
+    websiteSavedStatus.hidden = false;
+  };
+
   const saveWebsite = async (
     nextWebsite
   ) => {
@@ -2707,7 +2736,19 @@ function renderPlanBrandingReview(project) {
         payload.website || "";
 
       markPlanChanged();
-      renderPlanBrandingReview(project);
+
+      websiteInput.value =
+        project.website;
+
+      if (project.website) {
+        showWebsiteSavedState();
+      } else {
+        saveWebsiteButton.hidden = false;
+        removeWebsiteButton.hidden = true;
+        websiteSavedStatus.hidden = true;
+      }
+
+      websiteInput.disabled = false;
     } catch (error) {
       window.alert(
         error?.message ||
@@ -2730,6 +2771,13 @@ function renderPlanBrandingReview(project) {
       saveWebsite(
         websiteInput.value
       );
+    }
+  );
+
+  websiteInput.addEventListener(
+    "input",
+    () => {
+      showWebsiteEditingState();
     }
   );
 
@@ -2757,7 +2805,8 @@ function renderPlanBrandingReview(project) {
 
   websiteActions.append(
     saveWebsiteButton,
-    removeWebsiteButton
+    removeWebsiteButton,
+    websiteSavedStatus
   );
 
   websiteItem.append(

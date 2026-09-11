@@ -435,5 +435,6 @@
   "review.branding_website_placeholder": "https://example.com",
   "review.branding_save": "儲存",
   "review.branding_remove": "移除",
-  "review.branding_update_failed": "無法更新影片品牌設定。"
+  "review.branding_update_failed": "無法更新影片品牌設定。",
+  "review.branding_saved": "✓ 已儲存"
 }

@@ -450,5 +450,6 @@
   "review.branding_website_placeholder": "https://ejemplo.com",
   "review.branding_save": "Guardar",
   "review.branding_remove": "Eliminar",
-  "review.branding_update_failed": "No se pudo actualizar la marca del video."
+  "review.branding_update_failed": "No se pudo actualizar la marca del video.",
+  "review.branding_saved": "✓ Guardado"
 }

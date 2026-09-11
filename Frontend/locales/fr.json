@@ -449,5 +449,6 @@
   "review.branding_website_placeholder": "https://exemple.com",
   "review.branding_save": "Enregistrer",
   "review.branding_remove": "Supprimer",
-  "review.branding_update_failed": "Impossible de mettre à jour l'identité visuelle de la vidéo."
+  "review.branding_update_failed": "Impossible de mettre à jour l'identité visuelle de la vidéo.",
+  "review.branding_saved": "✓ Enregistré"
 }

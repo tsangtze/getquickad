@@ -434,5 +434,6 @@
   "review.branding_website_placeholder": "https://example.com",
   "review.branding_save": "저장",
   "review.branding_remove": "삭제",
-  "review.branding_update_failed": "동영상 브랜딩을 업데이트할 수 없습니다."
+  "review.branding_update_failed": "동영상 브랜딩을 업데이트할 수 없습니다.",
+  "review.branding_saved": "✓ 저장됨"
 }

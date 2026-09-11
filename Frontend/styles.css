@@ -2742,6 +2742,19 @@ input::placeholder {
   color: #b42318;
 }
 
+/* Version 1.1.9.9.1: website saved confirmation. */
+.plan-branding-saved-status {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  padding: 8px 4px;
+  font-weight: 700;
+}
+
+.plan-branding-saved-status[hidden] {
+  display: none;
+}
+
 .plan-branding-website-main {
   width: 100%;
 }
