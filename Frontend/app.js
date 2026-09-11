@@ -827,6 +827,10 @@ const styleSetupHome =
 const planStyleHost =
   document.querySelector("#plan-style-host");
 const planReview = document.querySelector("#plan-review");
+const planBrandingReview =
+  document.querySelector("#plan-branding-review");
+const planBrandingContent =
+  document.querySelector("#plan-branding-content");
 const durationFieldset =
   document.querySelector("#duration-options");
 const durationSetupHome =
@@ -2298,6 +2302,475 @@ function showProjectSetupMode() {
   });
 }
 
+function renderPlanBrandingReview(project) {
+  if (!planBrandingReview || !planBrandingContent) {
+    return;
+  }
+
+  planBrandingContent.replaceChildren();
+
+  const projectId =
+    String(project?.id ?? "");
+
+  const logoAsset =
+    project?.assets?.productLogo;
+
+  const website =
+    String(project?.website ?? "").trim();
+
+  const markPlanChanged = () => {
+    currentStoryboard?.scenes?.forEach((scene) => {
+      scene.approved = false;
+    });
+
+    renderCurrentScenePlan();
+  };
+
+  const requestJson = async (url, options) => {
+    const response =
+      await fetch(url, options);
+
+    const payload =
+      await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        payload?.error ||
+        uiText(
+          "review.branding_update_failed",
+          "Could not update video branding."
+        )
+      );
+    }
+
+    return payload;
+  };
+
+  // --------------------------------------------------------
+  // Product logo
+  // --------------------------------------------------------
+
+  const logoItem =
+    document.createElement("div");
+
+  logoItem.className =
+    "plan-branding-item plan-branding-logo-item";
+
+  const logoMain =
+    document.createElement("div");
+
+  logoMain.className =
+    "plan-branding-main";
+
+  if (logoAsset?.storedName && projectId) {
+    const logoImage =
+      document.createElement("img");
+
+    logoImage.className =
+      "plan-branding-logo";
+
+    logoImage.src =
+      `/api/projects/${encodeURIComponent(
+        projectId
+      )}/assets/${encodeURIComponent(
+        logoAsset.storedName
+      )}`;
+
+    logoImage.alt =
+      uiText(
+        "review.branding_logo_alt",
+        "Uploaded product logo"
+      );
+
+    logoMain.append(logoImage);
+  }
+
+  const logoText =
+    document.createElement("div");
+
+  const logoLabel =
+    document.createElement("small");
+
+  logoLabel.textContent =
+    uiText(
+      "review.branding_logo",
+      "Product logo"
+    );
+
+  const logoValue =
+    document.createElement("strong");
+
+  logoValue.textContent =
+    logoAsset?.originalName ||
+    uiText(
+      "review.branding_logo_none",
+      "No product logo"
+    );
+
+  logoText.append(
+    logoLabel,
+    logoValue
+  );
+
+  logoMain.append(logoText);
+
+  const logoActions =
+    document.createElement("div");
+
+  logoActions.className =
+    "plan-branding-actions";
+
+  const replaceLogoButton =
+    document.createElement("button");
+
+  replaceLogoButton.type = "button";
+  replaceLogoButton.className =
+    "plan-branding-button";
+
+  replaceLogoButton.textContent =
+    uiText(
+      "review.branding_logo_replace",
+      logoAsset?.storedName
+        ? "Replace"
+        : "Add logo"
+    );
+
+  const reviewLogoInput =
+    document.createElement("input");
+
+  reviewLogoInput.type = "file";
+  reviewLogoInput.accept =
+    "image/jpeg,image/png,image/webp";
+  reviewLogoInput.hidden = true;
+
+  replaceLogoButton.addEventListener(
+    "click",
+    () => {
+      reviewLogoInput.click();
+    }
+  );
+
+  reviewLogoInput.addEventListener(
+    "change",
+    async () => {
+      const file =
+        reviewLogoInput.files?.[0];
+
+      if (!file || !projectId) {
+        return;
+      }
+
+      replaceLogoButton.disabled = true;
+
+      try {
+        const formData =
+          new FormData();
+
+        formData.append(
+          "productLogo",
+          file
+        );
+
+        const payload =
+          await requestJson(
+            `/api/projects/${encodeURIComponent(
+              projectId
+            )}/product-logo`,
+            {
+              method: "POST",
+              body: formData
+            }
+          );
+
+        project.assets ??= {};
+
+        project.assets.productLogo =
+          payload.productLogo;
+
+        markPlanChanged();
+        renderPlanBrandingReview(project);
+      } catch (error) {
+        window.alert(
+          error?.message ||
+          uiText(
+            "review.branding_update_failed",
+            "Could not update video branding."
+          )
+        );
+      } finally {
+        reviewLogoInput.value = "";
+        replaceLogoButton.disabled = false;
+      }
+    }
+  );
+
+  logoActions.append(
+    replaceLogoButton,
+    reviewLogoInput
+  );
+
+  if (logoAsset?.storedName) {
+    const removeLogoButton =
+      document.createElement("button");
+
+    removeLogoButton.type = "button";
+
+    removeLogoButton.className =
+      "plan-branding-button plan-branding-remove";
+
+    removeLogoButton.textContent =
+      uiText(
+        "review.branding_remove",
+        "Remove"
+      );
+
+    removeLogoButton.addEventListener(
+      "click",
+      async () => {
+        if (!projectId) {
+          return;
+        }
+
+        removeLogoButton.disabled = true;
+        replaceLogoButton.disabled = true;
+
+        try {
+          await requestJson(
+            `/api/projects/${encodeURIComponent(
+              projectId
+            )}/product-logo`,
+            {
+              method: "DELETE"
+            }
+          );
+
+          project.assets ??= {};
+          delete project.assets.productLogo;
+
+          markPlanChanged();
+          renderPlanBrandingReview(project);
+        } catch (error) {
+          window.alert(
+            error?.message ||
+            uiText(
+              "review.branding_update_failed",
+              "Could not update video branding."
+            )
+          );
+
+          removeLogoButton.disabled = false;
+          replaceLogoButton.disabled = false;
+        }
+      }
+    );
+
+    logoActions.append(
+      removeLogoButton
+    );
+  }
+
+  logoItem.append(
+    logoMain,
+    logoActions
+  );
+
+  planBrandingContent.append(
+    logoItem
+  );
+
+  // --------------------------------------------------------
+  // Website
+  // --------------------------------------------------------
+
+  const websiteItem =
+    document.createElement("div");
+
+  websiteItem.className =
+    "plan-branding-item plan-branding-website-item";
+
+  const websiteMain =
+    document.createElement("div");
+
+  websiteMain.className =
+    "plan-branding-main plan-branding-website-main";
+
+  const websiteLabel =
+    document.createElement("label");
+
+  websiteLabel.className =
+    "plan-branding-website-label";
+
+  const websiteLabelText =
+    document.createElement("span");
+
+  websiteLabelText.textContent =
+    uiText(
+      "review.branding_website",
+      "Website"
+    );
+
+  const websiteInput =
+    document.createElement("input");
+
+  websiteInput.type = "text";
+
+  websiteInput.className =
+    "plan-branding-website-input";
+
+  websiteInput.value = website;
+
+  websiteInput.placeholder =
+    uiText(
+      "review.branding_website_placeholder",
+      "https://example.com"
+    );
+
+  websiteInput.autocomplete = "url";
+  websiteInput.inputMode = "url";
+
+  websiteLabel.append(
+    websiteLabelText,
+    websiteInput
+  );
+
+  websiteMain.append(
+    websiteLabel
+  );
+
+  const websiteActions =
+    document.createElement("div");
+
+  websiteActions.className =
+    "plan-branding-actions";
+
+  const saveWebsiteButton =
+    document.createElement("button");
+
+  saveWebsiteButton.type = "button";
+
+  saveWebsiteButton.className =
+    "plan-branding-button";
+
+  saveWebsiteButton.textContent =
+    uiText(
+      "review.branding_save",
+      "Save"
+    );
+
+  const removeWebsiteButton =
+    document.createElement("button");
+
+  removeWebsiteButton.type = "button";
+
+  removeWebsiteButton.className =
+    "plan-branding-button plan-branding-remove";
+
+  removeWebsiteButton.textContent =
+    uiText(
+      "review.branding_remove",
+      "Remove"
+    );
+
+  removeWebsiteButton.hidden =
+    !website;
+
+  const saveWebsite = async (
+    nextWebsite
+  ) => {
+    if (!projectId) {
+      return;
+    }
+
+    saveWebsiteButton.disabled = true;
+    removeWebsiteButton.disabled = true;
+    websiteInput.disabled = true;
+
+    try {
+      const payload =
+        await requestJson(
+          `/api/projects/${encodeURIComponent(
+            projectId
+          )}/website`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+            body: JSON.stringify({
+              website: nextWebsite
+            })
+          }
+        );
+
+      project.website =
+        payload.website || "";
+
+      markPlanChanged();
+      renderPlanBrandingReview(project);
+    } catch (error) {
+      window.alert(
+        error?.message ||
+        uiText(
+          "review.branding_update_failed",
+          "Could not update video branding."
+        )
+      );
+
+      saveWebsiteButton.disabled = false;
+      removeWebsiteButton.disabled = false;
+      websiteInput.disabled = false;
+      websiteInput.focus();
+    }
+  };
+
+  saveWebsiteButton.addEventListener(
+    "click",
+    () => {
+      saveWebsite(
+        websiteInput.value
+      );
+    }
+  );
+
+  websiteInput.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+
+      event.preventDefault();
+
+      saveWebsite(
+        websiteInput.value
+      );
+    }
+  );
+
+  removeWebsiteButton.addEventListener(
+    "click",
+    () => {
+      saveWebsite("");
+    }
+  );
+
+  websiteActions.append(
+    saveWebsiteButton,
+    removeWebsiteButton
+  );
+
+  websiteItem.append(
+    websiteMain,
+    websiteActions
+  );
+
+  planBrandingContent.append(
+    websiteItem
+  );
+
+  planBrandingReview.hidden = false;
+}
 function renderVideoPlanReview(
   project,
   storyboard,
@@ -2385,6 +2858,8 @@ function renderVideoPlanReview(
     project,
     currentStoryboard
   );
+
+  renderPlanBrandingReview(project);
 
   currentStoryboard.scenes.forEach(
     (scene) => {

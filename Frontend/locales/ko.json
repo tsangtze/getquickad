@@ -423,5 +423,16 @@
   "videos.cancel": "취소",
   "videos.manage": "내 동영상 관리",
   "videos.this_video": "이 동영상",
-  "brand.localized_name": "빠른 광고 AI"
+  "brand.localized_name": "빠른 광고 AI",
+  "review.branding_title": "동영상 브랜딩",
+  "review.branding_desc": "이 정보는 최종 동영상에 표시됩니다.",
+  "review.branding_logo": "제품 로고",
+  "review.branding_logo_alt": "업로드한 제품 로고",
+  "review.branding_logo_none": "제품 로고 없음",
+  "review.branding_logo_replace": "교체",
+  "review.branding_website": "웹사이트",
+  "review.branding_website_placeholder": "https://example.com",
+  "review.branding_save": "저장",
+  "review.branding_remove": "삭제",
+  "review.branding_update_failed": "동영상 브랜딩을 업데이트할 수 없습니다."
 }

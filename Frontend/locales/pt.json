@@ -429,5 +429,16 @@
   "videos.cancel": "Cancelar",
   "videos.manage": "Gerenciar Meus vídeos",
   "videos.this_video": "este vídeo",
-  "brand.localized_name": "Anúncio Rápido AI"
+  "brand.localized_name": "Anúncio Rápido AI",
+  "review.branding_title": "Marca do vídeo",
+  "review.branding_desc": "Estes dados aparecerão no seu vídeo final.",
+  "review.branding_logo": "Logo do produto",
+  "review.branding_logo_alt": "Logo do produto enviado",
+  "review.branding_logo_none": "Sem logo do produto",
+  "review.branding_logo_replace": "Substituir",
+  "review.branding_website": "Site",
+  "review.branding_website_placeholder": "https://exemplo.com",
+  "review.branding_save": "Salvar",
+  "review.branding_remove": "Remover",
+  "review.branding_update_failed": "Não foi possível atualizar a marca do vídeo."
 }
