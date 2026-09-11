@@ -165,7 +165,7 @@ export function validateStoryboard(
   }
 
   const requiredSceneCount =
-    imageCount <= 5
+    imageCount <= 4
       ? 5
       : imageCount + 1;
 
@@ -322,20 +322,42 @@ export function validateStoryboard(
     expectedStart = scene.endSeconds;
   });
 
+  const nonCtaScenes = value.scenes.filter(
+    (scene) => scene.role !== "cta"
+  );
+
+  for (
+    let sceneIndex = 1;
+    sceneIndex < nonCtaScenes.length;
+    sceneIndex += 1
+  ) {
+    const previousImageIndex =
+      nonCtaScenes[sceneIndex - 1].imageIndex;
+
+    const currentImageIndex =
+      nonCtaScenes[sceneIndex].imageIndex;
+
+    if (currentImageIndex < previousImageIndex) {
+      errors.push(
+        "Product scenes must follow uploaded image order and must not return to an earlier uploaded image."
+      );
+      break;
+    }
+  }
   for (
     let imageIndex = 1;
     imageIndex <= imageCount;
     imageIndex += 1
   ) {
     const imageIsUsed =
-      value.scenes.some(
+      nonCtaScenes.some(
         (scene) =>
           scene.imageIndex === imageIndex
       );
 
     if (!imageIsUsed) {
       errors.push(
-        `Uploaded image ${imageIndex} is not used by any scene.`
+        `Uploaded image ${imageIndex} is not used by any non-CTA scene.`
       );
     }
   }

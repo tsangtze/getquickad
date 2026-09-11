@@ -73,7 +73,7 @@ function buildSystemInstructions(
   imageCount = 1
 ) {
   const requiredSceneCount =
-    imageCount <= 5
+    imageCount <= 4
       ? 5
       : imageCount + 1;
   const languageDescription = describeLanguage(language);
@@ -154,18 +154,19 @@ ${durationMode === "manual"
 - Use only facts supplied by the customer.
 - imageIndex must reference an available uploaded image.
 - Follow the customer's upload order by default.
-- Scene 1 must use imageIndex 1.
-- Scene 2 must use imageIndex 2 when at least 2 images are available.
-- Continue matching scene numbers to image indexes in upload order while unused images are available.
-- When there are 6 through 10 uploaded images, Scenes 1 through ${imageCount} must use image indexes 1 through ${imageCount} exactly once in upload order so every uploaded image receives its own normal content scene.
 - The final Scene ${requiredSceneCount} is a dedicated call-to-action scene.
 - The final CTA visual is supplied separately by the renderer, so its imageIndex remains only a valid structural product-image reference required by the storyboard schema.
 - Do not write the final CTA caption or narration as though the CTA scene visibly shows the product image referenced by imageIndex.
 - For the final CTA scene, focus the caption and narration on the customer's exact call to action and, when supplied, the website.
-- Do not turn Scene ${imageCount} into the call to action when there are 6 through 10 uploaded images. Scene ${imageCount} must remain a normal content scene for uploaded image ${imageCount}.
-- Every uploaded image must be used by at least one scene.
-- When there are fewer uploaded images than scenes, reuse images as needed, restarting from imageIndex 1 and continuing in upload order.
-- When there are 1 through 5 uploaded images, create 5 scenes and reuse images in upload order as needed.
+- Every uploaded image must be used by at least one non-CTA scene.
+- PRODUCT IMAGE ORDER RULE: Product scenes must follow the customer's uploaded image order and must never return to an earlier uploaded image.
+- Preserve this order whether the images show unrelated products or different views of the same product.
+- With 1 uploaded image, the four non-CTA scenes must use image indexes 1, 1, 1, 1.
+- With 2 uploaded images, the four non-CTA scenes must use image indexes 1, 1, 2, 2.
+- With 3 uploaded images, the four non-CTA scenes must use image indexes 1, 1, 2, 3.
+- With 4 uploaded images, the four non-CTA scenes must use image indexes 1, 2, 3, 4.
+- With 5 through 10 uploaded images, give every uploaded image exactly one normal content scene in upload order, followed by the dedicated CTA scene. Scenes 1 through ${imageCount} must use image indexes 1 through ${imageCount} exactly once.
+- Do not turn Scene ${imageCount} into the call to action when there are 5 through 10 uploaded images. Scene ${imageCount} must remain a normal content scene for uploaded image ${imageCount}.
 - For every non-CTA scene, write the caption and narration specifically for the visible content of its assigned product image.
 - Motion must remain controlled and subtle.
 - Avoid rapid or excessive zooming.
@@ -245,8 +246,9 @@ If no description was supplied, infer only what is clearly visible in the upload
 Do not invent a brand, price, material, feature, compatibility, certification, guarantee, or unsupported use case.
 When the image is ambiguous, use cautious generic wording that the customer can revise during plan review.
 Preserve the uploaded image order when assigning scenes.
-For example, with 3 images use image indexes 1, 2, 3, 1, 2.
-The customer can revise this order during plan review.
+For example, with 3 uploaded images, the four normal content scenes must use image indexes 1, 1, 2, 3, followed by the dedicated CTA scene.
+Never alternate backward between uploaded images such as 1, 2, 1, 2.
+The customer can revise scene content during plan review.
 `.trim();
 }
 
