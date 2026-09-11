@@ -35,7 +35,7 @@ const validStoryboard = {
       sceneNumber: 2,
       startSeconds: 4,
       endSeconds: 9,
-      imageIndex: 2,
+      imageIndex: 1,
       role: "product",
       narration:
         "Meet the compact rechargeable coffee maker designed for life on the move.",
@@ -73,7 +73,7 @@ const validStoryboard = {
       sceneNumber: 4,
       startSeconds: 15,
       endSeconds: 20,
-      imageIndex: 1,
+      imageIndex: 2,
       role: "benefit",
       narration:
         "Simple controls make every cup quick and convenient.",
@@ -759,6 +759,235 @@ console.log(
 );
 // --- v0.9.4 duration-limit boundary tests ---
 
+
+// --- v1.1.9.12 ordered product scene tests ---
+
+const orderedTwoImageStoryboard =
+  structuredClone(validStoryboard);
+
+const orderedTwoImageResult =
+  validateStoryboard(
+    orderedTwoImageStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (!orderedTwoImageResult.ok) {
+  throw new Error(
+    `Expected ordered 2-image sequence 1,1,2,2 to pass: ${orderedTwoImageResult.errors.join(" | ")}`
+  );
+}
+
+console.log(
+  "PASS: Ordered 2-image sequence 1,1,2,2 accepted."
+);
+
+const backwardTwoImageStoryboard =
+  structuredClone(validStoryboard);
+
+backwardTwoImageStoryboard.scenes[0].imageIndex = 1;
+backwardTwoImageStoryboard.scenes[1].imageIndex = 2;
+backwardTwoImageStoryboard.scenes[2].imageIndex = 1;
+backwardTwoImageStoryboard.scenes[3].imageIndex = 2;
+
+const backwardTwoImageResult =
+  validateStoryboard(
+    backwardTwoImageStoryboard,
+    {
+      imageCount: 2
+    }
+  );
+
+if (backwardTwoImageResult.ok) {
+  throw new Error(
+    "Expected backward 2-image sequence 1,2,1,2 to fail."
+  );
+}
+
+if (
+  !backwardTwoImageResult.errors.some(
+    (error) =>
+      error.includes(
+        "must not return to an earlier uploaded image"
+      )
+  )
+) {
+  throw new Error(
+    `Expected backward-order validation error: ${backwardTwoImageResult.errors.join(" | ")}`
+  );
+}
+
+console.log(
+  "PASS: Backward 2-image sequence 1,2,1,2 rejected."
+);
+
+const alternateThreeImageStoryboard =
+  structuredClone(validStoryboard);
+
+alternateThreeImageStoryboard.scenes[0].imageIndex = 1;
+alternateThreeImageStoryboard.scenes[1].imageIndex = 2;
+alternateThreeImageStoryboard.scenes[2].imageIndex = 2;
+alternateThreeImageStoryboard.scenes[3].imageIndex = 3;
+
+const alternateThreeImageResult =
+  validateStoryboard(
+    alternateThreeImageStoryboard,
+    {
+      imageCount: 3
+    }
+  );
+
+if (!alternateThreeImageResult.ok) {
+  throw new Error(
+    `Expected monotonic 3-image sequence 1,2,2,3 to pass: ${alternateThreeImageResult.errors.join(" | ")}`
+  );
+}
+
+console.log(
+  "PASS: Monotonic 3-image sequence 1,2,2,3 accepted."
+);
+
+const fiveImageStoryboard =
+  structuredClone(validStoryboard);
+
+const fiveImageContentScenes =
+  fiveImageStoryboard.scenes
+    .slice(0, 4)
+    .map((scene) => structuredClone(scene));
+
+const fifthProductScene =
+  structuredClone(
+    fiveImageStoryboard.scenes[3]
+  );
+
+const fiveImageCtaScene =
+  structuredClone(
+    fiveImageStoryboard.scenes[4]
+  );
+
+fiveImageStoryboard.scenes = [
+  ...fiveImageContentScenes,
+  fifthProductScene,
+  fiveImageCtaScene
+];
+
+fiveImageStoryboard.scenes.forEach(
+  (scene, index) => {
+    scene.sceneNumber = index + 1;
+    scene.startSeconds = index * 5;
+    scene.endSeconds = (index + 1) * 5;
+  }
+);
+
+fiveImageStoryboard.totalDurationSeconds = 30;
+
+fiveImageStoryboard.narrationWordCount =
+  fiveImageStoryboard.scenes
+    .map((scene) => scene.narration)
+    .join(" ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+
+for (let index = 0; index < 5; index += 1) {
+  fiveImageStoryboard.scenes[index].imageIndex =
+    index + 1;
+
+  if (
+    fiveImageStoryboard.scenes[index].role ===
+    "cta"
+  ) {
+    fiveImageStoryboard.scenes[index].role =
+      "benefit";
+  }
+}
+
+fiveImageStoryboard.scenes[5].role = "cta";
+fiveImageStoryboard.scenes[5].imageIndex = 1;
+
+const fiveImageResult =
+  validateStoryboard(
+    fiveImageStoryboard,
+    {
+      imageCount: 5
+    }
+  );
+
+if (!fiveImageResult.ok) {
+  throw new Error(
+    `Expected 5 product images plus dedicated CTA to pass: ${fiveImageResult.errors.join(" | ")}`
+  );
+}
+
+console.log(
+  "PASS: Five images use scenes 1,2,3,4,5 plus dedicated CTA."
+);
+
+const fiveImageMissingContentStoryboard =
+  structuredClone(fiveImageStoryboard);
+
+fiveImageMissingContentStoryboard.scenes[4].imageIndex =
+  4;
+
+const fiveImageMissingContentResult =
+  validateStoryboard(
+    fiveImageMissingContentStoryboard,
+    {
+      imageCount: 5
+    }
+  );
+
+if (fiveImageMissingContentResult.ok) {
+  throw new Error(
+    "Expected image 5 missing from non-CTA scenes to fail."
+  );
+}
+
+if (
+  !fiveImageMissingContentResult.errors.some(
+    (error) =>
+      error.includes(
+        "Uploaded image 5 is not used by any non-CTA scene."
+      )
+  )
+) {
+  throw new Error(
+    `Expected non-CTA image coverage error: ${fiveImageMissingContentResult.errors.join(" | ")}`
+  );
+}
+
+console.log(
+  "PASS: CTA structural imageIndex cannot satisfy product-image coverage."
+);
+
+const fiveImageFiveSceneStoryboard =
+  structuredClone(validStoryboard);
+
+fiveImageFiveSceneStoryboard.scenes[0].imageIndex = 1;
+fiveImageFiveSceneStoryboard.scenes[1].imageIndex = 2;
+fiveImageFiveSceneStoryboard.scenes[2].imageIndex = 3;
+fiveImageFiveSceneStoryboard.scenes[3].imageIndex = 4;
+fiveImageFiveSceneStoryboard.scenes[4].imageIndex = 5;
+
+const fiveImageFiveSceneResult =
+  validateStoryboard(
+    fiveImageFiveSceneStoryboard,
+    {
+      imageCount: 5
+    }
+  );
+
+if (fiveImageFiveSceneResult.ok) {
+  throw new Error(
+    "Expected five uploaded images with only five total scenes to fail."
+  );
+}
+
+console.log(
+  "PASS: Five uploaded images require six total scenes including CTA."
+);
 function storyboardWithDuration(seconds) {
   const copy = structuredClone(validStoryboard);
   const sceneCount = copy.scenes.length;
