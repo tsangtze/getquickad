@@ -892,6 +892,7 @@ let selectedImages = [];
 let currentPlanMaxVideoSeconds = 30;
 let currentPlanId = "free";
 let currentProjectId = "";
+let websiteConfirmationRequired = false;
 let currentStoryboard = null;
 let reviewImageUrls = [];
 let reviewCtaImageUrl = "";
@@ -1562,6 +1563,17 @@ function validateVideoPlan() {
   if (window.quickAdMusic.locked) { finalVideoButton.disabled = true; return false; }
   if (!currentStoryboard) {
     finalVideoButton.disabled = true;
+    return false;
+  }
+
+  if (websiteConfirmationRequired) {
+    finalVideoButton.disabled = true;
+    planStatus.textContent =
+      uiText(
+        "review.branding_confirm_required",
+        "Confirm the website or address before creating the final video."
+      );
+
     return false;
   }
 
@@ -2671,12 +2683,12 @@ function renderPlanBrandingReview(project) {
   saveWebsiteButton.type = "button";
 
   saveWebsiteButton.className =
-    "plan-branding-button";
+    "plan-branding-button confirm-scene-button";
 
   saveWebsiteButton.textContent =
     uiText(
       "review.branding_save",
-      "Save"
+      "Confirm"
     );
 
   const removeWebsiteButton =
@@ -2705,10 +2717,13 @@ function renderPlanBrandingReview(project) {
   websiteSavedStatus.textContent =
     uiText(
       "review.branding_saved",
-      "✓ Saved"
+      "✓ Confirmed"
     );
 
   websiteSavedStatus.hidden = true;
+
+  websiteConfirmationRequired =
+    String(websiteInput.value ?? "").trim().length > 0;
 
   const showWebsiteEditingState = () => {
     saveWebsiteButton.disabled = false;
@@ -2757,7 +2772,7 @@ function renderPlanBrandingReview(project) {
       project.website =
         payload.website || "";
 
-      markPlanChanged();
+      websiteConfirmationRequired = false;
 
       websiteInput.value =
         project.website;
@@ -2771,6 +2786,7 @@ function renderPlanBrandingReview(project) {
       }
 
       websiteInput.disabled = false;
+      validateVideoPlan();
     } catch (error) {
       window.alert(
         error?.message ||
@@ -2799,7 +2815,12 @@ function renderPlanBrandingReview(project) {
   websiteInput.addEventListener(
     "input",
     () => {
+      websiteConfirmationRequired =
+        Boolean(String(websiteInput.value ?? "").trim()) ||
+        Boolean(String(project.website ?? "").trim());
+
       showWebsiteEditingState();
+      validateVideoPlan();
     }
   );
 
@@ -2821,6 +2842,8 @@ function renderPlanBrandingReview(project) {
   removeWebsiteButton.addEventListener(
     "click",
     () => {
+      websiteConfirmationRequired = true;
+      validateVideoPlan();
       saveWebsite("");
     }
   );

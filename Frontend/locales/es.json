@@ -449,8 +449,9 @@
   "review.branding_logo_replace": "Reemplazar",
   "review.branding_website": "Sitio web o dirección",
   "review.branding_website_placeholder": "Sitio web, dirección de la tienda, página social u otra información de contacto",
-  "review.branding_save": "Guardar",
+  "review.branding_save": "Confirmar",
   "review.branding_remove": "Eliminar",
   "review.branding_update_failed": "No se pudo actualizar la marca del video.",
-  "review.branding_saved": "✓ Guardado"
+  "review.branding_saved": "✓ Confirmado",
+  "review.branding_confirm_required": "Confirma el sitio web o la dirección antes de crear el video final."
 }

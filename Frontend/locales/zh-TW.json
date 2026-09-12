@@ -434,8 +434,9 @@
   "review.branding_logo_replace": "更換",
   "review.branding_website": "網站或地址",
   "review.branding_website_placeholder": "網站、店家地址、社群頁面或其他聯絡資訊",
-  "review.branding_save": "儲存",
+  "review.branding_save": "確認",
   "review.branding_remove": "移除",
   "review.branding_update_failed": "無法更新影片品牌設定。",
-  "review.branding_saved": "✓ 已儲存"
+  "review.branding_saved": "✓ 已確認",
+  "review.branding_confirm_required": "建立最終影片前，請確認網站或地址。"
 }

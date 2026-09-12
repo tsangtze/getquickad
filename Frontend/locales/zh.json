@@ -433,8 +433,9 @@
   "review.branding_logo_replace": "替换",
   "review.branding_website": "网站或地址",
   "review.branding_website_placeholder": "网站、店铺地址、社交主页或其他联系信息",
-  "review.branding_save": "保存",
+  "review.branding_save": "确认",
   "review.branding_remove": "移除",
   "review.branding_update_failed": "无法更新视频品牌设置。",
-  "review.branding_saved": "✓ 已保存"
+  "review.branding_saved": "✓ 已确认",
+  "review.branding_confirm_required": "创建最终视频前，请确认网站或地址。"
 }

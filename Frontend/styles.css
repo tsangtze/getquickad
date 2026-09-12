@@ -2742,17 +2742,35 @@ input::placeholder {
   opacity: 0.6;
 }
 
+/* Version 1.1.9.16: website confirmation uses the scene-confirm action color. */
+.plan-branding-button.confirm-scene-button {
+  border-color: #6656ff;
+  color: #ffffff;
+  background: #6656ff;
+  font-weight: 800;
+}
+
+.plan-branding-button.confirm-scene-button:hover:not(:disabled) {
+  background: #5142df;
+}
+
 .plan-branding-remove {
   color: #b42318;
 }
 
-/* Version 1.1.9.9.1: website saved confirmation. */
+/* Version 1.1.9.16: website saved confirmation matches scene confirmation. */
 .plan-branding-saved-status {
   display: inline-flex;
+  min-width: 150px;
   min-height: 38px;
   align-items: center;
-  padding: 8px 4px;
-  font-weight: 700;
+  justify-content: center;
+  padding: 11px 16px;
+  border: 1px solid #28ad72;
+  border-radius: 10px;
+  color: #12633f;
+  background: #e5f8ef;
+  font-weight: 800;
 }
 
 .plan-branding-saved-status[hidden] {

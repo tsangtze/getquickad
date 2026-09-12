@@ -448,8 +448,9 @@
   "review.branding_logo_replace": "Ersetzen",
   "review.branding_website": "Website oder Adresse",
   "review.branding_website_placeholder": "Website, Geschäftsadresse, Social-Media-Seite oder andere Kontaktinformationen",
-  "review.branding_save": "Speichern",
+  "review.branding_save": "Bestätigen",
   "review.branding_remove": "Entfernen",
   "review.branding_update_failed": "Das Video-Branding konnte nicht aktualisiert werden.",
-  "review.branding_saved": "✓ Gespeichert"
+  "review.branding_saved": "✓ Bestätigt",
+  "review.branding_confirm_required": "Bestätigen Sie die Website oder Adresse, bevor Sie das endgültige Video erstellen."
 }

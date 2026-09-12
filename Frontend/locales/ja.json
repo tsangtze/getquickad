@@ -433,8 +433,9 @@
   "review.branding_logo_replace": "置き換える",
   "review.branding_website": "ウェブサイトまたは住所",
   "review.branding_website_placeholder": "ウェブサイト、店舗住所、SNSページ、その他の連絡先情報",
-  "review.branding_save": "保存",
+  "review.branding_save": "確認",
   "review.branding_remove": "削除",
   "review.branding_update_failed": "動画のブランド設定を更新できませんでした。",
-  "review.branding_saved": "✓ 保存済み"
+  "review.branding_saved": "✓ 確認済み",
+  "review.branding_confirm_required": "最終動画を作成する前に、ウェブサイトまたは住所を確認してください。"
 }

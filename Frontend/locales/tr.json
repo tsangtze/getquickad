@@ -434,8 +434,9 @@
   "review.branding_logo_replace": "Değiştir",
   "review.branding_website": "Web sitesi veya adres",
   "review.branding_website_placeholder": "Web sitesi, mağaza adresi, sosyal medya sayfası veya diğer iletişim bilgileri",
-  "review.branding_save": "Kaydet",
+  "review.branding_save": "Onayla",
   "review.branding_remove": "Kaldır",
   "review.branding_update_failed": "Video markası güncellenemedi.",
-  "review.branding_saved": "✓ Kaydedildi"
+  "review.branding_saved": "✓ Onaylandı",
+  "review.branding_confirm_required": "Son videoyu oluşturmadan önce web sitesini veya adresi onaylayın."
 }

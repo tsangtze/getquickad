@@ -433,8 +433,9 @@
   "review.branding_logo_replace": "Replace",
   "review.branding_website": "Website or address",
   "review.branding_website_placeholder": "Website, store address, social page, or other contact information",
-  "review.branding_save": "Save",
+  "review.branding_save": "Confirm",
   "review.branding_remove": "Remove",
   "review.branding_update_failed": "Could not update video branding.",
-  "review.branding_saved": "✓ Saved"
+  "review.branding_saved": "✓ Confirmed",
+  "review.branding_confirm_required": "Confirm the website or address before creating the final video."
 }

@@ -434,8 +434,9 @@
   "review.branding_logo_replace": "बदलें",
   "review.branding_website": "वेबसाइट या पता",
   "review.branding_website_placeholder": "वेबसाइट, स्टोर का पता, सोशल पेज या अन्य संपर्क जानकारी",
-  "review.branding_save": "सेव करें",
+  "review.branding_save": "पुष्टि करें",
   "review.branding_remove": "हटाएं",
   "review.branding_update_failed": "वीडियो ब्रांडिंग अपडेट नहीं हो सकी।",
-  "review.branding_saved": "✓ सेव हो गया"
+  "review.branding_saved": "✓ पुष्टि की गई",
+  "review.branding_confirm_required": "अंतिम वीडियो बनाने से पहले वेबसाइट या पता पुष्टि करें।"
 }
