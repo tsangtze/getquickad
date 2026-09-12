@@ -337,5 +337,51 @@
       setBusy(false);
     }
   });
+  window.quickAdOpenSignup = async () => {
+    if (dialog.open || busy) return;
+
+    loginForm.hidden = true;
+    signedInPanel.hidden = true;
+    status.textContent =
+      accountText("account.checking", "Checking your session...");
+    dialog.showModal();
+    setBusy(true);
+
+    try {
+      const { response, data } = await request("session");
+
+      if (response.status === 401) {
+        showUser(null);
+        setMode(true);
+        status.textContent =
+          accountText("account.create_status", "Create your QuickAd AI account.");
+        emailInput.focus();
+        return;
+      }
+
+      if (response.ok && data.ok && data.user?.id) {
+        showUser(data.user);
+        status.textContent =
+          accountText("account.signed_in", "You are signed in.");
+        return;
+      }
+
+      showUser(null);
+      setMode(true);
+      status.textContent =
+        accountText("account.create_status", "Create your QuickAd AI account.");
+    } catch {
+      showUser(null);
+      setMode(true);
+      status.textContent =
+        accountText(
+          "account.session_check_failed",
+          "Session check failed. You can still create an account."
+        );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (returnedFromEmail) button.click();
 })();

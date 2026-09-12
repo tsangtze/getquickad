@@ -234,6 +234,48 @@ h1 {
   line-height: 1;
 }
 
+.intro-cta {
+  margin: 20px 0 0;
+}
+
+.intro-cta[hidden] {
+  display: none;
+}
+
+.intro-cta-button {
+  appearance: none;
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 22px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.22);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.intro-cta-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 13px 28px rgba(79, 70, 229, 0.28);
+}
+
+.intro-cta-button:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.28);
+  outline-offset: 3px;
+}
+
+.intro-cta-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
 #quotaBanner {
   display: none;
   width: fit-content;
@@ -2947,4 +2989,8 @@ input::placeholder {
   .plan-branding-actions {
     justify-content: flex-start;
   }
+}
+/* Version 1.1.9.28 — keep CTA scroll target below fixed header */
+#upload-heading {
+  scroll-margin-top: 110px;
 }

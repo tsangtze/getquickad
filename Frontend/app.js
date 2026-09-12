@@ -3774,6 +3774,50 @@ function quickAdReloadPrivatePage() {
   window.location.reload();
 }
 
+function updateIntroCta(user) {
+  const container =
+    document.getElementById("intro-cta");
+
+  const button =
+    document.getElementById("intro-cta-button");
+
+  const note =
+    document.getElementById("intro-cta-note");
+
+  if (!container || !button || !note) return;
+
+  const signedIn = Boolean(user?.id);
+
+  button.textContent = signedIn
+    ? uiText("intro.cta_start", "Start Creating")
+    : uiText("intro.cta_free", "Create Your First Video Free");
+
+  note.textContent = signedIn
+    ? ""
+    : uiText(
+        "intro.cta_free_note",
+        "2 free videos · No subscription required"
+      );
+
+  note.hidden = signedIn;
+  container.hidden = false;
+}
+
+const introCtaButton =
+  document.getElementById("intro-cta-button");
+
+introCtaButton?.addEventListener("click", () => {
+  if (quickAdHistoryUser) {
+    document.getElementById("upload-heading")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+    return;
+  }
+
+  window.quickAdOpenSignup?.();
+});
+
 window.quickAdAccountChanged = (user) => {
   const nextId = typeof user?.id === "string" ? user.id : null;
 
@@ -3784,6 +3828,7 @@ window.quickAdAccountChanged = (user) => {
 
   quickAdIdentityKnown = true;
   quickAdHistoryUser = nextId;
+  updateIntroCta(user);
 };
 
 window.quickAdNotifyAccountChange = () => {
