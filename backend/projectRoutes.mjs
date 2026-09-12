@@ -65,7 +65,7 @@ function cleanText(value, maximumLength) {
 
 function normalizeWebsite(value) {
   const suppliedWebsite =
-    cleanText(value, 250);
+    String(value ?? "").trim();
 
   if (!suppliedWebsite) {
     return {
@@ -73,18 +73,32 @@ function normalizeWebsite(value) {
     };
   }
 
-  if (/\s/.test(suppliedWebsite)) {
+  if (suppliedWebsite.length > 60) {
     return {
       code: "PROJECT_WEBSITE_INVALID",
       error:
-        "Enter only the website address, without additional words."
+        "Website or address must contain 60 characters or fewer."
+    };
+  }
+
+  const looksLikeWebsite =
+    !/\s/.test(suppliedWebsite) &&
+    (
+      /^https?:\/\//i.test(suppliedWebsite) ||
+      /^www\./i.test(suppliedWebsite) ||
+      /^[^\s/]+\.[^\s/]+(?:\/.*)?$/i.test(
+        suppliedWebsite
+      )
+    );
+
+  if (!looksLikeWebsite) {
+    return {
+      website: suppliedWebsite
     };
   }
 
   const websiteWithProtocol =
-    /^[a-z][a-z0-9+.-]*:\/\//i.test(
-      suppliedWebsite
-    )
+    /^https?:\/\//i.test(suppliedWebsite)
       ? suppliedWebsite
       : `https://${suppliedWebsite}`;
 
@@ -101,19 +115,24 @@ function normalizeWebsite(value) {
       return {
         code: "PROJECT_WEBSITE_INVALID",
         error:
-          "Enter a valid website address."
+          "Enter a valid website or address."
       };
     }
 
+    const normalizedWebsite =
+      parsedWebsite.toString();
+
     return {
       website:
-        parsedWebsite.toString()
+        normalizedWebsite.length <= 60
+          ? normalizedWebsite
+          : suppliedWebsite
     };
   } catch {
     return {
       code: "PROJECT_WEBSITE_INVALID",
       error:
-        "Enter a valid website address."
+        "Enter a valid website or address."
     };
   }
 }

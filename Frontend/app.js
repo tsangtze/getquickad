@@ -815,7 +815,31 @@ function resizeProductDescription() {
   description.style.height = `${description.scrollHeight}px`;
 }
 const websiteInput = document.querySelector("#website");
+const websiteCount = document.querySelector("#website-count");
 const characterCount = document.querySelector("#character-count");
+
+const updateCreateWebsiteCounter = () => {
+  if (!websiteInput || !websiteCount) {
+    return;
+  }
+
+  websiteCount.textContent =
+    uiText(
+      "scene.caption_count",
+      `${websiteInput.value.length} / 60 characters`,
+      {
+        count: websiteInput.value.length,
+        max: 60
+      }
+    );
+};
+
+websiteInput?.addEventListener(
+  "input",
+  updateCreateWebsiteCounter
+);
+
+updateCreateWebsiteCounter();
 const uploadError = document.querySelector("#upload-error");
 const descriptionError = document.querySelector("#description-error");
 const formMessage = document.querySelector("#form-message");
@@ -2645,9 +2669,10 @@ function renderPlanBrandingReview(project) {
     );
 
   const websiteInput =
-    document.createElement("input");
+    document.createElement("textarea");
 
-  websiteInput.type = "text";
+  websiteInput.maxLength = 60;
+  websiteInput.rows = 1;
 
   websiteInput.className =
     "plan-branding-website-input";
@@ -2667,8 +2692,47 @@ function renderPlanBrandingReview(project) {
     websiteInput
   );
 
+  const websiteCounter =
+    document.createElement("div");
+
+  websiteCounter.className =
+    "text-meta";
+
+  const websiteCounterSpacer =
+    document.createElement("span");
+
+  const websiteCounterValue =
+    document.createElement("span");
+
+  const resizeWebsiteInput = () => {
+    websiteInput.style.height = "auto";
+    websiteInput.style.height =
+      `${websiteInput.scrollHeight}px`;
+  };
+
+  const updateWebsiteCounter = () => {
+    websiteCounterValue.textContent =
+      uiText(
+        "scene.caption_count",
+        `${websiteInput.value.length} / 60 characters`,
+        {
+          count: websiteInput.value.length,
+          max: 60
+        }
+      );
+  };
+
+  updateWebsiteCounter();
+  resizeWebsiteInput();
+
+  websiteCounter.append(
+    websiteCounterSpacer,
+    websiteCounterValue
+  );
+
   websiteMain.append(
-    websiteLabel
+    websiteLabel,
+    websiteCounter
   );
 
   const websiteActions =
@@ -2776,6 +2840,8 @@ function renderPlanBrandingReview(project) {
 
       websiteInput.value =
         project.website;
+      updateWebsiteCounter();
+      resizeWebsiteInput();
 
       if (project.website) {
         showWebsiteSavedState();
@@ -2815,6 +2881,9 @@ function renderPlanBrandingReview(project) {
   websiteInput.addEventListener(
     "input",
     () => {
+      updateWebsiteCounter();
+      resizeWebsiteInput();
+
       websiteConfirmationRequired =
         Boolean(String(websiteInput.value ?? "").trim()) ||
         Boolean(String(project.website ?? "").trim());

@@ -408,23 +408,32 @@ function buildCaptionAss({
 }
 
 function getBrandText(project) {
-  if (project.website) {
+  const brandingText =
+    String(project.website ?? "").trim();
+
+  if (brandingText) {
     try {
       const parsedWebsite =
-        new URL(project.website);
+        new URL(brandingText);
 
-      return parsedWebsite.hostname
-        .replace(/^www\./i, "");
+      if (
+        ["http:", "https:"].includes(
+          parsedWebsite.protocol
+        ) &&
+        parsedWebsite.hostname
+      ) {
+        return parsedWebsite.hostname
+          .replace(/^www\./i, "");
+      }
     } catch {
-      return String(project.website)
-        .replace(/^https?:\/\//i, "")
-        .replace(/\/.*$/, "");
+      // Preserve free-form branding text.
     }
+
+    return brandingText;
   }
 
   return "QuickAd AI";
 }
-
 function getRoleLabel(role) {
   const labels = {
     hook: "DISCOVER",
