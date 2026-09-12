@@ -876,11 +876,6 @@ export async function renderVideo({
     projectDirectory
   });
 
-  console.log("[video-render] branding:", {
-    projectId: String(project?.id ?? ""),
-    hasWebsite: Boolean(project?.website),
-    brandText: getBrandText(project)
-  });
 
   const narrationPath = path.join(
     projectDirectory,
