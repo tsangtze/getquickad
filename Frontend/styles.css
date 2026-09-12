@@ -285,6 +285,128 @@ h1 {
   font-weight: 900;
 }
 
+
+/* Version 1.1.9.23: stronger typography hierarchy. */
+
+/* Give normal interface copy more visual weight. */
+body {
+  font-weight: 600;
+}
+
+/* Keep major headings visually distinct from normal bold copy. */
+h1,
+h2,
+h3,
+.step-heading h2,
+.create-card h2,
+.plan-review-heading h2,
+.plan-branding-heading strong {
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+/* Important labels remain stronger than surrounding copy. */
+.field-label,
+.scene-caption-column label,
+.scene-review-header strong,
+.plan-branding-item strong {
+  font-weight: 750;
+}
+
+/* Supporting copy should stay readable instead of looking washed out. */
+.intro-copy,
+.step-heading p,
+.step-status,
+.upload-optional,
+.field-label span,
+.text-meta,
+.duration-help,
+.duration-option small,
+.duration-note,
+.style-option small,
+.plan-review-heading p:not(.review-eyebrow),
+.scene-review-header small,
+.scene-caption-meta,
+.scene-narration-text,
+.plan-branding-heading small,
+.plan-branding-item small,
+.plan-branding-website-label {
+  font-weight: 600;
+}
+
+/* User-entered values and selectable controls should render crisply. */
+textarea,
+input[type="text"],
+select,
+.scene-caption-input,
+.plan-branding-website-input {
+  font-weight: 600;
+}
+
+/* Placeholder text remains intentionally secondary. */
+textarea::placeholder,
+input::placeholder {
+  font-weight: 500;
+}
+
+/* Version 1.1.9.23: clearer editable fields. */
+#productDesc,
+#website,
+#custom-call-to-action,
+.scene-caption-input,
+.plan-branding-website-input {
+  border: 2px solid #aeb8cc;
+  background: #ffffff;
+}
+
+/* Make the active typing location unmistakable. */
+#productDesc:focus,
+#website:focus,
+#custom-call-to-action:focus,
+.scene-caption-input:focus,
+.plan-branding-website-input:focus {
+  border-color: var(--primary);
+  background: #f8f7ff;
+  outline: 3px solid rgba(99, 91, 255, 0.16);
+  outline-offset: 0;
+}
+
+/* Version 1.1.9.23: consistent interactive card states. */
+
+/* Unselected cards should have a clearly visible boundary. */
+.style-option,
+.duration-option,
+.narrator-option span,
+.music-card {
+  border-color: #aeb8cc;
+  background: #ffffff;
+}
+
+/* Hover gives users a light visual cue before selection. */
+.style-option:hover,
+.duration-option:not(.locked):hover,
+.narrator-option:hover span,
+.music-card:hover {
+  border-color: #8f87ff;
+  background: #f8f7ff;
+}
+
+/* Every selected choice uses the same visual language. */
+.style-option.selected,
+.duration-option.selected,
+.narrator-option input:checked + span,
+.music-card:has(input:checked) {
+  border-color: var(--primary);
+  background: #f0eeff;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+/* Paid/locked duration cards stay visibly unavailable. */
+.duration-option.locked,
+.duration-option.locked:hover {
+  border-color: #cbd2df;
+  background: #f8fafc;
+}
 @media (max-width: 720px) {
   #quotaBanner {
     width: 100%;
