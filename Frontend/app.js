@@ -3296,6 +3296,13 @@ finalVideoButton.addEventListener(
         "error"
       );
 
+      const planApproval =
+        planStatus.closest(".plan-approval");
+
+      if (planApproval) {
+        planApproval.before(formMessage);
+      }
+
       formMessage.classList.add(
         "visible",
         "success-card"
@@ -3377,6 +3384,11 @@ form.addEventListener("submit", async (event) => {
 
   setUploadError();
   descriptionError.textContent = "";
+  form.insertAdjacentElement(
+    "afterend",
+    formMessage
+  );
+
   formMessage.classList.remove(
     "visible",
     "error",
