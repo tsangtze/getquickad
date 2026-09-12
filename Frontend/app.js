@@ -2793,7 +2793,8 @@ function renderPlanBrandingReview(project) {
     saveWebsiteButton.disabled = false;
     removeWebsiteButton.disabled = false;
     websiteInput.disabled = false;
-    saveWebsiteButton.hidden = false;
+    saveWebsiteButton.hidden =
+      !String(websiteInput.value ?? "").trim();
     removeWebsiteButton.hidden = !project.website;
     websiteSavedStatus.hidden = true;
   };
@@ -2846,7 +2847,8 @@ function renderPlanBrandingReview(project) {
       if (project.website) {
         showWebsiteSavedState();
       } else {
-        saveWebsiteButton.hidden = false;
+        saveWebsiteButton.hidden =
+          !String(websiteInput.value ?? "").trim();
         removeWebsiteButton.hidden = true;
         websiteSavedStatus.hidden = true;
       }
@@ -2885,8 +2887,11 @@ function renderPlanBrandingReview(project) {
       resizeWebsiteInput();
 
       websiteConfirmationRequired =
-        Boolean(String(websiteInput.value ?? "").trim()) ||
-        Boolean(String(project.website ?? "").trim());
+        Boolean(
+          String(
+            websiteInput.value ?? ""
+          ).trim()
+        );
 
       showWebsiteEditingState();
       validateVideoPlan();
