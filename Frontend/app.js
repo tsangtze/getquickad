@@ -3168,6 +3168,22 @@ finalVideoButton.addEventListener(
       }
 
       window.quickAdMusic.lock("ready");
+
+      planBrandingContent
+        ?.querySelectorAll(
+          ".plan-branding-button"
+        )
+        .forEach((button) => {
+          button.hidden = true;
+        });
+
+      planBrandingContent
+        ?.querySelectorAll(
+          ".plan-branding-website-input"
+        )
+        .forEach((input) => {
+          input.disabled = true;
+        });
       finalVideoButton.textContent =
         uiText("result.video_ready", "Video Ready");
 
