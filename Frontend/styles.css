@@ -2994,3 +2994,59 @@ input::placeholder {
 #upload-heading {
   scroll-margin-top: 110px;
 }
+
+/* Version 1.1.9.29 - legal pages */
+.footer-legal-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer a:hover {
+  color: var(--text);
+}
+
+.legal-shell {
+  width: min(860px, calc(100% - 36px));
+  margin: 42px auto 0;
+}
+
+.legal-card {
+  padding: clamp(24px, 5vw, 52px);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.legal-card h1 {
+  margin: 4px 0 8px;
+}
+
+.legal-card h2 {
+  margin: 30px 0 8px;
+  font-size: 1.15rem;
+}
+
+.legal-card p {
+  line-height: 1.7;
+}
+
+.legal-effective {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+.legal-back {
+  margin-top: 36px;
+}
+
+.legal-back a {
+  font-weight: 800;
+}
