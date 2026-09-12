@@ -3298,9 +3298,13 @@ finalVideoButton.addEventListener(
 
       formMessage.classList.add(
         "visible",
-        "success-card",
-        "success-popover"
+        "success-card"
       );
+
+      formMessage.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+      });
 
     } catch (error) {
       window.quickAdMusic.lock("");
