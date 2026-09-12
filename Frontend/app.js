@@ -2789,6 +2789,9 @@ function renderPlanBrandingReview(project) {
   websiteConfirmationRequired =
     String(websiteInput.value ?? "").trim().length > 0;
 
+  saveWebsiteButton.hidden =
+    !websiteConfirmationRequired;
+
   const showWebsiteEditingState = () => {
     saveWebsiteButton.disabled = false;
     removeWebsiteButton.disabled = false;
