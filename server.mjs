@@ -241,6 +241,42 @@ function buildAlternateLinks() {
   return languageLinks.join("\n");
 }
 
+const socialShareImageUrl =
+  `${seoOrigin}/assets/quickad-social-share.png`;
+
+function buildSocialMeta({
+  title,
+  description,
+  canonicalUrl
+}) {
+  const safeTitle =
+    escapeHtmlAttribute(title);
+
+  const safeDescription =
+    escapeHtmlAttribute(description);
+
+  const safeCanonicalUrl =
+    escapeHtmlAttribute(canonicalUrl);
+
+  const safeImageUrl =
+    escapeHtmlAttribute(socialShareImageUrl);
+
+  return (
+    `  <meta property="og:type" content="website">` +
+    `\n  <meta property="og:site_name" content="QuickAd AI">` +
+    `\n  <meta property="og:title" content="${safeTitle}">` +
+    `\n  <meta property="og:description" content="${safeDescription}">` +
+    `\n  <meta property="og:url" content="${safeCanonicalUrl}">` +
+    `\n  <meta property="og:image" content="${safeImageUrl}">` +
+    `\n  <meta property="og:image:width" content="1200">` +
+    `\n  <meta property="og:image:height" content="630">` +
+    `\n  <meta property="og:image:alt" content="QuickAd AI — turn product photos into videos">` +
+    `\n  <meta name="twitter:card" content="summary_large_image">` +
+    `\n  <meta name="twitter:title" content="${safeTitle}">` +
+    `\n  <meta name="twitter:description" content="${safeDescription}">` +
+    `\n  <meta name="twitter:image" content="${safeImageUrl}">`
+  );
+}
 function buildHomeHtml({
   html,
   language,
@@ -295,6 +331,11 @@ function buildHomeHtml({
       "</title>",
       `</title>\n` +
         `  <link rel="canonical" href="${canonical}">\n` +
+        `${buildSocialMeta({
+          title: seo.title,
+          description: seo.description,
+          canonicalUrl
+        })}\n` +
         `${alternateLinks}` +
         `  <script type="application/ld+json">${structuredData}</script>`
     );
@@ -628,6 +669,11 @@ function buildSeoLandingHtml({
       "</head>",
       (
         `  <link rel="canonical" href="${escapeHtmlAttribute(canonicalUrl)}">\n` +
+        `${buildSocialMeta({
+          title: content.title,
+          description: content.description,
+          canonicalUrl
+        })}\n` +
         `${buildSeoLandingAlternateLinks(intent)}\n` +
         `  <script type="application/ld+json">${structuredData}</script>\n` +
         `</head>`
