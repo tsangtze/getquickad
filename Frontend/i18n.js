@@ -103,7 +103,22 @@ function applyTranslations(){
   }
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key=el.getAttribute('data-i18n');
-    const val=t(key);
+
+    // Pass data-i18n-* attributes to parameterized translations.
+    const params={};
+
+    for(const attribute of el.attributes){
+      if(!attribute.name.startsWith('data-i18n-')) continue;
+
+      const paramName =
+        attribute.name.slice('data-i18n-'.length);
+
+      if(paramName){
+        params[paramName]=attribute.value;
+      }
+    }
+
+    const val=t(key,params);
     if(val) el.textContent=val;
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
