@@ -121,6 +121,78 @@ function applyTranslations(){
     const val=t(key,params);
     if(val) el.textContent=val;
   });
+
+  const demoLanguageNote =
+    document.getElementById('demo-language-note-text');
+
+  if(demoLanguageNote){
+    const highlightTerms = {
+      en: ['multiple languages'],
+      es: ['español'],
+      de: ['deutsche'],
+      fr: ['français'],
+      hi: ['हिंदी'],
+      it: ['italiano'],
+      ja: ['日本語'],
+      ko: ['한국어'],
+      pt: ['português'],
+      tr: ['Türkçe'],
+      zh: ['中文'],
+      'zh-TW': ['中文'],
+      ar: ['اللغة التي تختارها']
+    };
+
+    const terms = highlightTerms[currentLang] || [];
+
+    if(terms.length > 0){
+      const text = demoLanguageNote.textContent;
+      const fragment = document.createDocumentFragment();
+
+      let cursor = 0;
+
+      while(cursor < text.length){
+        let nextIndex = -1;
+        let nextTerm = '';
+
+        for(const term of terms){
+          const index = text.indexOf(term, cursor);
+
+          if(
+            index !== -1 &&
+            (nextIndex === -1 || index < nextIndex)
+          ){
+            nextIndex = index;
+            nextTerm = term;
+          }
+        }
+
+        if(nextIndex === -1){
+          fragment.append(
+            document.createTextNode(text.slice(cursor))
+          );
+          break;
+        }
+
+        if(nextIndex > cursor){
+          fragment.append(
+            document.createTextNode(
+              text.slice(cursor, nextIndex)
+            )
+          );
+        }
+
+        const highlight = document.createElement('strong');
+        highlight.className = 'demo-language-highlight';
+        highlight.textContent = nextTerm;
+
+        fragment.append(highlight);
+
+        cursor = nextIndex + nextTerm.length;
+      }
+
+      demoLanguageNote.replaceChildren(fragment);
+    }
+  }
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
     const key=el.getAttribute('data-i18n-placeholder');
     const val=t(key);
