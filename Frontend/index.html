@@ -61,6 +61,65 @@
         <span class="video-summary-badge"><span class="video-summary-icon" aria-hidden="true">🎬</span><span>MP4</span></span>
       </div>
     </section>
+    <section class="demo-showcase" aria-labelledby="demo-showcase-title">
+      <div class="demo-showcase-heading">
+        <p class="eyebrow" data-i18n="demo.eyebrow">See QuickAd AI in action</p>
+        <h2 id="demo-showcase-title" data-i18n="demo.title">From product photos to finished videos</h2>
+        <p data-i18n="demo.intro">See how QuickAd AI works, then watch a real product video created with it. Create videos with captions and narration in your selected language.</p>
+        <p class="demo-language-note">
+          <span aria-hidden="true">🌐</span>
+          <span data-i18n="demo.language_note">Demo shown in English. QuickAd AI can generate captions and narration in your selected language.</span>
+        </p>
+      </div>
+
+      <div class="demo-video-grid">
+        <article class="demo-video-card">
+          <div class="demo-video-frame">
+            <video
+              controls
+              preload="none"
+              playsinline
+              aria-label="QuickAd AI walkthrough video" data-i18n-aria-label="demo.walkthrough_aria"
+            >
+              <source
+                src="/assets/quickad-walkthrough.mp4"
+                type="video/mp4"
+              >
+              <span data-i18n="demo.unsupported">Your browser does not support the video element.</span>
+            </video>
+          </div>
+
+          <div class="demo-video-copy">
+            <span class="demo-video-label" data-i18n="demo.walkthrough_label">55-second walkthrough</span>
+            <h3 data-i18n="demo.walkthrough_title">How QuickAd AI works</h3>
+            <p data-i18n="demo.walkthrough_desc">Follow the process from product photos and video settings to a finished social media video.</p>
+          </div>
+        </article>
+
+        <article class="demo-video-card">
+          <div class="demo-video-frame">
+            <video
+              controls
+              preload="none"
+              playsinline
+              aria-label="Coffee maker promotional video created with QuickAd AI" data-i18n-aria-label="demo.example_aria"
+            >
+              <source
+                src="/assets/quickad-coffee-demo.mp4"
+                type="video/mp4"
+              >
+              <span data-i18n="demo.unsupported">Your browser does not support the video element.</span>
+            </video>
+          </div>
+
+          <div class="demo-video-copy">
+            <span class="demo-video-label" data-i18n="demo.example_label">Example output</span>
+            <h3 data-i18n="demo.example_title">Product photos to finished ad</h3>
+            <p data-i18n="demo.example_desc">This coffee maker promotion was created with QuickAd AI from ordinary product photos.</p>
+          </div>
+        </article>
+      </div>
+    </section>
     <form id="video-form" class="creation-form" novalidate>
       <section class="form-card" aria-labelledby="upload-heading">
         <div class="step-number">1</div>
@@ -659,15 +718,3 @@
   </footer>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-

@@ -441,5 +441,18 @@
   "review.branding_remove": "हटाएं",
   "review.branding_update_failed": "वीडियो ब्रांडिंग अपडेट नहीं हो सकी।",
   "review.branding_saved": "✓ पुष्टि की गई",
-  "review.branding_confirm_required": "अंतिम वीडियो बनाने से पहले वेबसाइट या पता पुष्टि करें।"
+  "review.branding_confirm_required": "अंतिम वीडियो बनाने से पहले वेबसाइट या पता पुष्टि करें।",
+  "demo.eyebrow": "QuickAd AI को काम करते देखें",
+  "demo.title": "प्रोडक्ट फ़ोटो से तैयार वीडियो तक",
+  "demo.intro": "देखें कि QuickAd AI कैसे काम करता है, फिर इससे बनाया गया एक वास्तविक प्रोडक्ट वीडियो देखें।",
+  "demo.language_note": "डेमो अंग्रेज़ी में दिखाया गया है। QuickAd AI हिंदी में कैप्शन और नैरेशन बना सकता है।",
+  "demo.walkthrough_label": "55 सेकंड का डेमो",
+  "demo.walkthrough_title": "QuickAd AI कैसे काम करता है",
+  "demo.walkthrough_desc": "प्रोडक्ट फ़ोटो और वीडियो सेटिंग से लेकर तैयार सोशल मीडिया वीडियो तक की प्रक्रिया देखें।",
+  "demo.walkthrough_aria": "QuickAd AI का डेमो वीडियो",
+  "demo.example_label": "आउटपुट उदाहरण",
+  "demo.example_title": "प्रोडक्ट फ़ोटो से तैयार विज्ञापन तक",
+  "demo.example_desc": "यह कॉफी मेकर प्रमोशन सामान्य प्रोडक्ट फ़ोटो से QuickAd AI का उपयोग करके बनाया गया था।",
+  "demo.example_aria": "QuickAd AI से बनाया गया कॉफी मेकर प्रमोशनल वीडियो",
+  "demo.unsupported": "आपका ब्राउज़र वीडियो एलिमेंट को सपोर्ट नहीं करता।"
 }

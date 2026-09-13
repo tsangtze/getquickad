@@ -441,5 +441,18 @@
   "review.branding_remove": "Kaldır",
   "review.branding_update_failed": "Video markası güncellenemedi.",
   "review.branding_saved": "✓ Onaylandı",
-  "review.branding_confirm_required": "Son videoyu oluşturmadan önce web sitesini veya adresi onaylayın."
+  "review.branding_confirm_required": "Son videoyu oluşturmadan önce web sitesini veya adresi onaylayın.",
+  "demo.eyebrow": "QuickAd AI'ı çalışırken görün",
+  "demo.title": "Ürün fotoğraflarından tamamlanmış videolara",
+  "demo.intro": "QuickAd AI'ın nasıl çalıştığını görün ve ardından onunla oluşturulmuş gerçek bir ürün videosunu izleyin.",
+  "demo.language_note": "Demo İngilizce olarak gösterilmektedir. QuickAd AI Türkçe altyazı ve seslendirme oluşturabilir.",
+  "demo.walkthrough_label": "55 saniyelik demo",
+  "demo.walkthrough_title": "QuickAd AI nasıl çalışır",
+  "demo.walkthrough_desc": "Ürün fotoğrafları ve video ayarlarından tamamlanmış bir sosyal medya videosuna kadar olan süreci izleyin.",
+  "demo.walkthrough_aria": "QuickAd AI kullanım demo videosu",
+  "demo.example_label": "Örnek çıktı",
+  "demo.example_title": "Ürün fotoğraflarından tamamlanmış reklama",
+  "demo.example_desc": "Bu kahve makinesi tanıtımı, sıradan ürün fotoğraflarından QuickAd AI ile oluşturuldu.",
+  "demo.example_aria": "QuickAd AI ile oluşturulan kahve makinesi tanıtım videosu",
+  "demo.unsupported": "Tarayıcınız video öğesini desteklemiyor."
 }

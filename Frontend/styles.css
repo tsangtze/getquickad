@@ -3050,3 +3050,126 @@ input::placeholder {
 .legal-back a {
   font-weight: 800;
 }
+
+/* Version 1.1.9.30: homepage product demo videos. */
+.demo-showcase {
+  margin: 0 0 34px;
+  padding: 28px;
+  border: 1px solid #dde4f0;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.06);
+}
+
+.demo-showcase-heading {
+  max-width: 720px;
+  margin-bottom: 22px;
+}
+
+.demo-showcase-heading .eyebrow {
+  margin-bottom: 8px;
+}
+
+.demo-showcase-heading h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  line-height: 1.15;
+}
+
+.demo-showcase-heading > p:last-child {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.demo-language-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #dbe2ee;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.demo-video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.demo-video-card {
+  overflow: hidden;
+  border: 1px solid #dbe2ee;
+  border-radius: 20px;
+  background: #f8fafc;
+}
+
+.demo-video-frame {
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: #111827;
+}
+
+.demo-video-frame video {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: min(54vh, 480px);
+  max-height: 480px;
+  border-radius: 12px;
+  background: #000000;
+}
+
+.demo-video-copy {
+  padding: 18px 20px 20px;
+}
+
+.demo-video-label {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.demo-video-copy h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+
+.demo-video-copy p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .demo-showcase {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .demo-video-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-video-frame {
+    min-height: 0;
+  }
+
+  .demo-video-frame video {
+    height: min(70vh, 520px);
+  }
+}

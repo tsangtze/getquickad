@@ -440,5 +440,18 @@
   "review.branding_remove": "Remove",
   "review.branding_update_failed": "Could not update video branding.",
   "review.branding_saved": "✓ Confirmed",
-  "review.branding_confirm_required": "Confirm the website or address before creating the final video."
+  "review.branding_confirm_required": "Confirm the website or address before creating the final video.",
+  "demo.eyebrow": "See QuickAd AI in action",
+  "demo.title": "From product photos to finished videos",
+  "demo.intro": "See how QuickAd AI works, then watch a real product video created with it.",
+  "demo.language_note": "Demo shown in English. QuickAd AI can generate captions and narration in multiple languages.",
+  "demo.walkthrough_label": "55-second walkthrough",
+  "demo.walkthrough_title": "How QuickAd AI works",
+  "demo.walkthrough_desc": "Follow the process from product photos and video settings to a finished social media video.",
+  "demo.walkthrough_aria": "QuickAd AI walkthrough video",
+  "demo.example_label": "Example output",
+  "demo.example_title": "Product photos to finished ad",
+  "demo.example_desc": "This coffee maker promotion was created with QuickAd AI from ordinary product photos.",
+  "demo.example_aria": "Coffee maker promotional video created with QuickAd AI",
+  "demo.unsupported": "Your browser does not support the video element."
 }

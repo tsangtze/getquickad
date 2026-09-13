@@ -441,5 +441,18 @@
   "review.branding_remove": "移除",
   "review.branding_update_failed": "無法更新影片品牌設定。",
   "review.branding_saved": "✓ 已確認",
-  "review.branding_confirm_required": "建立最終影片前，請確認網站或地址。"
+  "review.branding_confirm_required": "建立最終影片前，請確認網站或地址。",
+  "demo.eyebrow": "看看 QuickAd AI 如何運作",
+  "demo.title": "從產品照片到完成影片",
+  "demo.intro": "了解 QuickAd AI 的使用流程，並觀看使用它製作的真實產品影片。",
+  "demo.language_note": "示範影片為英文。QuickAd AI 可以產生中文字幕和中文旁白。",
+  "demo.walkthrough_label": "55 秒操作示範",
+  "demo.walkthrough_title": "QuickAd AI 如何使用",
+  "demo.walkthrough_desc": "查看從產品照片和影片設定到完成社群媒體影片的整個流程。",
+  "demo.walkthrough_aria": "QuickAd AI 操作示範影片",
+  "demo.example_label": "成品範例",
+  "demo.example_title": "從產品照片到完成廣告",
+  "demo.example_desc": "這個咖啡機宣傳影片由 QuickAd AI 使用一般產品照片製作。",
+  "demo.example_aria": "使用 QuickAd AI 製作的咖啡機宣傳影片",
+  "demo.unsupported": "您的瀏覽器不支援影片元素。"
 }
