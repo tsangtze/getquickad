@@ -110,7 +110,8 @@ const supportedSeoLanguages = [
   "zh",
   "zh-TW",
   "tr",
-  "hi"
+  "hi",
+  "ar"
 ];
 
 const localizedHomePaths =
@@ -196,6 +197,12 @@ const seoByLanguage = {
       "AI प्रोडक्ट वीडियो जनरेटर | QuickAd AI",
     description:
       "प्रोडक्ट फ़ोटो को सोशल मीडिया और शॉर्ट-फॉर्म प्रमोशनल वीडियो में बदलें, जिनमें AI नैरेशन, कैप्शन, संगीत और कई स्टाइल शामिल हों।"
+  },
+  ar: {
+    title:
+      "مولد فيديوهات المنتجات بالذكاء الاصطناعي | QuickAd AI",
+    description:
+      "حوّل صور المنتجات إلى فيديوهات ترويجية جاهزة للنشر على وسائل التواصل الاجتماعي والمقاطع القصيرة، مع تعليق صوتي بالذكاء الاصطناعي وترجمات وموسيقى وأنماط متعددة."
   }
 };
 
@@ -317,7 +324,9 @@ function buildHomeHtml({
     )
     .replace(
       '<html lang="en">',
-      `<html lang="${escapeHtmlAttribute(language)}">`
+      language === "ar"
+        ? '<html lang="ar" dir="rtl">'
+        : `<html lang="${escapeHtmlAttribute(language)}">`
     )
     .replace(
       /<meta\s+name="description"[\s\S]*?>/i,

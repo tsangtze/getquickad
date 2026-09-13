@@ -10,7 +10,8 @@ const SUPPORTED_LANGS = {
   zh: { name: "简体中文", flag: "CN" },
   "zh-TW": { name: "繁體中文", flag: "TW" },
   tr: { name: "Türkçe", flag: "TR" },
-  hi: { name: "हिन्दी", flag: "IN" }
+  hi: { name: "हिन्दी", flag: "IN" },
+  ar: { name: "العربية", flag: "SA" }
 };
 function getLanguageFromPath(){
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -80,6 +81,8 @@ async function loadTranslations(lang){
     }
 
     document.documentElement.lang=lang;
+    document.documentElement.dir=
+      lang === 'ar' ? 'rtl' : 'ltr';
     applyTranslations();
   }catch(e){
     if(lang!=='en'){
