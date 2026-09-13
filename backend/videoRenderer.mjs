@@ -183,6 +183,10 @@ function getAssFontName(language = "en") {
     return "Noto Serif Devanagari";
   }
 
+  if (normalizedLanguage.startsWith("ar")) {
+    return "Noto Sans Arabic";
+  }
+
   return "Inter";
 }
 
@@ -475,6 +479,8 @@ async function findVideoFont(language = "en") {
     normalizedLanguage.startsWith("ko");
   const needsHindiFont =
     normalizedLanguage.startsWith("hi");
+  const needsArabicFont =
+    normalizedLanguage.startsWith("ar");
 
   const bundledFont = path.join(
     process.cwd(),
@@ -496,7 +502,13 @@ async function findVideoFont(language = "en") {
     "backend/fonts/NotoSerifDevanagari-Bold.ttf"
   );
 
+  const bundledArabicFont = path.join(
+    process.cwd(),
+    "backend/fonts/NotoSansArabic-VF.ttf"
+  );
+
   const candidates = [
+    ...(needsArabicFont ? [bundledArabicFont] : []),
     ...(needsHindiFont ? [bundledHindiFont] : []),
     ...(needsTraditionalChineseFont ? [bundledTraditionalChineseFont] : []),
     ...(needsCjkFont ? [bundledCjkFont] : []),
@@ -908,10 +920,13 @@ export async function renderVideo({
 
   const textFiles = [];
   const temporaryFiles = [];
-  const hideRoleLabel =
+  const normalizedProjectLanguage =
     String(project.language || project.targetLanguage || "en")
-      .toLowerCase()
-      .startsWith("hi");
+      .toLowerCase();
+
+  const hideRoleLabel =
+    normalizedProjectLanguage.startsWith("hi") ||
+    normalizedProjectLanguage.startsWith("ar");
 
 
   const createTextFile =
