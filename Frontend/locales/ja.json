@@ -445,7 +445,7 @@
   "demo.title": "商品写真から完成動画まで",
   "demo.intro": "QuickAd AI の使い方と、実際に作成された商品動画をご覧ください。",
   "demo.language_note": "デモ動画は英語です。QuickAd AI は日本語の字幕とナレーションを生成できます。",
-  "demo.walkthrough_label": "1分間の操作デモ",
+  "demo.walkthrough_label": "55秒の操作デモ",
   "demo.walkthrough_title": "QuickAd AI の使い方",
   "demo.walkthrough_desc": "商品写真と動画設定から、完成したSNS向け動画までの流れをご覧いただけます。",
   "demo.walkthrough_aria": "QuickAd AI 操作デモ動画",
