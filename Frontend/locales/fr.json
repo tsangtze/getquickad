@@ -460,13 +460,13 @@
   "demo.title": "Des photos de produit aux vidéos finalisées",
   "demo.intro": "Découvrez le fonctionnement de QuickAd AI, puis regardez une vraie vidéo produit créée avec l'application.",
   "demo.language_note": "La démonstration est présentée en anglais. QuickAd AI peut générer des sous-titres et une narration en français.",
-  "demo.walkthrough_label": "Démonstration de 55 secondes",
+  "demo.walkthrough_label": "Démonstration d'une minute",
   "demo.walkthrough_title": "Comment fonctionne QuickAd AI",
   "demo.walkthrough_desc": "Suivez le processus, des photos du produit et des réglages vidéo jusqu'à une vidéo finalisée pour les réseaux sociaux.",
   "demo.walkthrough_aria": "Vidéo de démonstration de QuickAd AI",
   "demo.example_label": "Exemple de résultat",
   "demo.example_title": "Des photos de produit à la publicité finalisée",
-  "demo.example_desc": "Cette promotion pour une cafetière a été créée avec QuickAd AI à partir de simples photos du produit.",
+  "demo.example_desc": "Cette démonstration pour une cafetière fictive a été créée avec QuickAd AI à partir d'images originales du produit.",
   "demo.example_aria": "Vidéo promotionnelle d'une cafetière créée avec QuickAd AI",
   "demo.unsupported": "Votre navigateur ne prend pas en charge l'élément vidéo."
 }
