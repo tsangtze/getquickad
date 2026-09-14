@@ -468,5 +468,9 @@
   "demo.example_title": "Des photos de produit à la publicité finalisée",
   "demo.example_desc": "Cette démonstration pour une cafetière fictive a été créée avec QuickAd AI à partir d'images originales du produit.",
   "demo.example_aria": "Vidéo promotionnelle d'une cafetière créée avec QuickAd AI",
+  "demo.transformation_label": "Transformation en 14 secondes",
+  "demo.transformation_title": "Des photos de produit à la vidéo prête à publier",
+  "demo.transformation_desc": "Découvrez comment des photos de produit deviennent une vidéo promotionnelle finalisée avec QuickAd AI.",
+  "demo.transformation_aria": "Transformation de photos de produit en vidéo prête à publier avec QuickAd AI",
   "demo.unsupported": "Votre navigateur ne prend pas en charge l'élément vidéo."
 }

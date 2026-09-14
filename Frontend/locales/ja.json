@@ -453,5 +453,9 @@
   "demo.example_title": "商品写真から完成広告へ",
   "demo.example_desc": "この架空のコーヒーメーカーのプロモーション動画は、オリジナルの商品画像から QuickAd AI で作成されました。",
   "demo.example_aria": "QuickAd AI で作成したコーヒーメーカーのプロモーション動画",
+  "demo.transformation_label": "14秒で変身",
+  "demo.transformation_title": "商品写真から投稿できる動画へ",
+  "demo.transformation_desc": "商品写真が QuickAd AI で完成したプロモーション動画になる様子をご覧ください。",
+  "demo.transformation_aria": "QuickAd AI で商品写真を投稿できる動画に変換するデモ動画",
   "demo.unsupported": "お使いのブラウザは動画要素に対応していません。"
 }

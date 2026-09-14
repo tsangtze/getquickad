@@ -454,5 +454,9 @@
   "demo.example_title": "Ürün fotoğraflarından tamamlanmış reklama",
   "demo.example_desc": "Bu kurgusal kahve makinesi tanıtımı, özgün ürün görsellerinden QuickAd AI ile oluşturuldu.",
   "demo.example_aria": "QuickAd AI ile oluşturulan kahve makinesi tanıtım videosu",
+  "demo.transformation_label": "14 saniyede dönüşüm",
+  "demo.transformation_title": "Ürün fotoğraflarından paylaşmaya hazır videoya",
+  "demo.transformation_desc": "Ürün fotoğraflarının QuickAd AI ile tamamlanmış bir tanıtım videosuna nasıl dönüştüğünü görün.",
+  "demo.transformation_aria": "QuickAd AI ile ürün fotoğraflarını paylaşmaya hazır videoya dönüştürme videosu",
   "demo.unsupported": "Tarayıcınız video öğesini desteklemiyor."
 }

@@ -453,5 +453,9 @@
   "demo.example_title": "从产品照片到成品广告",
   "demo.example_desc": "这个虚构咖啡机宣传视频由 QuickAd AI 使用原创产品图片制作。",
   "demo.example_aria": "使用 QuickAd AI 制作的咖啡机宣传视频",
+  "demo.transformation_label": "14 秒快速转换",
+  "demo.transformation_title": "从产品照片到可直接发布的视频",
+  "demo.transformation_desc": "看看 QuickAd AI 如何将产品照片转换成完成的宣传视频。",
+  "demo.transformation_aria": "使用 QuickAd AI 将产品照片转换成可直接发布视频的演示",
   "demo.unsupported": "您的浏览器不支持视频元素。"
 }

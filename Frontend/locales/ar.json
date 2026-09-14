@@ -453,5 +453,9 @@
   "demo.example_title": "من صور المنتج إلى إعلان جاهز",
   "demo.example_desc": "تم إنشاء هذا الإعلان التجريبي لآلة صنع قهوة خيالية باستخدام QuickAd AI من صور أصلية للمنتج.",
   "demo.example_aria": "فيديو ترويجي لآلة صنع القهوة تم إنشاؤه باستخدام QuickAd AI",
+  "demo.transformation_label": "تحويل في 14 ثانية",
+  "demo.transformation_title": "من صور المنتج إلى فيديو جاهز للنشر",
+  "demo.transformation_desc": "شاهد كيف تتحول صور المنتج إلى فيديو ترويجي جاهز باستخدام QuickAd AI.",
+  "demo.transformation_aria": "فيديو يوضح تحويل صور المنتج إلى فيديو جاهز للنشر باستخدام QuickAd AI",
   "demo.unsupported": "متصفحك لا يدعم عنصر الفيديو."
 }

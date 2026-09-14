@@ -454,5 +454,9 @@
   "demo.example_title": "प्रोडक्ट फ़ोटो से तैयार विज्ञापन तक",
   "demo.example_desc": "यह काल्पनिक कॉफी मेकर प्रमोशन मूल प्रोडक्ट इमेज से QuickAd AI का उपयोग करके बनाया गया था।",
   "demo.example_aria": "QuickAd AI से बनाया गया कॉफी मेकर प्रमोशनल वीडियो",
+  "demo.transformation_label": "14 सेकंड में बदलाव",
+  "demo.transformation_title": "प्रोडक्ट फ़ोटो से पोस्ट करने के लिए तैयार वीडियो",
+  "demo.transformation_desc": "देखें कि QuickAd AI से प्रोडक्ट फ़ोटो कैसे एक तैयार प्रमोशनल वीडियो में बदलते हैं।",
+  "demo.transformation_aria": "QuickAd AI से प्रोडक्ट फ़ोटो को पोस्ट करने के लिए तैयार वीडियो में बदलने का वीडियो",
   "demo.unsupported": "आपका ब्राउज़र वीडियो एलिमेंट को सपोर्ट नहीं करता।"
 }

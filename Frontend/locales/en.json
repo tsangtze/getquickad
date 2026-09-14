@@ -453,5 +453,9 @@
   "demo.example_title": "Product photos to finished ad",
   "demo.example_desc": "This fictional coffee maker promotion was created with QuickAd AI from original product images.",
   "demo.example_aria": "Coffee maker promotional video created with QuickAd AI",
+  "demo.transformation_label": "14-second transformation",
+  "demo.transformation_title": "From product photos to ready-to-post video",
+  "demo.transformation_desc": "See how product photos become a finished promotional video with QuickAd AI.",
+  "demo.transformation_aria": "Product photos transformed into a ready-to-post video with QuickAd AI",
   "demo.unsupported": "Your browser does not support the video element."
 }

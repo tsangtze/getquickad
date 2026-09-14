@@ -468,5 +468,9 @@
   "demo.example_title": "Von Produktfotos zur fertigen Anzeige",
   "demo.example_desc": "Diese Demo-Werbung für eine fiktive Kaffeemaschine wurde mit QuickAd AI aus originalen Produktbildern erstellt.",
   "demo.example_aria": "Mit QuickAd AI erstelltes Werbevideo für eine Kaffeemaschine",
+  "demo.transformation_label": "14-Sekunden-Transformation",
+  "demo.transformation_title": "Von Produktfotos zum veröffentlichungsfertigen Video",
+  "demo.transformation_desc": "Sehen Sie, wie Produktfotos mit QuickAd AI zu einem fertigen Werbevideo werden.",
+  "demo.transformation_aria": "Video zur Umwandlung von Produktfotos in ein veröffentlichungsfertiges Video mit QuickAd AI",
   "demo.unsupported": "Ihr Browser unterstützt das Videoelement nicht."
 }

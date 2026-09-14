@@ -453,5 +453,9 @@
   "demo.example_title": "제품 사진에서 완성된 광고까지",
   "demo.example_desc": "이 가상의 커피 메이커 홍보 동영상은 원본 제품 이미지를 사용하여 QuickAd AI로 제작되었습니다.",
   "demo.example_aria": "QuickAd AI로 제작한 커피 메이커 홍보 동영상",
+  "demo.transformation_label": "14초 만에 변환",
+  "demo.transformation_title": "제품 사진에서 바로 게시할 수 있는 동영상까지",
+  "demo.transformation_desc": "제품 사진이 QuickAd AI로 완성된 홍보 동영상이 되는 과정을 확인하세요.",
+  "demo.transformation_aria": "QuickAd AI로 제품 사진을 바로 게시할 수 있는 동영상으로 변환하는 영상",
   "demo.unsupported": "브라우저가 동영상 요소를 지원하지 않습니다."
 }
