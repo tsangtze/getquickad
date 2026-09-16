@@ -129,6 +129,16 @@ export const SEO_LANDING_UI = {
     relatedAria: "संबंधित QuickAd AI टूल",
     footerPromise:
       "QuickAd AI से अपने प्रोडक्ट फोटो को प्रोडक्ट वीडियो में बदलें।"
+  },
+
+  ar: {
+    brandLocalized: "إعلانات سريعة بالذكاء الاصطناعي",
+    createVideo: "أنشئ فيديو",
+    outputAria: "مثال على فيديو تم إنشاؤه بواسطة QuickAd AI",
+    duration: "المدة",
+    relatedHeading: "اكتشف المزيد من أدوات فيديو المنتجات",
+    relatedAria: "صفحات QuickAd AI ذات الصلة",
+    footerPromise: "حوّل صور منتجاتك إلى فيديوهات جاهزة للنشر باستخدام الذكاء الاصطناعي."
   }
 };
 

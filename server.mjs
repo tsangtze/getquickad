@@ -439,7 +439,8 @@ function buildSeoLandingLanguageOptions({
     zh: "简体中文",
     "zh-TW": "繁體中文",
     tr: "Türkçe",
-    hi: "हिन्दी"
+    hi: "हिन्दी",
+    ar: "العربية"
   };
 
   return getSeoLandingAlternates(intent)
@@ -527,6 +528,11 @@ function getSeoLandingLinkLabels(language) {
       photoToVideo: "प्रोडक्ट फोटो से वीडियो",
       adVideo: "AI विज्ञापन वीडियो",
       ecommerceVideo: "ई-कॉमर्स वीडियो"
+    },
+    ar: {
+      photoToVideo: "تحويل صور المنتجات إلى فيديو",
+      adVideo: "فيديوهات إعلانية بالذكاء الاصطناعي",
+      ecommerceVideo: "فيديوهات للتجارة الإلكترونية"
     }
   };
 
@@ -664,7 +670,9 @@ function buildSeoLandingHtml({
   let rendered = html
     .replace(
       '<html lang="en">',
-      `<html lang="${escapeHtmlAttribute(language)}">`
+      language === "ar"
+        ? '<html lang="ar" dir="rtl">'
+        : `<html lang="${escapeHtmlAttribute(language)}">`
     )
     .replace(
       /<meta\s+name="description"[\s\S]*?>/i,
@@ -826,11 +834,11 @@ const seoLandingPaths = Object.keys(SEO_LANDING_ROUTES)
   .filter(Boolean);
 
 if (
-  seoLandingPaths.length !== 36 ||
-  new Set(seoLandingPaths).size !== 36
+  seoLandingPaths.length !== 39 ||
+  new Set(seoLandingPaths).size !== 39
 ) {
   throw new Error(
-    "SEO landing route registration must contain 36 unique paths."
+    "SEO landing route registration must contain 39 unique paths."
   );
 }
 
@@ -842,11 +850,11 @@ const seoLandingPathsWithoutTrailingSlash =
   );
 
 if (
-  seoLandingPathsWithoutTrailingSlash.length !== 36 ||
-  new Set(seoLandingPathsWithoutTrailingSlash).size !== 36
+  seoLandingPathsWithoutTrailingSlash.length !== 39 ||
+  new Set(seoLandingPathsWithoutTrailingSlash).size !== 39
 ) {
   throw new Error(
-    "SEO landing no-slash registration must contain 36 unique paths."
+    "SEO landing no-slash registration must contain 39 unique paths."
   );
 }
 
