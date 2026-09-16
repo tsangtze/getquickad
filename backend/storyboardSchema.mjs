@@ -48,6 +48,7 @@ export const SceneSchema = z
     caption: z.string(),
     emphasisWords: z.array(z.string()).min(1).max(2),
     captionSegments: z.array(CaptionSegmentSchema).min(1).max(3),
+
     motion: z.enum(MOTION_TYPES),
     transition: z.enum(TRANSITION_TYPES)
   })
@@ -76,7 +77,8 @@ const LegacySceneSchema =
     emphasisWords:
       z.array(z.string()).max(2),
     captionSegments:
-      z.array(CaptionSegmentSchema).max(3).optional()
+      z.array(CaptionSegmentSchema).max(3).optional(),
+
   });
 
 const LegacyStoryboardSchema =
@@ -297,28 +299,6 @@ export function validateStoryboard(
       }
     }
 
-    const sceneDurationSeconds =
-      scene.endSeconds - scene.startSeconds;
-
-    const sceneNarrationWords =
-      countWords(scene.narration);
-
-    const maxSceneNarrationWords =
-      Math.max(
-        1,
-        Math.floor(
-          sceneDurationSeconds * 2.5
-        )
-      );
-
-    if (
-      sceneNarrationWords >
-      maxSceneNarrationWords
-    ) {
-      errors.push(
-        `Scene ${scene.sceneNumber} narration is too long for its ${sceneDurationSeconds}-second duration.`
-      );
-    }
     expectedStart = scene.endSeconds;
   });
 

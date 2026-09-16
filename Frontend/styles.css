@@ -1647,6 +1647,45 @@ input::placeholder {
   font-weight: 800;
 }
 
+.scene-generated-captions {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.scene-generated-captions-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scene-caption-segment {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #faf9ff;
+}
+
+.scene-caption-segment-number {
+  color: #6b5fe8;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.scene-caption-segment-text {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .scene-narration-label {
   margin-top: 3px;
   color: var(--muted);
@@ -1818,8 +1857,26 @@ input::placeholder {
 }
 .scene-approval-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 12px;
   margin-top: 4px;
+}
+
+.scene-approval-status {
+  flex: 1 1 auto;
+  padding: 10px 12px;
+  border: 1px solid #e7b6b6;
+  border-radius: 10px;
+  background: #fff7f7;
+  color: #a12626;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.scene-approval-status[hidden] {
+  display: none;
 }
 
 .confirm-scene-button {

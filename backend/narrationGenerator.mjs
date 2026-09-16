@@ -42,7 +42,8 @@ const MAX_SCENE_AUDIO_TEMPO = 1.21;
 function buildSceneAudioFilter({
   inputIndex,
   duration,
-  spokenDurationSeconds
+  spokenDurationSeconds,
+  sceneNumber
 }) {
   const safeDuration =
     Number(duration);
@@ -79,6 +80,14 @@ function buildSceneAudioFilter({
 
       error.code =
         "NARRATION_SCENE_TOO_LONG";
+
+      if (
+        Number.isInteger(Number(sceneNumber)) &&
+        Number(sceneNumber) > 0
+      ) {
+        error.sceneNumber =
+          Number(sceneNumber);
+      }
 
       throw error;
     }
@@ -347,7 +356,12 @@ export async function generateNarration({
             inputIndex: sceneIndex,
             duration: sceneAudio.duration,
             spokenDurationSeconds:
-              sceneAudio.spokenDurationSeconds
+              sceneAudio.spokenDurationSeconds,
+            sceneNumber:
+              storyboard.scenes[
+                sceneIndex
+              ]?.sceneNumber ??
+              sceneIndex + 1
           })
       );
 

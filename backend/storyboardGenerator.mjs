@@ -132,6 +132,11 @@ ${durationMode === "manual"
 - The complete scene narration must be exactly the caption segment texts joined in order with a single normal space between segments.
 - Do not add narration words that are absent from captionSegments, and do not omit spoken words from captionSegments.
 - Use 1 segment when the spoken message is naturally short. Use 2 or 3 segments when a longer scene needs richer narration. Do not force extra segments merely to reach 3.
+- When dividing narration into 2 or 3 caption segments, split at natural language boundaries first: prefer complete sentences or clauses, then punctuation boundaries, then natural phrase boundaries.
+- Never end a caption segment at a grammatically incomplete or awkward point when a natural phrase boundary is available.
+- Keep sequential caption segments roughly balanced by natural spoken duration when practical, but never damage grammar or meaning merely to make segment lengths equal.
+- Do not split by equal character count. Natural phrasing and readability take priority over equal-length segments.
+- Every spoken word must remain in the caption segments in the same order, so joining the segments reconstructs the complete narration exactly.
 - For longer 45-second and 60-second videos, prefer multiple sequential caption segments in longer scenes when needed to support useful natural narration and avoid long silent tails.
 - For every caption segment, set emphasisWords to 1 or 2 meaningful words or short terms copied exactly from that segment's text.
 - Choose the strongest product, benefit, action, number, or emotionally meaningful terms for emphasis.
@@ -140,10 +145,6 @@ ${durationMode === "manual"
 - Keep caption-segment emphasisWords appropriate for the target language, including Chinese, Japanese, and Korean.
 - COMPATIBILITY FIELDS: For each newly generated scene, set caption exactly equal to captionSegments[0].text and set the scene-level emphasisWords exactly equal to captionSegments[0].emphasisWords.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
-- Each scene narration must contain no more than floor(scene duration in seconds × 2.5) words. Examples: 4 seconds = 10 words, 6 seconds = 15 words, 10 seconds = 25 words.
-- PACING TARGET: Aim for the spoken narration to occupy approximately 75-90% of each scene's duration so the viewer does not wait through a long silent tail before the next scene.
-- For languages normally written with spaces, a useful target is approximately 1.9-2.25 spoken words per second of scene duration, while never exceeding the 2.5-words-per-second maximum above.
-- For Chinese, Japanese, Korean, and other languages where whitespace word counts are not a reliable pacing measure, apply the same 75-90% spoken-time goal naturally rather than trying to satisfy an English-style word count.
 - When a scene would otherwise contain too little narration for its assigned duration, enrich the caption/narration with useful, truthful details supported by the customer's supplied information or clearly visible image content.
 - If there is not enough truthful material to enrich that scene naturally, shorten that scene and redistribute the available time among other scenes that can support useful narration.
 - Across longer 45-second and 60-second videos, use the additional available time for proportionally richer useful storytelling rather than stretching short 30-second-style captions across longer scenes.
@@ -341,7 +342,7 @@ function splitCaptionText(text, maxCharacters = 60) {
   let remaining =
     characters;
 
-  const preferredBoundaries =
+  const punctuationBoundaries =
     new Set([
       "।",
       ".",
@@ -359,26 +360,74 @@ function splitCaptionText(text, maxCharacters = 60) {
       "、",
       "—",
       "–",
-      "-",
-      " "
+      "-"
     ]);
 
   while (remaining.length > maxCharacters) {
     let splitIndex = -1;
 
+    const targetIndex =
+      Math.min(
+        Math.round(remaining.length / 2),
+        maxCharacters
+      );
+
+    const minimumBalancedIndex =
+      Math.max(
+        1,
+        Math.floor(targetIndex * 0.6)
+      );
+
+    let bestBoundaryIndex = -1;
+    let bestBoundaryScore =
+      Number.POSITIVE_INFINITY;
+
     for (
-      let index = maxCharacters;
-      index > 0;
-      index--
+      let index = minimumBalancedIndex;
+      index <= maxCharacters;
+      index++
     ) {
+      const boundaryCharacter =
+        remaining[index - 1];
+
+      const isPunctuation =
+        punctuationBoundaries.has(
+          boundaryCharacter
+        );
+
+      const isSpace =
+        boundaryCharacter === " ";
+
       if (
-        preferredBoundaries.has(
-          remaining[index - 1]
-        )
+        !isPunctuation &&
+        !isSpace
       ) {
-        splitIndex = index;
-        break;
+        continue;
       }
+
+      const distance =
+        Math.abs(index - targetIndex);
+
+      const punctuationBonus =
+        isPunctuation
+          ? Math.min(
+              8,
+              Math.floor(targetIndex * 0.15)
+            )
+          : 0;
+
+      const score =
+        distance - punctuationBonus;
+
+      if (score < bestBoundaryScore) {
+        bestBoundaryScore = score;
+        bestBoundaryIndex = index;
+      }
+    }
+
+    if (bestBoundaryIndex > 0) {
+      splitIndex =
+        bestBoundaryIndex;
     }
 
     if (splitIndex <= 0) {

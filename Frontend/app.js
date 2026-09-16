@@ -1359,6 +1359,199 @@ const SCENE_TIMELINE_WEIGHTS = {
   11: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
 };
 
+function splitSceneCaptionText(
+  text,
+  maxCharacters = 60
+) {
+  const source =
+    String(text ?? "")
+      .trim()
+      .replace(/\s+/gu, " ");
+
+  if (!source) {
+    return [];
+  }
+
+  const characters =
+    Array.from(source);
+
+  if (
+    characters.length <=
+    maxCharacters
+  ) {
+    return [source];
+  }
+
+  const strongBoundaries =
+    new Set([
+      "।",
+      ".",
+      "!",
+      "?",
+      "！",
+      "？",
+      "。",
+      ";",
+      "；",
+      ":",
+      "：",
+      ",",
+      "，",
+      "、",
+      "—",
+      "–"
+    ]);
+
+  const chunks = [];
+  let remaining =
+    characters;
+
+  while (
+    remaining.length >
+    maxCharacters
+  ) {
+    const minimumRemainingChunks =
+      Math.ceil(
+        remaining.length /
+        maxCharacters
+      );
+
+    const targetLength =
+      Math.ceil(
+        remaining.length /
+        minimumRemainingChunks
+      );
+
+    let splitIndex = -1;
+    let bestScore =
+      Number.POSITIVE_INFINITY;
+
+    for (
+      let index = 1;
+      index <=
+        Math.min(
+          maxCharacters,
+          remaining.length - 1
+        );
+      index++
+    ) {
+      const boundary =
+        remaining[index - 1];
+
+      const isStrongBoundary =
+        strongBoundaries.has(
+          boundary
+        );
+
+      const isWordBoundary =
+        boundary === " ";
+
+      if (
+        !isStrongBoundary &&
+        !isWordBoundary
+      ) {
+        continue;
+      }
+
+      const distance =
+        Math.abs(
+          index - targetLength
+        );
+
+      const punctuationBonus =
+        isStrongBoundary
+          ? 8
+          : 0;
+
+      const score =
+        distance -
+        punctuationBonus;
+
+      if (score < bestScore) {
+        splitIndex = index;
+        bestScore = score;
+      }
+    }
+
+    if (splitIndex <= 0) {
+      splitIndex =
+        Math.min(
+          maxCharacters,
+          remaining.length
+        );
+    }
+
+    const chunk =
+      remaining
+        .slice(0, splitIndex)
+        .join("")
+        .trim();
+
+    if (chunk) {
+      chunks.push(chunk);
+    }
+
+    remaining =
+      remaining.slice(splitIndex);
+
+    while (
+      remaining.length > 0 &&
+      remaining[0] === " "
+    ) {
+      remaining =
+        remaining.slice(1);
+    }
+  }
+
+  const finalChunk =
+    remaining
+      .join("")
+      .trim();
+
+  if (finalChunk) {
+    chunks.push(finalChunk);
+  }
+
+  return chunks;
+}
+
+function usesCharacterBasedEditLimit(text) {
+  const value = String(text ?? "");
+
+  const cjkCount =
+    (
+      value.match(
+        /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu
+      ) ?? []
+    ).length;
+
+  const letterNumberCount =
+    (
+      value.match(/[\p{L}\p{N}]/gu) ?? []
+    ).length;
+
+  return (
+    letterNumberCount > 0 &&
+    cjkCount / letterNumberCount >= 0.5
+  );
+}
+
+function countSceneEditUnits(text, characterBased) {
+  const value = String(text ?? "");
+
+  if (characterBased) {
+    return (
+      value.match(/[\p{L}\p{N}]/gu) ?? []
+    ).length;
+  }
+
+  return value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+}
+
 function countNarrationWords(scenes) {
   return scenes
     .map((scene) =>
@@ -1619,10 +1812,11 @@ function validateVideoPlan() {
 
   if (invalidScene) {
     finalVideoButton.disabled = true;
-    planStatus.textContent = uiText("review.invalid_scene", `Scene ${invalidScene.sceneNumber} needs a valid picture and a caption containing 1-60 characters.`, { number: invalidScene.sceneNumber });
+    planStatus.textContent = uiText("review.invalid_scene", `Scene ${invalidScene.sceneNumber} needs a valid picture and caption.`, { number: invalidScene.sceneNumber });
 
     return false;
   }
+
 
   const approvedCount =
     currentStoryboard.scenes.filter(
@@ -1795,6 +1989,8 @@ function createSceneReviewCard(scene) {
         "";
 
       scene.approved = false;
+
+      clearSceneApprovalStatus();
 
       updateSceneApprovalState();
 
@@ -2017,7 +2213,33 @@ function createSceneReviewCard(scene) {
   captionColumn.className = "scene-caption-column";
 
   const captionLabel = document.createElement("label");
-  captionLabel.textContent = uiText("scene.ai_caption", "AI caption");
+  captionLabel.textContent =
+    uiText("scene.edit_caption", "Edit scene captions");
+
+  const originalAiCaptionState = {
+    caption:
+      String(scene.caption ?? "").trim(),
+    narration:
+      String(scene.narration ?? "").trim(),
+    emphasisWords:
+      Array.isArray(scene.emphasisWords)
+        ? [...scene.emphasisWords]
+        : [],
+    captionSegments:
+      Array.isArray(scene.captionSegments)
+        ? scene.captionSegments.map(
+            (segment) => ({
+              ...segment,
+              emphasisWords:
+                Array.isArray(
+                  segment.emphasisWords
+                )
+                  ? [...segment.emphasisWords]
+                  : []
+            })
+          )
+        : null
+  };
 
   const captionInput =
     document.createElement("textarea");
@@ -2025,10 +2247,9 @@ function createSceneReviewCard(scene) {
   captionInput.className =
     "scene-caption-input";
 
-  captionInput.rows = 2;
-  captionInput.maxLength = 60;
+  captionInput.rows = 3;
   captionInput.value =
-    scene.caption;
+    originalAiCaptionState.narration;
 
   captionInput.setAttribute("aria-label", uiText("scene.caption_for", `Caption for scene ${scene.sceneNumber}`, { number: scene.sceneNumber }));
 
@@ -2038,56 +2259,313 @@ function createSceneReviewCard(scene) {
   const captionAdvice =
     document.createElement("span");
 
-  captionAdvice.textContent = uiText("scene.caption_advice", "Recommended: 3–8 words · Maximum: 60 characters");
+  captionAdvice.textContent =
+    uiText(
+      "scene.edit_caption_advice",
+      "Keep your edit about the same length as the AI original"
+    );
 
   const captionCounter =
     document.createElement("span");
 
-  captionCounter.textContent = uiText("scene.caption_count", `${captionInput.value.length} / 60 characters`, { count: captionInput.value.length, max: 60 });
+  captionCounter.textContent =
+    uiText(
+      "scene.ai_original",
+      "AI original"
+    );
 
+  const restoreAiCaptionButton =
+    document.createElement("button");
+
+  restoreAiCaptionButton.type = "button";
+  restoreAiCaptionButton.className =
+    "scene-caption-restore";
+
+  restoreAiCaptionButton.textContent =
+    uiText(
+      "scene.restore_ai_captions",
+      "Restore AI captions"
+    );
+
+  restoreAiCaptionButton.hidden = true;
+
+  let captionWasEdited = false;
+  let manualCaptionValue = "";
+  let editLimitWasBlocked = false;
+
+  const originalEditLimitUsesCharacters =
+    usesCharacterBasedEditLimit(
+      originalAiCaptionState.narration
+    );
+
+  const originalEditLimit =
+    countSceneEditUnits(
+      originalAiCaptionState.narration,
+      originalEditLimitUsesCharacters
+    );
+
+  const proposedCaptionFitsOriginalLimit = (
+    proposedCaption
+  ) => {
+    if (
+      countSceneEditUnits(
+        proposedCaption,
+        originalEditLimitUsesCharacters
+      ) > originalEditLimit
+    ) {
+      return false;
+    }
+
+    return (
+      splitSceneCaptionText(
+        proposedCaption,
+        60
+      ).length <= 3
+    );
+  };
+
+  const showEditLimitReached = () => {
+    editLimitWasBlocked = true;
+
+    captionCounter.textContent =
+      uiText(
+        "scene.original_length_limit_reached",
+        "AI original length reached"
+      );
+
+    captionCounter.classList.add(
+      "limit-warning"
+    );
+  };
+
+  const showEditedCaptionStatus = () => {
+    captionCounter.textContent =
+      editLimitWasBlocked
+        ? uiText(
+            "scene.original_length_limit_reached",
+            "AI original length reached"
+          )
+        : uiText(
+            "scene.edited",
+            "Edited"
+          );
+
+    captionCounter.classList.toggle(
+      "limit-warning",
+      editLimitWasBlocked
+    );
+  };
+  captionInput.addEventListener(
+    "paste",
+    (event) => {
+      const pastedText =
+        event.clipboardData?.getData(
+          "text/plain"
+        ) ?? "";
+
+      if (!pastedText) {
+        return;
+      }
+
+      const selectionStart =
+        captionInput.selectionStart ??
+        captionInput.value.length;
+
+      const selectionEnd =
+        captionInput.selectionEnd ??
+        selectionStart;
+
+      const proposedValue =
+        captionInput.value.slice(
+          0,
+          selectionStart
+        ) +
+        pastedText +
+        captionInput.value.slice(
+          selectionEnd
+        );
+
+      const proposedCompleteCaption =
+        proposedValue
+          .trim()
+          .replace(/\s+/gu, " ");
+
+      if (
+        !proposedCaptionFitsOriginalLimit(
+          proposedCompleteCaption
+        )
+      ) {
+        event.preventDefault();
+        showEditLimitReached();
+      }
+    }
+  );
+  captionInput.addEventListener(
+    "beforeinput",
+    (event) => {
+      if (
+        !event.inputType.startsWith("insert")
+      ) {
+        return;
+      }
+
+      const selectionStart =
+        captionInput.selectionStart ??
+        captionInput.value.length;
+
+      const selectionEnd =
+        captionInput.selectionEnd ??
+        selectionStart;
+
+      const insertedText =
+        event.inputType ===
+        "insertLineBreak"
+          ? "\n"
+          : event.data ?? "";
+
+      if (
+        !insertedText &&
+        event.inputType !== "insertLineBreak"
+      ) {
+        return;
+      }
+
+      const proposedValue =
+        captionInput.value.slice(
+          0,
+          selectionStart
+        ) +
+        insertedText +
+        captionInput.value.slice(
+          selectionEnd
+        );
+
+      const proposedCompleteCaption =
+        proposedValue
+          .trim()
+          .replace(/\s+/gu, " ");
+
+      if (
+        !proposedCaptionFitsOriginalLimit(
+          proposedCompleteCaption
+        )
+      ) {
+        event.preventDefault();
+        showEditLimitReached();
+      }
+    }
+  );
   captionInput.addEventListener(
     "input",
     () => {
-      scene.caption =
+      if (!captionWasEdited) {
+        captionWasEdited = true;
+        restoreAiCaptionButton.hidden =
+          false;
+      }
+
+      manualCaptionValue =
         captionInput.value;
+
+      editLimitWasBlocked = false;
+
+      const completeCaption =
+        manualCaptionValue
+          .trim()
+          .replace(/\s+/gu, " ");
+
       scene.narration =
-        captionInput.value;
+        completeCaption;
 
-      if (
-        Array.isArray(scene.captionSegments)
-      ) {
-        const editedCaption =
-          captionInput.value;
+      const previousEmphasis =
+        Array.isArray(
+          originalAiCaptionState.captionSegments
+        )
+          ? originalAiCaptionState.captionSegments
+              .flatMap(
+                (segment) =>
+                  Array.isArray(
+                    segment.emphasisWords
+                  )
+                    ? segment.emphasisWords
+                    : []
+              )
+          : originalAiCaptionState.emphasisWords;
 
-        const previousEmphasis =
-          Array.isArray(scene.emphasisWords)
-            ? scene.emphasisWords
-            : [];
+      const manualSegmentTexts =
+        splitSceneCaptionText(
+          completeCaption,
+          60
+        );
 
-        const preservedEmphasis =
-          previousEmphasis.filter(
-            (term) =>
-              editedCaption.includes(term)
-          );
+      const manualCaptionSegments =
+        manualSegmentTexts.map(
+          (segmentText) => {
+            const matchingEmphasis =
+              previousEmphasis
+                .filter(
+                  (term) =>
+                    segmentText.includes(
+                      term
+                    )
+                )
+                .slice(0, 2);
 
-      if (preservedEmphasis.length > 0) {
-        scene.emphasisWords =
-          preservedEmphasis;
+            const fallbackWord =
+              (
+                segmentText.match(
+                  /[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*/gu
+                ) ?? []
+              )
+                .sort(
+                  (a, b) =>
+                    Array.from(b).length -
+                    Array.from(a).length
+                )[0] ?? "";
 
-        scene.captionSegments = [
-          {
-            text:
-              editedCaption,
-            emphasisWords:
-              [...preservedEmphasis]
+            const segmentEmphasis =
+              matchingEmphasis.length > 0
+                ? matchingEmphasis
+                : fallbackWord
+                  ? [fallbackWord]
+                  : segmentText
+                    ? [
+                        Array.from(
+                          segmentText
+                        )[0]
+                      ]
+                    : [];
+
+            return {
+              text:
+                segmentText,
+              emphasisWords:
+                segmentEmphasis
+            };
           }
-        ];
+        );
+
+      if (manualCaptionSegments.length > 0) {
+        scene.captionSegments =
+          manualCaptionSegments;
+
+        scene.caption =
+          manualCaptionSegments[0].text;
+
+        scene.emphasisWords =
+          [
+            ...manualCaptionSegments[0]
+              .emphasisWords
+          ];
       } else {
+        scene.caption = "";
         scene.emphasisWords = [];
         delete scene.captionSegments;
       }
-      }
 
+      renderCaptionSegments(
+        manualCaptionSegments
+      );
 
       narrationText.textContent =
         scene.narration;
@@ -2097,24 +2575,114 @@ function createSceneReviewCard(scene) {
           currentStoryboard.scenes
         );
 
-      captionCounter.textContent = uiText("scene.caption_count", `${captionInput.value.length} / 60 characters`, { count: captionInput.value.length, max: 60 });
-
-      captionCounter.classList.toggle(
-        "limit-warning",
-        captionInput.value.length > 55
-      );
+      showEditedCaptionStatus();
 
       scene.approved = false;
+
+      clearSceneApprovalStatus();
 
       updateSceneApprovalState();
 
       validateVideoPlan();
     }
   );
+  restoreAiCaptionButton.addEventListener(
+    "click",
+    () => {
+      scene.caption =
+        originalAiCaptionState.caption;
 
+      scene.narration =
+        originalAiCaptionState.narration;
+
+      scene.emphasisWords =
+        [
+          ...originalAiCaptionState
+            .emphasisWords
+        ];
+
+      if (
+        Array.isArray(
+          originalAiCaptionState
+            .captionSegments
+        )
+      ) {
+        scene.captionSegments =
+          originalAiCaptionState
+            .captionSegments
+            .map(
+              (segment) => ({
+                ...segment,
+                emphasisWords:
+                  Array.isArray(
+                    segment.emphasisWords
+                  )
+                    ? [
+                        ...segment
+                          .emphasisWords
+                      ]
+                    : []
+              })
+            );
+      } else {
+        delete scene.captionSegments;
+      }
+
+
+      captionInput.value =
+        originalAiCaptionState.narration;
+
+      manualCaptionValue = "";
+      editLimitWasBlocked = false;
+      captionWasEdited = false;
+
+      captionCounter.textContent =
+        uiText(
+          "scene.ai_original",
+          "AI original"
+        );
+
+      captionCounter.classList.remove(
+        "limit-warning"
+      );
+
+      restoreAiCaptionButton.hidden =
+        true;
+
+      renderCaptionSegments(
+        Array.isArray(
+          scene.captionSegments
+        )
+          ? scene.captionSegments
+          : [
+              {
+                text:
+                  scene.caption
+              }
+            ]
+      );
+
+      narrationText.textContent =
+        scene.narration;
+
+      currentStoryboard.narrationWordCount =
+        countNarrationWords(
+          currentStoryboard.scenes
+        );
+
+      scene.approved = false;
+
+      clearSceneApprovalStatus();
+
+      updateSceneApprovalState();
+
+      validateVideoPlan();
+    }
+  );
   captionMeta.append(
     captionAdvice,
-    captionCounter
+    captionCounter,
+    restoreAiCaptionButton
   );
 
   const narrationLabel =
@@ -2135,12 +2703,104 @@ function createSceneReviewCard(scene) {
   narrationText.textContent =
     scene.narration;
 
+  const generatedCaptionSegments =
+    Array.isArray(scene.captionSegments) &&
+    scene.captionSegments.length > 0
+      ? scene.captionSegments
+      : [
+          {
+            text:
+              String(scene.caption ?? "").trim()
+          }
+        ];
+
+  const generatedCaptions =
+    document.createElement("div");
+
+  generatedCaptions.className =
+    "scene-generated-captions";
+
+  const generatedCaptionsLabel =
+    document.createElement("span");
+
+  generatedCaptionsLabel.className =
+    "scene-generated-captions-label";
+
+  generatedCaptionsLabel.textContent =
+    uiText(
+      "scene.ai_captions",
+      "AI captions"
+    );
+
+  generatedCaptions.append(
+    generatedCaptionsLabel
+  );
+
+  function renderCaptionSegments(segments) {
+    generatedCaptions
+      .querySelectorAll(
+        ".scene-caption-segment"
+      )
+      .forEach(
+        (element) => element.remove()
+      );
+
+    segments.forEach(
+      (segment, index) => {
+        const segmentRow =
+          document.createElement("div");
+
+        segmentRow.className =
+          "scene-caption-segment";
+
+        const segmentNumber =
+          document.createElement("span");
+
+        segmentNumber.className =
+          "scene-caption-segment-number";
+
+        segmentNumber.textContent =
+          uiText(
+            "scene.caption_segment",
+            `Caption ${index + 1}`,
+            {
+              number:
+                index + 1
+            }
+          );
+
+        const segmentText =
+          document.createElement("p");
+
+        segmentText.className =
+          "scene-caption-segment-text";
+
+        segmentText.textContent =
+          String(segment?.text ?? "").trim();
+
+        segmentRow.append(
+          segmentNumber,
+          segmentText
+        );
+
+        generatedCaptions.append(
+          segmentRow
+        );
+      }
+    );
+  }
+
+  renderCaptionSegments(
+    generatedCaptionSegments
+  );
+
   captionLabel.append(
     captionInput,
     captionMeta
   );
 
   captionColumn.append(
+    generatedCaptions,
     captionLabel,
     narrationLabel,
     narrationText
@@ -2156,6 +2816,24 @@ function createSceneReviewCard(scene) {
 
   sceneApprovalActions.className =
     "scene-approval-actions";
+
+  const sceneApprovalStatus =
+    document.createElement("div");
+
+  sceneApprovalStatus.className =
+    "scene-approval-status";
+
+  sceneApprovalStatus.hidden = true;
+
+  const clearSceneApprovalStatus = () => {
+    sceneApprovalStatus.textContent = "";
+    sceneApprovalStatus.hidden = true;
+  };
+
+  const showSceneApprovalStatus = (message) => {
+    sceneApprovalStatus.textContent = message;
+    sceneApprovalStatus.hidden = false;
+  };
 
   const confirmSceneButton =
     document.createElement("button");
@@ -2214,11 +2892,28 @@ function createSceneReviewCard(scene) {
         updateSceneApprovalState();
         validateVideoPlan();
 
+        showSceneApprovalStatus(
+          uiText(
+            "review.invalid_scene",
+            `Scene ${scene.sceneNumber} needs a valid picture and caption.`,
+            {
+              number:
+                scene.sceneNumber
+            }
+          )
+        );
+
         return;
       }
 
+
       scene.caption = caption;
-      captionInput.value = caption;
+
+      if (captionWasEdited) {
+        captionInput.value =
+          scene.narration;
+      }
+
       narrationText.textContent =
         scene.narration;
 
@@ -2229,12 +2924,15 @@ function createSceneReviewCard(scene) {
 
       scene.approved = true;
 
+      clearSceneApprovalStatus();
+
       updateSceneApprovalState();
       validateVideoPlan();
     }
   );
 
   sceneApprovalActions.append(
+    sceneApprovalStatus,
     confirmSceneButton
   );
 
@@ -4339,13 +5037,19 @@ function localizedApiError(result) {
     SCENE_CAPTION_INVALID: {
       key: "review.caption_rule",
       fallback:
-        "Captions must contain 1–60 characters."
+        "Review and confirm every scene before creating the final video."
     },
 
     STORYBOARD_INVALID: {
       key: "api.storyboard_invalid",
       fallback:
         "Your video plan contains invalid scene information. Please review it and try again."
+    },
+
+    NARRATION_SCENE_TOO_LONG: {
+      key: "api.narration_scene_too_long",
+      fallback:
+        "A scene narration is too long for its duration. Shorten that scene's caption slightly, then confirm the scene again."
     },
 
     FINAL_VIDEO_GENERATION_FAILED: {

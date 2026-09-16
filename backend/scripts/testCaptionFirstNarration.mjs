@@ -109,28 +109,85 @@ requireContract(
 );
 
 requireContract(
-  /scene\.caption\s*=\s*\r?\n\s*captionInput\.value;\s*\r?\n\s*scene\.narration\s*=\s*\r?\n\s*captionInput\.value;/.test(
+  /scene\.narration\s*=\s*\r?\n\s*completeCaption;/.test(
     frontendSource
   ),
-  "Plan Review manual caption edits must keep spoken narration equal to the edited caption."
+  "Plan Review manual caption edits must keep spoken narration equal to the complete edited caption."
 );
+
 requireContract(
   frontendSource.includes(
-    "Array.isArray(scene.captionSegments)"
+    "const manualSegmentTexts ="
   ) &&
     frontendSource.includes(
-      "scene.captionSegments = ["
+      "splitSceneCaptionText("
     ) &&
     frontendSource.includes(
-      "preservedEmphasis.length > 0"
+      "completeCaption,"
+    ) &&
+    frontendSource.includes(
+      "const manualCaptionSegments ="
+    ) &&
+    frontendSource.includes(
+      "manualSegmentTexts.map("
+    ),
+  "Plan Review manual edits must split the complete edited narration into technical caption segments."
+);
+
+requireContract(
+  /scene\.captionSegments\s*=\s*\r?\n\s*manualCaptionSegments;/.test(
+    frontendSource
+  ) &&
+    /scene\.caption\s*=\s*\r?\n\s*manualCaptionSegments\[0\]\.text;/.test(
+      frontendSource
+    ) &&
+    frontendSource.includes(
+      "...manualCaptionSegments[0]"
+    ) &&
+    frontendSource.includes(
+      ".emphasisWords"
+    ),
+  "Plan Review manual edits must preserve compatibility caption and emphasis from the first technical segment."
+);
+
+requireContract(
+  frontendSource.includes(
+    "originalAiCaptionState.captionSegments"
+  ) &&
+    frontendSource.includes(
+      "matchingEmphasis.length > 0"
     ) &&
     frontendSource.includes(
       "delete scene.captionSegments;"
+    ),
+  "Plan Review manual segmentation must retain valid edited emphasis and preserve the empty-caption cleanup path."
+);
+
+requireContract(
+  frontendSource.includes(
+    "maxCharacters = 60"
+  ) &&
+    frontendSource.includes(
+      "characters.length <="
     ) &&
     frontendSource.includes(
-      "editedCaption.includes(term)"
+      "maxCharacters"
     ),
-  "Plan Review manual edits must collapse segmented scenes to one synchronized segment and remove stale emphasis."
+  "Manual caption segmentation must preserve the technical 60-character per-segment safeguard."
+);
+
+requireContract(
+  /splitSceneCaptionText\(\s*\r?\n?\s*proposedCaption,\s*\r?\n?\s*60\s*\)\.length\s*<=\s*3/.test(
+    frontendSource
+  ),
+  "Manual caption edits must remain representable by at most three technical caption segments."
+);
+
+requireContract(
+  !/scene\.captionSegments\s*=\s*\[\s*\{\s*text:\s*\r?\n?\s*completeCaption/.test(
+    frontendSource
+  ),
+  "Manual edits must not collapse the complete combined narration into one caption segment."
 );
 requireContract(
   frontendSource.includes(
@@ -349,6 +406,68 @@ console.log(
         `${testCase.name} splitter changed the source text.`
       );
     }
+  }
+
+  const naturalEnglish =
+    "Meet BrewMate, designed for better coffee and brighter mornings.";
+
+  const naturalEnglishChunks =
+    splitCaptionText(
+      naturalEnglish,
+      60
+    );
+
+  if (
+    naturalEnglishChunks.length !== 2
+  ) {
+    throw new Error(
+      `Natural English split produced ${naturalEnglishChunks.length} chunks instead of 2.`
+    );
+  }
+
+  for (
+    const chunk of naturalEnglishChunks
+  ) {
+    if (
+      Array.from(chunk).length > 60
+    ) {
+      throw new Error(
+        "Natural English split exceeded the caption limit."
+      );
+    }
+  }
+
+  if (
+    naturalEnglishChunks.join(" ") !==
+    naturalEnglish
+  ) {
+    throw new Error(
+      "Natural English split changed source text."
+    );
+  }
+
+  if (
+    !naturalEnglishChunks.some(
+      (chunk) =>
+        chunk.includes(
+          "brighter mornings."
+        )
+    )
+  ) {
+    throw new Error(
+      `Natural English split separated the phrase "brighter mornings.": ${JSON.stringify(naturalEnglishChunks)}`
+    );
+  }
+
+  if (
+    naturalEnglishChunks.some(
+      (chunk) =>
+        chunk === "mornings."
+    )
+  ) {
+    throw new Error(
+      `Natural English split produced an orphan final word: ${JSON.stringify(naturalEnglishChunks)}`
+    );
   }
 
   const noWhitespace =

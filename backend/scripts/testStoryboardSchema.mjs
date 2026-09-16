@@ -412,6 +412,7 @@ console.log(
   "PASS: Empty emphasisWords rejected."
 );
 
+
 // --- caption emphasis legacy compatibility tests ---
 
 const legacyMissingEmphasisStoryboard =
@@ -1214,6 +1215,8 @@ function storyboardWithWordCount(seconds, wordCount) {
       }
     ];
     scene.narration = text;
+
+
     wordIndex += count;
   });
 

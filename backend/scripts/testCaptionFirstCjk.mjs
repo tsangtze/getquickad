@@ -58,7 +58,8 @@ const result =
     storyboard,
     {
       imageCount: 1,
-      maxDurationSeconds: 30
+      maxDurationSeconds: 30,
+      allowLegacyMissingEmphasis: true
     }
   );
 

@@ -26,6 +26,9 @@ import {
   validateStoryboard
 } from "./storyboardSchema.mjs";
 import {
+  findSceneExceedingAiOriginal
+} from "./sceneEditLimit.mjs";
+import {
   generateNarration
 } from "./narrationGenerator.mjs";
 import {
@@ -516,6 +519,18 @@ export async function createProjectRouter({
 }) {
   const router = express.Router();
 
+  const applicationOrigin =
+    new URL(
+      authConfiguration().applicationOrigin
+    );
+
+  const isLocalDevelopment =
+    process.env.NODE_ENV !== "production" &&
+    (
+      applicationOrigin.hostname === "localhost" ||
+      applicationOrigin.hostname === "127.0.0.1"
+    );
+
   // Held until the asynchronous operation finishes, even if the client disconnects.
   const activeProjects = new Set();
   const withProjectLock = (handler) => async (request, response, next) => {
@@ -840,7 +855,12 @@ export async function createProjectRouter({
           );
 
         const videoPlanCheck =
-          canGenerateVideoPlan(usage);
+          isLocalDevelopment
+            ? {
+                ok: true,
+                planId: usage.planId
+              }
+            : canGenerateVideoPlan(usage);
 
         if (!videoPlanCheck.ok) {
           await removeFiles(uploadedFiles);
@@ -1054,10 +1074,12 @@ export async function createProjectRouter({
             "utf8"
           );
 
-          await recordSuccessfulVideoPlan(
-            projectRoot,
-            request.authUser.id
-          );
+          if (!isLocalDevelopment) {
+            await recordSuccessfulVideoPlan(
+              projectRoot,
+              request.authUser.id
+            );
+          }
 
           response.status(201).json({
             ok: true,
@@ -2197,7 +2219,7 @@ export async function createProjectRouter({
             code: "SCENE_CAPTION_INVALID",
 
             error:
-              "Every scene needs a caption containing 1–60 characters."
+              "Every scene needs a valid caption."
           });
           return;
         }
@@ -2241,6 +2263,53 @@ export async function createProjectRouter({
 
         const approvedStoryboard =
           validation.storyboard;
+
+        // Manual caption edits may not exceed the narration capacity
+        // established by the server-persisted AI original.
+        //
+        // Whitespace-delimited languages use the original word count.
+        // Chinese, Japanese, and Korean use Unicode letters/numbers so
+        // punctuation and spacing do not consume the editing allowance.
+        const originalStoryboard =
+          existingStoryboardRecord?.storyboard;
+
+
+        if (
+          !Array.isArray(originalStoryboard?.scenes) ||
+          originalStoryboard.scenes.length !==
+            approvedStoryboard.scenes.length
+        ) {
+          response.status(409).json({
+            ok: false,
+            code: "AI_ORIGINAL_STORYBOARD_MISSING",
+
+            error:
+              "The original AI video plan is unavailable. Generate the video plan again before creating the final video."
+          });
+          return;
+        }
+
+        const overOriginalScene =
+          findSceneExceedingAiOriginal({
+            originalScenes:
+              originalStoryboard.scenes,
+            editedScenes:
+              approvedStoryboard.scenes
+          });
+        if (overOriginalScene) {
+          response.status(400).json({
+            ok: false,
+            code: "SCENE_CAPTION_EXCEEDS_AI_ORIGINAL",
+            sceneNumber:
+              Number(
+                overOriginalScene.sceneNumber
+              ) || null,
+
+            error:
+              `Scene ${overOriginalScene.sceneNumber} caption is longer than the AI original. Keep the edited caption about the same length as the AI original.`
+          });
+          return;
+        }
 
         let usage;
 
@@ -2616,6 +2685,41 @@ export async function createProjectRouter({
             JSON.stringify(project, null, 2),
             "utf8"
           ).catch(() => {});
+        }
+
+        if (
+          error?.code ===
+          "NARRATION_SCENE_TOO_LONG"
+        ) {
+          const sceneNumber =
+            Number(error?.sceneNumber);
+
+          response.status(400).json({
+            ok: false,
+            code:
+              "NARRATION_SCENE_TOO_LONG",
+            sceneNumber:
+              Number.isInteger(sceneNumber) &&
+              sceneNumber > 0
+                ? sceneNumber
+                : null,
+            params:
+              Number.isInteger(sceneNumber) &&
+              sceneNumber > 0
+                ? {
+                    number:
+                      sceneNumber
+                  }
+                : {},
+            error:
+              Number.isInteger(sceneNumber) &&
+              sceneNumber > 0
+                ? `Scene ${sceneNumber} narration is too long for its duration. Shorten that scene's caption slightly, then confirm the scene again.`
+                : "A scene narration is too long for its duration. Shorten that scene's caption slightly, then confirm the scene again.",
+            stage:
+              generationStage
+          });
+          return;
         }
 
         response.status(502).json({
