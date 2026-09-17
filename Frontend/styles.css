@@ -186,7 +186,8 @@ p {
   margin-top: 0;
 }
 
-h1 {
+h1,
+#my-videos-heading {
   max-width: 680px;
   margin-bottom: 13px;
   font-size: clamp(2.05rem, 5vw, 3.45rem);
