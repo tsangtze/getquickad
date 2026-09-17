@@ -4204,7 +4204,7 @@ form.addEventListener("submit", async (event) => {
     );
 
     // Auto-detect UI language for video generation - Phase 2 Mexico
-    const userLang = localStorage.getItem('quickad_lang') || document.documentElement.lang || navigator.language || 'en';
+    const userLang = document.documentElement.lang || localStorage.getItem('quickad_lang') || navigator.language || 'en';
     const normalizedLang = userLang.toLowerCase();
     const targetLang = normalizedLang.startsWith("es")
       ? "es-419"
