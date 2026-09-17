@@ -139,7 +139,7 @@ export function createBillingRouter({
             ok: false,
             code: "BILLING_PLAN_UNAVAILABLE",
             error:
-              "This QuickAd AI plan is not configured for checkout."
+              "This ImgGetVid plan is not configured for checkout."
           });
         }
 

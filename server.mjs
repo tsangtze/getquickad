@@ -66,7 +66,7 @@ app.use(express.static(frontendPath, { index: false }));
 app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
-    product: "QuickAd AI",
+    product: "ImgGetVid",
     version: "0.8.0",
     authConfigured:
       isAuthConfigured()
@@ -128,79 +128,79 @@ const seoOrigin = "https://getquickad.com";
 
 const seoByLanguage = {
   en: {
-    title: "AI Product Video Generator | QuickAd AI",
+    title: "AI Product Video Generator | ImgGetVid",
     description:
       "Turn product photos into ready-to-post social media and short-form promotional videos with AI narration, captions, music, and multiple styles."
   },
   es: {
     title:
-      "Generador de Videos de Producto con IA | QuickAd AI",
+      "Generador de Videos de Producto con IA | ImgGetVid",
     description:
       "Convierte fotos de productos en videos promocionales para redes sociales y formatos cortos, listos para publicar con narración por IA, subtítulos, música y múltiples estilos."
   },
   pt: {
     title:
-      "Gerador de Vídeos de Produto com IA | QuickAd AI",
+      "Gerador de Vídeos de Produto com IA | ImgGetVid",
     description:
       "Transforme fotos de produtos em vídeos promocionais para redes sociais e formatos curtos, prontos para publicar com narração por IA, legendas, música e vários estilos."
   },
   fr: {
     title:
-      "Générateur de Vidéos Produit par IA | QuickAd AI",
+      "Générateur de Vidéos Produit par IA | ImgGetVid",
     description:
       "Transformez vos photos de produits en vidéos promotionnelles pour les réseaux sociaux et les formats courts, avec narration IA, sous-titres, musique et plusieurs styles."
   },
   de: {
     title:
-      "KI-Produktvideo-Generator | QuickAd AI",
+      "KI-Produktvideo-Generator | ImgGetVid",
     description:
       "Verwandeln Sie Produktfotos in Social-Media- und Kurzformat-Werbevideos mit KI-Sprachausgabe, Untertiteln, Musik und verschiedenen Stilen."
   },
   it: {
     title:
-      "Generatore AI di Video Prodotto | QuickAd AI",
+      "Generatore AI di Video Prodotto | ImgGetVid",
     description:
       "Trasforma le foto dei prodotti in video promozionali per social media e formati brevi con narrazione AI, sottotitoli, musica e diversi stili."
   },
   ja: {
     title:
-      "AI商品動画ジェネレーター | QuickAd AI",
+      "AI商品動画ジェネレーター | ImgGetVid",
     description:
       "商品写真から、SNSやショート動画向けのプロモーション動画をAIナレーション、字幕、音楽、複数のスタイル付きで作成できます。"
   },
   ko: {
     title:
-      "AI 제품 비디오 생성기 | QuickAd AI",
+      "AI 제품 비디오 생성기 | ImgGetVid",
     description:
       "제품 사진을 소셜 미디어와 숏폼용 프로모션 영상으로 만들어 보세요. AI 내레이션, 자막, 음악, 다양한 스타일을 지원합니다."
   },
   zh: {
     title:
-      "AI 产品视频生成器 | QuickAd AI",
+      "AI 产品视频生成器 | ImgGetVid",
     description:
       "将产品照片制作成适合社交媒体和短视频推广的竖屏视频，并添加 AI 旁白、字幕、音乐和多种风格。"
   },
   "zh-TW": {
     title:
-      "AI 產品影片產生器 | QuickAd AI",
+      "AI 產品影片產生器 | ImgGetVid",
     description:
       "將產品照片製作成適合社群媒體和短影音推廣的直式影片，並加入 AI 旁白、字幕、音樂和多種風格。"
   },
   tr: {
     title:
-      "Yapay Zekâ Ürün Videosu Oluşturucu | QuickAd AI",
+      "Yapay Zekâ Ürün Videosu Oluşturucu | ImgGetVid",
     description:
       "Ürün fotoğraflarını sosyal medya ve kısa format için yapay zekâ anlatımı, altyazılar, müzik ve çeşitli stiller içeren tanıtım videolarına dönüştürün."
   },
   hi: {
     title:
-      "AI प्रोडक्ट वीडियो जनरेटर | QuickAd AI",
+      "AI प्रोडक्ट वीडियो जनरेटर | ImgGetVid",
     description:
       "प्रोडक्ट फ़ोटो को सोशल मीडिया और शॉर्ट-फॉर्म प्रमोशनल वीडियो में बदलें, जिनमें AI नैरेशन, कैप्शन, संगीत और कई स्टाइल शामिल हों।"
   },
   ar: {
     title:
-      "مولد فيديوهات المنتجات بالذكاء الاصطناعي | QuickAd AI",
+      "مولد فيديوهات المنتجات بالذكاء الاصطناعي | ImgGetVid",
     description:
       "حوّل صور المنتجات إلى فيديوهات ترويجية جاهزة للنشر على وسائل التواصل الاجتماعي والمقاطع القصيرة، مع تعليق صوتي بالذكاء الاصطناعي وترجمات وموسيقى وأنماط متعددة."
   }
@@ -270,14 +270,14 @@ function buildSocialMeta({
 
   return (
     `  <meta property="og:type" content="website">` +
-    `\n  <meta property="og:site_name" content="QuickAd AI">` +
+    `\n  <meta property="og:site_name" content="ImgGetVid">` +
     `\n  <meta property="og:title" content="${safeTitle}">` +
     `\n  <meta property="og:description" content="${safeDescription}">` +
     `\n  <meta property="og:url" content="${safeCanonicalUrl}">` +
     `\n  <meta property="og:image" content="${safeImageUrl}">` +
     `\n  <meta property="og:image:width" content="1200">` +
     `\n  <meta property="og:image:height" content="630">` +
-    `\n  <meta property="og:image:alt" content="QuickAd AI — turn product photos into videos">` +
+    `\n  <meta property="og:image:alt" content="ImgGetVid — turn product photos into videos">` +
     `\n  <meta name="twitter:card" content="summary_large_image">` +
     `\n  <meta name="twitter:title" content="${safeTitle}">` +
     `\n  <meta name="twitter:description" content="${safeDescription}">` +
@@ -358,7 +358,7 @@ function buildQuickAdStructuredData({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "QuickAd AI",
+    name: "ImgGetVid",
     url: canonicalUrl,
     description,
     applicationCategory: "MultimediaApplication",
@@ -566,7 +566,7 @@ function buildHomeSeoLandingLinks(language) {
 
   const ariaLabel =
     getSeoLandingUi(language)?.relatedAria ||
-    "QuickAd AI tools";
+    "ImgGetVid tools";
 
   return (
     `<nav class="home-seo-links" ` +
@@ -636,9 +636,9 @@ function buildSeoLandingHtml({
 
   const replacements = {
     HOME_URL: homeUrl,
-    HOME_ARIA_LABEL: "QuickAd AI",
+    HOME_ARIA_LABEL: "ImgGetVid",
     BRAND_LOCALIZED: ui.brandLocalized,
-    NAV_ARIA_LABEL: "QuickAd AI",
+    NAV_ARIA_LABEL: "ImgGetVid",
     LANGUAGE_ARIA_LABEL: "Language",
     CREATE_VIDEO_LABEL: ui.createVideo,
     EYEBROW: content.eyebrow,
@@ -917,12 +917,12 @@ app.use(async (error, request, response, next) => {
     return;
   }
 
-  console.error("QuickAd AI server error:", error);
+  console.error("ImgGetVid server error:", error);
 
   response.status(500).json({
     ok: false,
     error:
-      "QuickAd AI could not create the project. Please try again."
+      "ImgGetVid could not create the project. Please try again."
   });
 });
 
@@ -935,6 +935,6 @@ setInterval(
 
 app.listen(port, "0.0.0.0", () => {
   console.log(
-    `QuickAd AI is running at http://localhost:${port}`
+    `ImgGetVid is running at http://localhost:${port}`
   );
 });

@@ -168,7 +168,7 @@
         byId("title").textContent = passwordText("password.set_title", "Set your password");
         byId("identity").textContent = data.email;
         byId("email").value = data.email;
-        status.textContent = passwordText("password.link_verified", "Link verified. Choose a new QuickAd AI password.");
+        status.textContent = passwordText("password.link_verified", "Link verified. Choose a new ImgGetVid password.");
         updatePanel.hidden = false;
       } else {
         accessToken = ""; requestPanel.hidden = false;

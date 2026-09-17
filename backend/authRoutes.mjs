@@ -299,7 +299,7 @@ export function createAuthRouter() {
       return response.status(403).json({
         ok: false,
         code: "AUTH_ORIGIN_REQUIRED",
-        error: "This request must come from QuickAd AI."
+        error: "This request must come from ImgGetVid."
       });
     }
 

@@ -26,7 +26,7 @@
   function emailLinkMessage() {
     return emailLinkFailed
       ? accountText("account.email_link_failed", "The email link could not be completed. It may have expired. Request a fresh confirmation email.")
-      : accountText("account.email_link_returned", "You returned from an email link. Sign in with your QuickAd AI password. Invited users who have not set a password need a password-setup flow.");
+      : accountText("account.email_link_returned", "You returned from an email link. Sign in with your ImgGetVid password. Invited users who have not set a password need a password-setup flow.");
   }
 
   function accountText(key, fallback, params = {}) {
@@ -101,7 +101,7 @@
       <a class="qa-account-password-recovery" href="/password.html"
         data-i18n="account.forgot">Forgot password or need to set one?</a>
       <p class="qa-account-note">
-        Use your QuickAd AI test account.
+        Use your ImgGetVid test account.
         Self-service signup is not available yet.
         Signing in reloads this page and discards unsaved edits.
       </p>
@@ -147,8 +147,8 @@
       ? accountText("account.already_sign_in", "Already have an account? Sign in")
       : accountText("account.create_instead", "Create an account instead");
     note.textContent = signup
-      ? accountText("account.note_signup", "Choose a unique QuickAd AI password of at least 8 characters. Confirm your email, then return here to sign in.")
-      : accountText("account.note_signin", "Use your QuickAd AI password, not your Gmail password. Signing in reloads this page and discards unsaved edits.");
+      ? accountText("account.note_signup", "Choose a unique ImgGetVid password of at least 8 characters. Confirm your email, then return here to sign in.")
+      : accountText("account.note_signin", "Use your ImgGetVid password, not your Gmail password. Signing in reloads this page and discards unsaved edits.");
   }
 
   setMode(false);
@@ -170,8 +170,8 @@
     if (busy) return;
     setMode(!signupMode);
     status.textContent = signupMode
-      ? accountText("account.create_status", "Create your QuickAd AI account.")
-      : accountText("account.sign_in_status", "Sign in to QuickAd AI.");
+      ? accountText("account.create_status", "Create your ImgGetVid account.")
+      : accountText("account.sign_in_status", "Sign in to ImgGetVid.");
     emailInput.focus();
   });
 
@@ -230,7 +230,7 @@
         setMode(false);
         status.textContent = returnedFromEmail
           ? emailLinkMessage()
-          : accountText("account.sign_in_status", "Sign in to QuickAd AI.");
+          : accountText("account.sign_in_status", "Sign in to ImgGetVid.");
       } else if (response.ok && data.ok && data.user?.id) {
         showUser(data.user);
         status.textContent = accountText("account.signed_in", "You are signed in.");
@@ -354,7 +354,7 @@
         showUser(null);
         setMode(true);
         status.textContent =
-          accountText("account.create_status", "Create your QuickAd AI account.");
+          accountText("account.create_status", "Create your ImgGetVid account.");
         emailInput.focus();
         return;
       }
@@ -369,7 +369,7 @@
       showUser(null);
       setMode(true);
       status.textContent =
-        accountText("account.create_status", "Create your QuickAd AI account.");
+        accountText("account.create_status", "Create your ImgGetVid account.");
     } catch {
       showUser(null);
       setMode(true);

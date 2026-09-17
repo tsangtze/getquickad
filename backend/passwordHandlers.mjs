@@ -119,7 +119,7 @@ export function createPasswordHandlers({ createAuthClient, authConfiguration, fe
           "quickad_refresh",
           loginCookieOptions
         );
-        return response.json({ ok: true, code: "PASSWORD_SAVED", message: "Password saved. Return to QuickAd AI and sign in with your new password." });
+        return response.json({ ok: true, code: "PASSWORD_SAVED", message: "Password saved. Return to ImgGetVid and sign in with your new password." });
       } catch {
         return response.status(503).json({ ok: false, code: "PASSWORD_CHANGE_UNCERTAIN", error: "The password change could not be confirmed. Try signing in with your new password before requesting another link." });
       }

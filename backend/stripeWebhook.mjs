@@ -114,7 +114,7 @@ async function applySubscription(
 
   if (!userId) {
     console.warn(
-      "Stripe subscription has no QuickAd user ID:",
+      "Stripe subscription has no ImgGetVid user ID:",
       subscription?.id
     );
 

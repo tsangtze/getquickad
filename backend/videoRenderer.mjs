@@ -436,7 +436,7 @@ function getBrandText(project) {
     return brandingText;
   }
 
-  return "QuickAd AI";
+  return "ImgGetVid";
 }
 function getRoleLabel(role) {
   const labels = {

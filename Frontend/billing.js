@@ -34,7 +34,7 @@ function billingApiText(data, fallbackKey, fallbackText) {
     },
     BILLING_PLAN_UNAVAILABLE: {
       key: "billing.api_plan_unavailable",
-      fallback: "This QuickAd AI plan is not configured for checkout."
+      fallback: "This ImgGetVid plan is not configured for checkout."
     },
     BILLING_ACTIVE_SUBSCRIPTION_EXISTS: {
       key: "billing.api_active_subscription_exists",
