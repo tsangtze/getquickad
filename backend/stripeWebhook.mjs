@@ -114,7 +114,7 @@ async function applySubscription(
 
   if (!userId) {
     console.warn(
-      "Stripe subscription has no ImgGetVid user ID:",
+      "Stripe subscription has no Pix2Vid user ID:",
       subscription?.id
     );
 

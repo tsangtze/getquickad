@@ -102,7 +102,7 @@ function t(key, params = {}){
 function applyTranslations(){
   const brandLocalized = document.querySelector('.brand-localized');
   if (brandLocalized) {
-    brandLocalized.hidden = currentLang === 'en';
+    brandLocalized.hidden = false;
   }
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key=el.getAttribute('data-i18n');

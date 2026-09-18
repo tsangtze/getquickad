@@ -436,7 +436,7 @@ function getBrandText(project) {
     return brandingText;
   }
 
-  return "ImgGetVid";
+  return "Pix2Vid";
 }
 function getRoleLabel(role) {
   const labels = {

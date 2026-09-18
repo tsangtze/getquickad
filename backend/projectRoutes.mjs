@@ -363,7 +363,7 @@ function validateProject(
         max: 10
       },
       error:
-        "ImgGetVid supports up to 10 product images."
+        "Pix2Vid supports up to 10 product images."
     };
   }
 
@@ -631,7 +631,7 @@ export async function createProjectRouter({
         ok: false,
         code: "REQUEST_ORIGIN_INVALID",
 
-        error: "This request must come from ImgGetVid."
+        error: "This request must come from Pix2Vid."
       });
     }
 
@@ -1196,9 +1196,9 @@ export async function createProjectRouter({
                   project.productName ??
                   project.name ??
                   project.description ??
-                  "ImgGetVid Video"
+                  "Pix2Vid Video"
                 ).trim() ||
-                "ImgGetVid Video";
+                "Pix2Vid Video";
 
               return {
                 projectId,

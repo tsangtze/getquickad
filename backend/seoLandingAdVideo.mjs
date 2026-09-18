@@ -1,6 +1,6 @@
 export const SEO_AD_VIDEO_CONTENT = {
   en: {
-    title: "AI Ad Video Generator for Product Ads | ImgGetVid",
+    title: "AI Ad Video Generator for Product Ads | Pix2Vid",
     description:
       "Create product video ads from your photos with AI narration, captions, music, and ready-to-post vertical MP4 output.",
     eyebrow: "Product photos into video ads.",
@@ -10,7 +10,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "Create video ads without starting with filmed footage",
     benefitsCopy:
-      "ImgGetVid combines your product photos with narration, captions, music, and visual styling to create a complete promotional video.",
+      "Pix2Vid combines your product photos with narration, captions, music, and visual styling to create a complete promotional video.",
     features: [
       "AI narration focused on your product message",
       "Captions with important words emphasized",
@@ -31,7 +31,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   es: {
-    title: "Generador de Videos Publicitarios con IA | ImgGetVid",
+    title: "Generador de Videos Publicitarios con IA | Pix2Vid",
     description:
       "Crea videos publicitarios de productos a partir de tus fotos con narración por IA, subtítulos, música y MP4 vertical listo para publicar.",
     eyebrow: "Fotos de producto convertidas en anuncios de video.",
@@ -41,7 +41,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "Crea anuncios de video sin empezar con grabaciones",
     benefitsCopy:
-      "ImgGetVid combina tus fotos de producto con narración, subtítulos, música y estilos visuales para crear un video promocional completo.",
+      "Pix2Vid combina tus fotos de producto con narración, subtítulos, música y estilos visuales para crear un video promocional completo.",
     features: [
       "Narración por IA centrada en el mensaje de tu producto",
       "Subtítulos con palabras importantes destacadas",
@@ -62,7 +62,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   pt: {
-    title: "Gerador de Anúncios em Vídeo com IA | ImgGetVid",
+    title: "Gerador de Anúncios em Vídeo com IA | Pix2Vid",
     description:
       "Crie anúncios em vídeo de produtos usando suas fotos, com narração por IA, legendas, música e MP4 vertical pronto para publicar.",
     eyebrow: "Fotos de produtos viram anúncios em vídeo.",
@@ -72,7 +72,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "Crie anúncios em vídeo sem começar com filmagens",
     benefitsCopy:
-      "O ImgGetVid combina suas fotos de produtos com narração, legendas, música e estilos visuais para criar um vídeo promocional completo.",
+      "O Pix2Vid combina suas fotos de produtos com narração, legendas, música e estilos visuais para criar um vídeo promocional completo.",
     features: [
       "Narração por IA focada na mensagem do produto",
       "Legendas com palavras importantes em destaque",
@@ -93,7 +93,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   fr: {
-    title: "Générateur de Vidéos Publicitaires IA | ImgGetVid",
+    title: "Générateur de Vidéos Publicitaires IA | Pix2Vid",
     description:
       "Créez des vidéos publicitaires produit à partir de vos photos avec narration IA, sous-titres, musique et MP4 vertical prêt à publier.",
     eyebrow: "Vos photos produit deviennent des publicités vidéo.",
@@ -103,7 +103,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "Créez des publicités vidéo sans partir de séquences filmées",
     benefitsCopy:
-      "ImgGetVid associe vos photos produit à une narration, des sous-titres, de la musique et des styles visuels pour créer une vidéo promotionnelle complète.",
+      "Pix2Vid associe vos photos produit à une narration, des sous-titres, de la musique et des styles visuels pour créer une vidéo promotionnelle complète.",
     features: [
       "Narration IA centrée sur le message de votre produit",
       "Sous-titres avec mise en avant des mots importants",
@@ -124,7 +124,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   de: {
-    title: "KI-Werbevideo-Generator für Produkte | ImgGetVid",
+    title: "KI-Werbevideo-Generator für Produkte | Pix2Vid",
     description:
       "Erstellen Sie Produkt-Werbevideos aus Ihren Fotos mit KI-Sprachausgabe, Untertiteln, Musik und veröffentlichungsfertigem Hochkant-MP4.",
     eyebrow: "Produktfotos werden zu Werbevideos.",
@@ -134,7 +134,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "Erstellen Sie Werbevideos ohne eigenes Videomaterial",
     benefitsCopy:
-      "ImgGetVid kombiniert Ihre Produktfotos mit Sprachausgabe, Untertiteln, Musik und visuellen Stilen zu einem vollständigen Werbevideo.",
+      "Pix2Vid kombiniert Ihre Produktfotos mit Sprachausgabe, Untertiteln, Musik und visuellen Stilen zu einem vollständigen Werbevideo.",
     features: [
       "KI-Sprachausgabe passend zu Ihrer Produktbotschaft",
       "Untertitel mit hervorgehobenen wichtigen Wörtern",
@@ -155,7 +155,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   it: {
-    title: "Generatore di Video Pubblicitari AI | ImgGetVid",
+    title: "Generatore di Video Pubblicitari AI | Pix2Vid",
     description:
       "Crea video pubblicitari di prodotto dalle tue foto con narrazione AI, sottotitoli, musica e MP4 verticale pronto da pubblicare.",
     eyebrow: "Le foto dei prodotti diventano video pubblicitari.",
@@ -165,7 +165,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "Crea video pubblicitari senza partire da riprese",
     benefitsCopy:
-      "ImgGetVid combina le foto dei prodotti con narrazione, sottotitoli, musica e stili visivi per creare un video promozionale completo.",
+      "Pix2Vid combina le foto dei prodotti con narrazione, sottotitoli, musica e stili visivi per creare un video promozionale completo.",
     features: [
       "Narrazione AI focalizzata sul messaggio del prodotto",
       "Sottotitoli con parole importanti evidenziate",
@@ -186,7 +186,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   ja: {
-    title: "AI広告動画ジェネレーター | ImgGetVid",
+    title: "AI広告動画ジェネレーター | Pix2Vid",
     description:
       "商品写真から、AIナレーション、字幕、音楽を備えた縦型の商品広告動画を作成できます。",
     eyebrow: "商品写真から広告動画へ。",
@@ -196,7 +196,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "動画撮影なしで商品広告動画を作成",
     benefitsCopy:
-      "ImgGetVidは、商品写真にナレーション、字幕、音楽、ビジュアルスタイルを組み合わせて、完成したプロモーション動画を作成します。",
+      "Pix2Vidは、商品写真にナレーション、字幕、音楽、ビジュアルスタイルを組み合わせて、完成したプロモーション動画を作成します。",
     features: [
       "商品メッセージに合わせたAIナレーション",
       "重要な言葉を強調した字幕",
@@ -217,7 +217,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   ko: {
-    title: "AI 광고 영상 생성기 | ImgGetVid",
+    title: "AI 광고 영상 생성기 | Pix2Vid",
     description:
       "제품 사진으로 AI 내레이션, 자막, 음악이 포함된 게시용 세로형 제품 광고 영상을 만들어 보세요.",
     eyebrow: "제품 사진을 광고 영상으로.",
@@ -227,7 +227,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "별도의 영상 촬영 없이 제품 광고 영상을 만드세요",
     benefitsCopy:
-      "ImgGetVid는 제품 사진에 내레이션, 자막, 음악, 비주얼 스타일을 결합해 완성된 홍보 영상을 만듭니다.",
+      "Pix2Vid는 제품 사진에 내레이션, 자막, 음악, 비주얼 스타일을 결합해 완성된 홍보 영상을 만듭니다.",
     features: [
       "제품 메시지에 맞춘 AI 내레이션",
       "중요한 단어를 강조한 자막",
@@ -248,7 +248,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   zh: {
-    title: "AI 广告视频生成器 | ImgGetVid",
+    title: "AI 广告视频生成器 | Pix2Vid",
     description:
       "使用产品照片制作带有 AI 旁白、字幕、音乐的竖屏产品广告视频，可直接用于推广。",
     eyebrow: "产品照片变成广告视频。",
@@ -258,7 +258,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "无需拍摄视频也能制作产品广告",
     benefitsCopy:
-      "ImgGetVid 将产品照片与旁白、字幕、音乐和视觉风格组合成完整的推广视频。",
+      "Pix2Vid 将产品照片与旁白、字幕、音乐和视觉风格组合成完整的推广视频。",
     features: [
       "围绕产品卖点生成 AI 旁白",
       "突出重要词语的字幕",
@@ -279,7 +279,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   "zh-TW": {
-    title: "AI 廣告影片產生器 | ImgGetVid",
+    title: "AI 廣告影片產生器 | Pix2Vid",
     description:
       "使用商品照片製作帶有 AI 旁白、字幕、音樂的直式商品廣告影片，可直接用於推廣。",
     eyebrow: "商品照變成廣告影片。",
@@ -289,7 +289,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "不必拍攝影片也能製作商品廣告",
     benefitsCopy:
-      "ImgGetVid 將商品照片與旁白、字幕、音樂和視覺風格組合成完整的推廣影片。",
+      "Pix2Vid 將商品照片與旁白、字幕、音樂和視覺風格組合成完整的推廣影片。",
     features: [
       "依商品賣點產生 AI 旁白",
       "強調重要詞語的字幕",
@@ -310,7 +310,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   tr: {
-    title: "Yapay Zekâ Reklam Videosu Oluşturucu | ImgGetVid",
+    title: "Yapay Zekâ Reklam Videosu Oluşturucu | Pix2Vid",
     description:
       "Ürün fotoğraflarınızdan yapay zekâ anlatımı, altyazılar ve müzik içeren yayına hazır dikey reklam videoları oluşturun.",
     eyebrow: "Ürün fotoğraflarını reklam videosuna dönüştürün.",
@@ -320,7 +320,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "Video çekmeden ürün reklamları oluşturun",
     benefitsCopy:
-      "ImgGetVid ürün fotoğraflarınızı anlatım, altyazılar, müzik ve görsel stillerle birleştirerek tamamlanmış bir tanıtım videosu oluşturur.",
+      "Pix2Vid ürün fotoğraflarınızı anlatım, altyazılar, müzik ve görsel stillerle birleştirerek tamamlanmış bir tanıtım videosu oluşturur.",
     features: [
       "Ürün mesajınıza uygun yapay zekâ anlatımı",
       "Önemli kelimeleri vurgulayan altyazılar",
@@ -341,7 +341,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   hi: {
-    title: "AI विज्ञापन वीडियो जनरेटर | ImgGetVid",
+    title: "AI विज्ञापन वीडियो जनरेटर | Pix2Vid",
     description:
       "प्रोडक्ट फोटो से AI नैरेशन, कैप्शन, संगीत और पोस्ट करने योग्य वर्टिकल MP4 के साथ विज्ञापन वीडियो बनाएं।",
     eyebrow: "प्रोडक्ट फोटो से विज्ञापन वीडियो तक।",
@@ -351,7 +351,7 @@ export const SEO_AD_VIDEO_CONTENT = {
     benefitsHeading:
       "बिना वीडियो शूट किए प्रोडक्ट विज्ञापन बनाएं",
     benefitsCopy:
-      "ImgGetVid आपके प्रोडक्ट फोटो को नैरेशन, कैप्शन, संगीत और विज़ुअल स्टाइल के साथ जोड़कर पूरा प्रमोशनल वीडियो बनाता है।",
+      "Pix2Vid आपके प्रोडक्ट फोटो को नैरेशन, कैप्शन, संगीत और विज़ुअल स्टाइल के साथ जोड़कर पूरा प्रमोशनल वीडियो बनाता है।",
     features: [
       "प्रोडक्ट मैसेज के अनुसार AI नैरेशन",
       "महत्वपूर्ण शब्दों को हाइलाइट करने वाले कैप्शन",
@@ -372,7 +372,7 @@ export const SEO_AD_VIDEO_CONTENT = {
   },
 
   ar: {
-    title: "مولد فيديوهات إعلانية بالذكاء الاصطناعي | ImgGetVid",
+    title: "مولد فيديوهات إعلانية بالذكاء الاصطناعي | Pix2Vid",
     description:
       "أنشئ فيديوهات إعلانية عمودية من صور منتجاتك مع تعليق صوتي بالذكاء الاصطناعي وترجمات وموسيقى وملف MP4 جاهز للنشر.",
     eyebrow: "حوّل صور المنتجات إلى فيديوهات إعلانية.",
@@ -381,7 +381,7 @@ export const SEO_AD_VIDEO_CONTENT = {
       "حوّل صور منتجاتك الحالية إلى فيديوهات إعلانية عمودية لوسائل التواصل الاجتماعي والحملات القصيرة والعروض والترويج للمنتجات.",
     benefitsHeading: "أنشئ إعلانات للمنتجات دون تصوير فيديو",
     benefitsCopy:
-      "يجمع ImgGetVid صور منتجاتك مع التعليق الصوتي والترجمات والموسيقى والأنماط المرئية لإنشاء فيديو ترويجي متكامل.",
+      "يجمع Pix2Vid صور منتجاتك مع التعليق الصوتي والترجمات والموسيقى والأنماط المرئية لإنشاء فيديو ترويجي متكامل.",
     features: [
       "تعليق صوتي بالذكاء الاصطناعي يناسب رسالة منتجك",
       "ترجمات مع إبراز الكلمات المهمة",

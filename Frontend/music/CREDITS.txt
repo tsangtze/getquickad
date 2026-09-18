@@ -1,4 +1,4 @@
-ImgGetVid background music credits - Version 0.9.2
+Pix2Vid background music credits - Version 0.9.2
 Source pages checked: 2026-08-28
 Each source page lists CC0 1.0. CC0 permits commercial use and redistribution.
 License: https://creativecommons.org/publicdomain/zero/1.0/

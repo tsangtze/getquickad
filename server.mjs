@@ -66,7 +66,7 @@ app.use(express.static(frontendPath, { index: false }));
 app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
-    product: "ImgGetVid",
+    product: "Pix2Vid",
     version: "0.8.0",
     authConfigured:
       isAuthConfigured()
@@ -128,79 +128,79 @@ const seoOrigin = "https://getquickad.com";
 
 const seoByLanguage = {
   en: {
-    title: "AI Product Video Generator | ImgGetVid",
+    title: "AI Product Video Generator | Pix2Vid",
     description:
       "Turn product photos into ready-to-post social media and short-form promotional videos with AI narration, captions, music, and multiple styles."
   },
   es: {
     title:
-      "Generador de Videos de Producto con IA | ImgGetVid",
+      "Generador de Videos de Producto con IA | Pix2Vid",
     description:
       "Convierte fotos de productos en videos promocionales para redes sociales y formatos cortos, listos para publicar con narración por IA, subtítulos, música y múltiples estilos."
   },
   pt: {
     title:
-      "Gerador de Vídeos de Produto com IA | ImgGetVid",
+      "Gerador de Vídeos de Produto com IA | Pix2Vid",
     description:
       "Transforme fotos de produtos em vídeos promocionais para redes sociais e formatos curtos, prontos para publicar com narração por IA, legendas, música e vários estilos."
   },
   fr: {
     title:
-      "Générateur de Vidéos Produit par IA | ImgGetVid",
+      "Générateur de Vidéos Produit par IA | Pix2Vid",
     description:
       "Transformez vos photos de produits en vidéos promotionnelles pour les réseaux sociaux et les formats courts, avec narration IA, sous-titres, musique et plusieurs styles."
   },
   de: {
     title:
-      "KI-Produktvideo-Generator | ImgGetVid",
+      "KI-Produktvideo-Generator | Pix2Vid",
     description:
       "Verwandeln Sie Produktfotos in Social-Media- und Kurzformat-Werbevideos mit KI-Sprachausgabe, Untertiteln, Musik und verschiedenen Stilen."
   },
   it: {
     title:
-      "Generatore AI di Video Prodotto | ImgGetVid",
+      "Generatore AI di Video Prodotto | Pix2Vid",
     description:
       "Trasforma le foto dei prodotti in video promozionali per social media e formati brevi con narrazione AI, sottotitoli, musica e diversi stili."
   },
   ja: {
     title:
-      "AI商品動画ジェネレーター | ImgGetVid",
+      "AI商品動画ジェネレーター | Pix2Vid",
     description:
       "商品写真から、SNSやショート動画向けのプロモーション動画をAIナレーション、字幕、音楽、複数のスタイル付きで作成できます。"
   },
   ko: {
     title:
-      "AI 제품 비디오 생성기 | ImgGetVid",
+      "AI 제품 비디오 생성기 | Pix2Vid",
     description:
       "제품 사진을 소셜 미디어와 숏폼용 프로모션 영상으로 만들어 보세요. AI 내레이션, 자막, 음악, 다양한 스타일을 지원합니다."
   },
   zh: {
     title:
-      "AI 产品视频生成器 | ImgGetVid",
+      "AI 产品视频生成器 | Pix2Vid",
     description:
       "将产品照片制作成适合社交媒体和短视频推广的竖屏视频，并添加 AI 旁白、字幕、音乐和多种风格。"
   },
   "zh-TW": {
     title:
-      "AI 產品影片產生器 | ImgGetVid",
+      "AI 產品影片產生器 | Pix2Vid",
     description:
       "將產品照片製作成適合社群媒體和短影音推廣的直式影片，並加入 AI 旁白、字幕、音樂和多種風格。"
   },
   tr: {
     title:
-      "Yapay Zekâ Ürün Videosu Oluşturucu | ImgGetVid",
+      "Yapay Zekâ Ürün Videosu Oluşturucu | Pix2Vid",
     description:
       "Ürün fotoğraflarını sosyal medya ve kısa format için yapay zekâ anlatımı, altyazılar, müzik ve çeşitli stiller içeren tanıtım videolarına dönüştürün."
   },
   hi: {
     title:
-      "AI प्रोडक्ट वीडियो जनरेटर | ImgGetVid",
+      "AI प्रोडक्ट वीडियो जनरेटर | Pix2Vid",
     description:
       "प्रोडक्ट फ़ोटो को सोशल मीडिया और शॉर्ट-फॉर्म प्रमोशनल वीडियो में बदलें, जिनमें AI नैरेशन, कैप्शन, संगीत और कई स्टाइल शामिल हों।"
   },
   ar: {
     title:
-      "مولد فيديوهات المنتجات بالذكاء الاصطناعي | ImgGetVid",
+      "مولد فيديوهات المنتجات بالذكاء الاصطناعي | Pix2Vid",
     description:
       "حوّل صور المنتجات إلى فيديوهات ترويجية جاهزة للنشر على وسائل التواصل الاجتماعي والمقاطع القصيرة، مع تعليق صوتي بالذكاء الاصطناعي وترجمات وموسيقى وأنماط متعددة."
   }
@@ -270,14 +270,14 @@ function buildSocialMeta({
 
   return (
     `  <meta property="og:type" content="website">` +
-    `\n  <meta property="og:site_name" content="ImgGetVid">` +
+    `\n  <meta property="og:site_name" content="Pix2Vid">` +
     `\n  <meta property="og:title" content="${safeTitle}">` +
     `\n  <meta property="og:description" content="${safeDescription}">` +
     `\n  <meta property="og:url" content="${safeCanonicalUrl}">` +
     `\n  <meta property="og:image" content="${safeImageUrl}">` +
     `\n  <meta property="og:image:width" content="1200">` +
     `\n  <meta property="og:image:height" content="630">` +
-    `\n  <meta property="og:image:alt" content="ImgGetVid — turn product photos into videos">` +
+    `\n  <meta property="og:image:alt" content="Pix2Vid — turn product photos into videos">` +
     `\n  <meta name="twitter:card" content="summary_large_image">` +
     `\n  <meta name="twitter:title" content="${safeTitle}">` +
     `\n  <meta name="twitter:description" content="${safeDescription}">` +
@@ -358,7 +358,7 @@ function buildQuickAdStructuredData({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "ImgGetVid",
+    name: "Pix2Vid",
     url: canonicalUrl,
     description,
     applicationCategory: "MultimediaApplication",
@@ -566,7 +566,7 @@ function buildHomeSeoLandingLinks(language) {
 
   const ariaLabel =
     getSeoLandingUi(language)?.relatedAria ||
-    "ImgGetVid tools";
+    "Pix2Vid tools";
 
   return (
     `<nav class="home-seo-links" ` +
@@ -636,9 +636,9 @@ function buildSeoLandingHtml({
 
   const replacements = {
     HOME_URL: homeUrl,
-    HOME_ARIA_LABEL: "ImgGetVid",
+    HOME_ARIA_LABEL: "Pix2Vid",
     BRAND_LOCALIZED: ui.brandLocalized,
-    NAV_ARIA_LABEL: "ImgGetVid",
+    NAV_ARIA_LABEL: "Pix2Vid",
     LANGUAGE_ARIA_LABEL: "Language",
     CREATE_VIDEO_LABEL: ui.createVideo,
     EYEBROW: content.eyebrow,
@@ -917,12 +917,12 @@ app.use(async (error, request, response, next) => {
     return;
   }
 
-  console.error("ImgGetVid server error:", error);
+  console.error("Pix2Vid server error:", error);
 
   response.status(500).json({
     ok: false,
     error:
-      "ImgGetVid could not create the project. Please try again."
+      "Pix2Vid could not create the project. Please try again."
   });
 });
 
@@ -935,6 +935,6 @@ setInterval(
 
 app.listen(port, "0.0.0.0", () => {
   console.log(
-    `ImgGetVid is running at http://localhost:${port}`
+    `Pix2Vid is running at http://localhost:${port}`
   );
 });

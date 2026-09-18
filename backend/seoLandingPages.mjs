@@ -93,7 +93,7 @@ export const SEO_LANDING_ROUTES = {
 export const SEO_LANDING_CONTENT = {
   en: {
     photoToVideo: {
-      title: "Product Photo to Video Generator | ImgGetVid",
+      title: "Product Photo to Video Generator | Pix2Vid",
       description:
         "Turn product photos into ready-to-post vertical videos with AI narration, captions, music, and multiple styles.",
       eyebrow: "Product photos in. Video out.",
@@ -102,7 +102,7 @@ export const SEO_LANDING_CONTENT = {
         "Upload your existing product photos and turn them into polished vertical videos for social media, short-form content, and product promotion.",
       benefitsHeading: "Create more from the product photos you already have",
       benefitsCopy:
-        "ImgGetVid turns your product images into complete promotional videos instead of leaving you with a single animated photo.",
+        "Pix2Vid turns your product images into complete promotional videos instead of leaving you with a single animated photo.",
       features: [
         "AI narration built around your product",
         "Captions with important words emphasized",
@@ -123,7 +123,7 @@ export const SEO_LANDING_CONTENT = {
 
   es: {
     photoToVideo: {
-      title: "Convierte Fotos de Producto en Video | ImgGetVid",
+      title: "Convierte Fotos de Producto en Video | Pix2Vid",
       description:
         "Convierte fotos de producto en videos verticales listos para publicar con narración por IA, subtítulos, música y múltiples estilos.",
       eyebrow: "Fotos de producto. Video listo.",
@@ -132,7 +132,7 @@ export const SEO_LANDING_CONTENT = {
         "Sube las fotos que ya tienes de tu producto y conviértelas en videos verticales para redes sociales, contenido corto y promoción de productos.",
       benefitsHeading: "Aprovecha mejor las fotos de producto que ya tienes",
       benefitsCopy:
-        "ImgGetVid transforma tus imágenes de producto en videos promocionales completos, no solo en una foto animada.",
+        "Pix2Vid transforma tus imágenes de producto en videos promocionales completos, no solo en una foto animada.",
       features: [
         "Narración por IA adaptada a tu producto",
         "Subtítulos con palabras importantes destacadas",
@@ -153,7 +153,7 @@ export const SEO_LANDING_CONTENT = {
 
   pt: {
     photoToVideo: {
-      title: "Foto de Produto para Vídeo com IA | ImgGetVid",
+      title: "Foto de Produto para Vídeo com IA | Pix2Vid",
       description:
         "Transforme fotos de produtos em vídeos verticais prontos para publicar com narração por IA, legendas, música e vários estilos.",
       eyebrow: "Fotos de produto entram. Vídeo sai.",
@@ -162,7 +162,7 @@ export const SEO_LANDING_CONTENT = {
         "Envie as fotos que você já tem dos seus produtos e transforme-as em vídeos verticais para redes sociais, conteúdo curto e promoção de produtos.",
       benefitsHeading: "Faça mais com as fotos de produtos que você já tem",
       benefitsCopy:
-        "O ImgGetVid transforma suas imagens de produtos em vídeos promocionais completos, em vez de apenas animar uma única foto.",
+        "O Pix2Vid transforma suas imagens de produtos em vídeos promocionais completos, em vez de apenas animar uma única foto.",
       features: [
         "Narração por IA criada para o seu produto",
         "Legendas com palavras importantes em destaque",
@@ -183,7 +183,7 @@ export const SEO_LANDING_CONTENT = {
 
   fr: {
     photoToVideo: {
-      title: "Transformer une Photo Produit en Vidéo | ImgGetVid",
+      title: "Transformer une Photo Produit en Vidéo | Pix2Vid",
       description:
         "Transformez vos photos produit en vidéos verticales prêtes à publier avec narration IA, sous-titres, musique et plusieurs styles.",
       eyebrow: "Vos photos produit deviennent des vidéos.",
@@ -192,7 +192,7 @@ export const SEO_LANDING_CONTENT = {
         "Importez vos photos produit existantes et transformez-les en vidéos verticales pour les réseaux sociaux, les formats courts et la promotion de produits.",
       benefitsHeading: "Faites davantage avec vos photos produit existantes",
       benefitsCopy:
-        "ImgGetVid transforme vos images produit en vidéos promotionnelles complètes au lieu de simplement animer une seule photo.",
+        "Pix2Vid transforme vos images produit en vidéos promotionnelles complètes au lieu de simplement animer une seule photo.",
       features: [
         "Narration IA adaptée à votre produit",
         "Sous-titres avec mise en avant des mots importants",
@@ -213,7 +213,7 @@ export const SEO_LANDING_CONTENT = {
 
   de: {
     photoToVideo: {
-      title: "Produktfoto in Video umwandeln | ImgGetVid",
+      title: "Produktfoto in Video umwandeln | Pix2Vid",
       description:
         "Verwandeln Sie Produktfotos in veröffentlichungsfertige Hochkantvideos mit KI-Sprachausgabe, Untertiteln, Musik und verschiedenen Stilen.",
       eyebrow: "Produktfotos rein. Video raus.",
@@ -222,7 +222,7 @@ export const SEO_LANDING_CONTENT = {
         "Laden Sie vorhandene Produktfotos hoch und erstellen Sie daraus Hochkantvideos für Social Media, Kurzformate und Produktwerbung.",
       benefitsHeading: "Machen Sie mehr aus Ihren vorhandenen Produktfotos",
       benefitsCopy:
-        "ImgGetVid verwandelt Ihre Produktbilder in vollständige Werbevideos, statt nur ein einzelnes Foto zu animieren.",
+        "Pix2Vid verwandelt Ihre Produktbilder in vollständige Werbevideos, statt nur ein einzelnes Foto zu animieren.",
       features: [
         "KI-Sprachausgabe passend zu Ihrem Produkt",
         "Untertitel mit hervorgehobenen wichtigen Wörtern",
@@ -243,7 +243,7 @@ export const SEO_LANDING_CONTENT = {
 
   it: {
     photoToVideo: {
-      title: "Trasforma Foto Prodotto in Video con AI | ImgGetVid",
+      title: "Trasforma Foto Prodotto in Video con AI | Pix2Vid",
       description:
         "Trasforma le foto dei prodotti in video verticali pronti da pubblicare con narrazione AI, sottotitoli, musica e diversi stili.",
       eyebrow: "Foto prodotto dentro. Video pronto.",
@@ -252,7 +252,7 @@ export const SEO_LANDING_CONTENT = {
         "Carica le foto dei prodotti che hai già e trasformale in video verticali per social media, contenuti brevi e promozione di prodotti.",
       benefitsHeading: "Ottieni di più dalle foto dei prodotti che hai già",
       benefitsCopy:
-        "ImgGetVid trasforma le immagini dei prodotti in video promozionali completi invece di limitarsi ad animare una singola foto.",
+        "Pix2Vid trasforma le immagini dei prodotti in video promozionali completi invece di limitarsi ad animare una singola foto.",
       features: [
         "Narrazione AI creata per il tuo prodotto",
         "Sottotitoli con parole importanti evidenziate",
@@ -273,7 +273,7 @@ export const SEO_LANDING_CONTENT = {
 
   ja: {
     photoToVideo: {
-      title: "商品写真から動画を作成 | ImgGetVid",
+      title: "商品写真から動画を作成 | Pix2Vid",
       description:
         "商品写真から、AIナレーション、字幕、音楽、複数のスタイルを備えた投稿可能な縦型動画を作成できます。",
       eyebrow: "商品写真から、投稿できる動画へ。",
@@ -282,7 +282,7 @@ export const SEO_LANDING_CONTENT = {
         "お持ちの商品写真をアップロードして、SNS、ショート動画、商品プロモーション向けの縦型動画に仕上げます。",
       benefitsHeading: "今ある商品写真をもっと活用",
       benefitsCopy:
-        "ImgGetVidなら、1枚の写真を動かすだけではなく、商品画像からプロモーション用の完成動画を作成できます。",
+        "Pix2Vidなら、1枚の写真を動かすだけではなく、商品画像からプロモーション用の完成動画を作成できます。",
       features: [
         "商品に合わせたAIナレーション",
         "重要な言葉を強調した字幕",
@@ -303,7 +303,7 @@ export const SEO_LANDING_CONTENT = {
 
   ko: {
     photoToVideo: {
-      title: "제품 사진으로 영상 만들기 | ImgGetVid",
+      title: "제품 사진으로 영상 만들기 | Pix2Vid",
       description:
         "제품 사진을 AI 내레이션, 자막, 음악, 다양한 스타일이 포함된 게시용 세로형 영상으로 만들어 보세요.",
       eyebrow: "제품 사진을 바로 영상으로.",
@@ -312,7 +312,7 @@ export const SEO_LANDING_CONTENT = {
         "기존 제품 사진을 업로드해 소셜 미디어, 숏폼 콘텐츠, 제품 홍보에 사용할 수 있는 세로형 영상으로 만들어 보세요.",
       benefitsHeading: "이미 가지고 있는 제품 사진을 더 다양하게 활용하세요",
       benefitsCopy:
-        "ImgGetVid는 사진 한 장에 움직임만 추가하는 것이 아니라 제품 이미지로 완성된 홍보 영상을 만듭니다.",
+        "Pix2Vid는 사진 한 장에 움직임만 추가하는 것이 아니라 제품 이미지로 완성된 홍보 영상을 만듭니다.",
       features: [
         "제품에 맞춘 AI 내레이션",
         "중요한 단어를 강조한 자막",
@@ -333,7 +333,7 @@ export const SEO_LANDING_CONTENT = {
 
   zh: {
     photoToVideo: {
-      title: "产品照片转视频生成器 | ImgGetVid",
+      title: "产品照片转视频生成器 | Pix2Vid",
       description:
         "将产品照片制作成可直接发布的竖屏视频，并加入 AI 旁白、字幕、音乐和多种风格。",
       eyebrow: "上传产品照片，生成推广视频。",
@@ -342,7 +342,7 @@ export const SEO_LANDING_CONTENT = {
         "上传现有产品照片，制作适合社交媒体、短视频和商品推广的竖屏视频。",
       benefitsHeading: "让现有产品照片发挥更多价值",
       benefitsCopy:
-        "ImgGetVid 不只是让单张照片动起来，而是将产品图片制作成完整的推广视频。",
+        "Pix2Vid 不只是让单张照片动起来，而是将产品图片制作成完整的推广视频。",
       features: [
         "根据产品内容生成 AI 旁白",
         "突出重要词语的字幕",
@@ -363,7 +363,7 @@ export const SEO_LANDING_CONTENT = {
 
   "zh-TW": {
     photoToVideo: {
-      title: "AI 商品照轉影片 | ImgGetVid",
+      title: "AI 商品照轉影片 | Pix2Vid",
       description:
         "將商品照片製作成可直接發布的直式影片，並加入 AI 旁白、字幕、音樂和多種風格。",
       eyebrow: "上傳商品照，製作推廣影片。",
@@ -372,7 +372,7 @@ export const SEO_LANDING_CONTENT = {
         "上傳現有商品照片，製作適合社群媒體、短影音和商品推廣的直式影片。",
       benefitsHeading: "讓現有商品照片發揮更多價值",
       benefitsCopy:
-        "ImgGetVid 不只是讓單張照片動起來，而是將商品圖片製作成完整的推廣影片。",
+        "Pix2Vid 不只是讓單張照片動起來，而是將商品圖片製作成完整的推廣影片。",
       features: [
         "依商品內容產生 AI 旁白",
         "強調重要詞語的字幕",
@@ -393,7 +393,7 @@ export const SEO_LANDING_CONTENT = {
 
   tr: {
     photoToVideo: {
-      title: "Ürün Fotoğrafını Videoya Dönüştürün | ImgGetVid",
+      title: "Ürün Fotoğrafını Videoya Dönüştürün | Pix2Vid",
       description:
         "Ürün fotoğraflarını yapay zekâ anlatımı, altyazılar, müzik ve farklı stiller içeren yayına hazır dikey videolara dönüştürün.",
       eyebrow: "Ürün fotoğrafları girer. Video çıkar.",
@@ -402,7 +402,7 @@ export const SEO_LANDING_CONTENT = {
         "Mevcut ürün fotoğraflarınızı yükleyin ve sosyal medya, kısa video içerikleri ve ürün tanıtımları için dikey videolar oluşturun.",
       benefitsHeading: "Elinizdeki ürün fotoğraflarından daha fazlasını elde edin",
       benefitsCopy:
-        "ImgGetVid yalnızca tek bir fotoğrafı hareketlendirmek yerine ürün görsellerinizden tamamlanmış tanıtım videoları oluşturur.",
+        "Pix2Vid yalnızca tek bir fotoğrafı hareketlendirmek yerine ürün görsellerinizden tamamlanmış tanıtım videoları oluşturur.",
       features: [
         "Ürününüze uygun yapay zekâ anlatımı",
         "Önemli kelimeleri vurgulayan altyazılar",
@@ -423,7 +423,7 @@ export const SEO_LANDING_CONTENT = {
 
   hi: {
     photoToVideo: {
-      title: "प्रोडक्ट फोटो से वीडियो बनाएं | ImgGetVid",
+      title: "प्रोडक्ट फोटो से वीडियो बनाएं | Pix2Vid",
       description:
         "प्रोडक्ट फोटो को AI नैरेशन, कैप्शन, संगीत और कई स्टाइल के साथ पोस्ट करने योग्य वर्टिकल वीडियो में बदलें।",
       eyebrow: "प्रोडक्ट फोटो से तैयार वीडियो तक।",
@@ -432,7 +432,7 @@ export const SEO_LANDING_CONTENT = {
         "अपने मौजूदा प्रोडक्ट फोटो अपलोड करें और उन्हें सोशल मीडिया, शॉर्ट-फॉर्म कंटेंट और प्रोडक्ट प्रमोशन के लिए वर्टिकल वीडियो में बदलें।",
       benefitsHeading: "अपने मौजूदा प्रोडक्ट फोटो का ज्यादा उपयोग करें",
       benefitsCopy:
-        "ImgGetVid केवल एक फोटो को एनिमेट नहीं करता, बल्कि आपकी प्रोडक्ट इमेज से पूरा प्रमोशनल वीडियो बनाता है।",
+        "Pix2Vid केवल एक फोटो को एनिमेट नहीं करता, बल्कि आपकी प्रोडक्ट इमेज से पूरा प्रमोशनल वीडियो बनाता है।",
       features: [
         "आपके प्रोडक्ट के अनुसार AI नैरेशन",
         "महत्वपूर्ण शब्दों को हाइलाइट करने वाले कैप्शन",
@@ -453,7 +453,7 @@ export const SEO_LANDING_CONTENT = {
 
   ar: {
     photoToVideo: {
-      title: "تحويل صور المنتجات إلى فيديو بالذكاء الاصطناعي | ImgGetVid",
+      title: "تحويل صور المنتجات إلى فيديو بالذكاء الاصطناعي | Pix2Vid",
       description:
         "حوّل صور منتجاتك إلى فيديوهات عمودية جاهزة للنشر مع تعليق صوتي بالذكاء الاصطناعي وترجمات وموسيقى وأنماط متعددة.",
       eyebrow: "صور المنتج تتحول إلى فيديو جاهز للنشر.",
@@ -462,7 +462,7 @@ export const SEO_LANDING_CONTENT = {
         "ارفع صور منتجاتك الحالية وحوّلها إلى فيديوهات عمودية لوسائل التواصل الاجتماعي والمحتوى القصير والترويج للمنتجات.",
       benefitsHeading: "استفد أكثر من صور المنتجات التي لديك بالفعل",
       benefitsCopy:
-        "يحوّل ImgGetVid صور منتجاتك إلى فيديوهات ترويجية متكاملة بدلاً من الاكتفاء بتحريك صورة واحدة.",
+        "يحوّل Pix2Vid صور منتجاتك إلى فيديوهات ترويجية متكاملة بدلاً من الاكتفاء بتحريك صورة واحدة.",
       features: [
         "تعليق صوتي بالذكاء الاصطناعي مصمم لمنتجك",
         "ترجمات مع إبراز الكلمات المهمة",
