@@ -3957,7 +3957,7 @@ finalVideoButton.addEventListener(
         result.videoUrl + "?download=1";
 
       downloadLink.download =
-        "imggetvid-video.mp4";
+        "pix2vid-video.mp4";
 
       downloadLink.className =
         "video-result-link";

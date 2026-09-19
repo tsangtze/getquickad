@@ -1903,7 +1903,7 @@ export async function createProjectRouter({
           }
 
           response.set("Content-Type", object.ContentType || "video/mp4");
-          response.set("Content-Disposition", 'attachment; filename="imggetvid-video.mp4"');
+          response.set("Content-Disposition", 'attachment; filename="pix2vid-video.mp4"');
 
           if (Number.isFinite(Number(object.ContentLength))) {
             response.set("Content-Length", String(object.ContentLength));
@@ -1941,7 +1941,7 @@ export async function createProjectRouter({
       try {
         await fs.access(videoPath);
         if (String(request.query.download ?? "") === "1") {
-          response.download(videoPath, "imggetvid-video.mp4");
+          response.download(videoPath, "pix2vid-video.mp4");
           return;
         }
 

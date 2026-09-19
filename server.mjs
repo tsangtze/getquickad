@@ -124,7 +124,7 @@ const localizedHomePathsWithoutTrailingSlash =
     language => `/${language}`
   );
 
-const seoOrigin = "https://getquickad.com";
+const seoOrigin = "https://pix2vid.net";
 
 const seoByLanguage = {
   en: {
@@ -249,7 +249,7 @@ function buildAlternateLinks() {
 }
 
 const socialShareImageUrl =
-  `${seoOrigin}/assets/quickad-social-share.png`;
+  `${seoOrigin}/assets/pix2vid-social-share.png`;
 
 function buildSocialMeta({
   title,
