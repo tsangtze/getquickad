@@ -36,6 +36,21 @@ const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
+// Keep the retired QuickAd domain HTTPS-capable, but permanently move all
+// public traffic to Pix2Vid while preserving the original path and query.
+app.use((request, response, next) => {
+  const hostname = request.hostname.toLowerCase();
+
+  if (
+    hostname === "getquickad.com" ||
+    hostname === "www.getquickad.com"
+  ) {
+    response.redirect(301, `https://pix2vid.net${request.originalUrl}`);
+    return;
+  }
+
+  next();
+});
 const port = Number(process.env.PORT) || 4100;
 
 const currentFile = fileURLToPath(import.meta.url);
