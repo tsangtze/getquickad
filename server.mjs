@@ -29,6 +29,13 @@ import {
 } from "./backend/authService.mjs";
 
 const app = express();
+
+// Render terminates HTTPS in front of the Node service and forwards the
+// original client address through one proxy hop. Trust that hop so Express
+// and express-rate-limit can identify clients correctly.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 const port = Number(process.env.PORT) || 4100;
 
 const currentFile = fileURLToPath(import.meta.url);
