@@ -50,7 +50,7 @@ requireContract(
 
 requireContract(
   !usesCharacterBasedSceneEditLimit(
-    "QuickAd AI makes 视频 easy today"
+    "Pix2Vid makes 视频 easy today"
   ),
   "Mixed text below 50% CJK letters/numbers must use word counting."
 );

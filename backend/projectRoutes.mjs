@@ -363,7 +363,7 @@ function validateProject(
         max: 10
       },
       error:
-        "QuickAd AI supports up to 10 product images."
+        "Pix2Vid supports up to 10 product images."
     };
   }
 
@@ -631,7 +631,7 @@ export async function createProjectRouter({
         ok: false,
         code: "REQUEST_ORIGIN_INVALID",
 
-        error: "This request must come from QuickAd AI."
+        error: "This request must come from Pix2Vid."
       });
     }
 
@@ -1196,9 +1196,9 @@ export async function createProjectRouter({
                   project.productName ??
                   project.name ??
                   project.description ??
-                  "QuickAd Video"
+                  "Pix2Vid Video"
                 ).trim() ||
-                "QuickAd Video";
+                "Pix2Vid Video";
 
               return {
                 projectId,
@@ -1903,7 +1903,7 @@ export async function createProjectRouter({
           }
 
           response.set("Content-Type", object.ContentType || "video/mp4");
-          response.set("Content-Disposition", 'attachment; filename="quickad-video.mp4"');
+          response.set("Content-Disposition", 'attachment; filename="pix2vid-video.mp4"');
 
           if (Number.isFinite(Number(object.ContentLength))) {
             response.set("Content-Length", String(object.ContentLength));
@@ -1941,7 +1941,7 @@ export async function createProjectRouter({
       try {
         await fs.access(videoPath);
         if (String(request.query.download ?? "") === "1") {
-          response.download(videoPath, "quickad-video.mp4");
+          response.download(videoPath, "pix2vid-video.mp4");
           return;
         }
 

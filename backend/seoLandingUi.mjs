@@ -4,10 +4,10 @@ export const SEO_LANDING_UI = {
     createVideo: "Create Video",
     outputAria: "Video output",
     duration: "Up to 60 sec",
-    relatedHeading: "Related QuickAd AI tools",
-    relatedAria: "Related QuickAd AI tools",
+    relatedHeading: "Related Pix2Vid tools",
+    relatedAria: "Related Pix2Vid tools",
     footerPromise:
-      "Create product videos from your photos with QuickAd AI."
+      "Create product videos from your photos with Pix2Vid."
   },
 
   es: {
@@ -15,10 +15,10 @@ export const SEO_LANDING_UI = {
     createVideo: "Crear vídeo",
     outputAria: "Resultado de vídeo",
     duration: "Hasta 60 s",
-    relatedHeading: "Herramientas relacionadas de QuickAd AI",
-    relatedAria: "Herramientas relacionadas de QuickAd AI",
+    relatedHeading: "Herramientas relacionadas de Pix2Vid",
+    relatedAria: "Herramientas relacionadas de Pix2Vid",
     footerPromise:
-      "Crea vídeos de producto a partir de tus fotos con QuickAd AI."
+      "Crea vídeos de producto a partir de tus fotos con Pix2Vid."
   },
 
   pt: {
@@ -26,10 +26,10 @@ export const SEO_LANDING_UI = {
     createVideo: "Criar vídeo",
     outputAria: "Resultado do vídeo",
     duration: "Até 60 s",
-    relatedHeading: "Ferramentas relacionadas do QuickAd AI",
-    relatedAria: "Ferramentas relacionadas do QuickAd AI",
+    relatedHeading: "Ferramentas relacionadas do Pix2Vid",
+    relatedAria: "Ferramentas relacionadas do Pix2Vid",
     footerPromise:
-      "Crie vídeos de produtos a partir das suas fotos com o QuickAd AI."
+      "Crie vídeos de produtos a partir das suas fotos com o Pix2Vid."
   },
 
   fr: {
@@ -37,10 +37,10 @@ export const SEO_LANDING_UI = {
     createVideo: "Créer une vidéo",
     outputAria: "Résultat vidéo",
     duration: "Jusqu'à 60 s",
-    relatedHeading: "Outils QuickAd AI associés",
-    relatedAria: "Outils QuickAd AI associés",
+    relatedHeading: "Outils Pix2Vid associés",
+    relatedAria: "Outils Pix2Vid associés",
     footerPromise:
-      "Créez des vidéos produit à partir de vos photos avec QuickAd AI."
+      "Créez des vidéos produit à partir de vos photos avec Pix2Vid."
   },
 
   de: {
@@ -48,10 +48,10 @@ export const SEO_LANDING_UI = {
     createVideo: "Video erstellen",
     outputAria: "Videoausgabe",
     duration: "Bis zu 60 Sek.",
-    relatedHeading: "Weitere QuickAd AI Tools",
-    relatedAria: "Weitere QuickAd AI Tools",
+    relatedHeading: "Weitere Pix2Vid Tools",
+    relatedAria: "Weitere Pix2Vid Tools",
     footerPromise:
-      "Erstellen Sie mit QuickAd AI Produktvideos aus Ihren Fotos."
+      "Erstellen Sie mit Pix2Vid Produktvideos aus Ihren Fotos."
   },
 
   it: {
@@ -59,10 +59,10 @@ export const SEO_LANDING_UI = {
     createVideo: "Crea video",
     outputAria: "Risultato video",
     duration: "Fino a 60 s",
-    relatedHeading: "Strumenti QuickAd AI correlati",
-    relatedAria: "Strumenti QuickAd AI correlati",
+    relatedHeading: "Strumenti Pix2Vid correlati",
+    relatedAria: "Strumenti Pix2Vid correlati",
     footerPromise:
-      "Crea video di prodotto dalle tue foto con QuickAd AI."
+      "Crea video di prodotto dalle tue foto con Pix2Vid."
   },
 
   ja: {
@@ -70,10 +70,10 @@ export const SEO_LANDING_UI = {
     createVideo: "動画を作成",
     outputAria: "動画出力",
     duration: "最大60秒",
-    relatedHeading: "QuickAd AI 関連ツール",
-    relatedAria: "QuickAd AI 関連ツール",
+    relatedHeading: "Pix2Vid 関連ツール",
+    relatedAria: "Pix2Vid 関連ツール",
     footerPromise:
-      "QuickAd AIで商品写真から商品動画を作成できます。"
+      "Pix2Vidで商品写真から商品動画を作成できます。"
   },
 
   ko: {
@@ -81,10 +81,10 @@ export const SEO_LANDING_UI = {
     createVideo: "영상 만들기",
     outputAria: "영상 결과",
     duration: "최대 60초",
-    relatedHeading: "QuickAd AI 관련 도구",
-    relatedAria: "QuickAd AI 관련 도구",
+    relatedHeading: "Pix2Vid 관련 도구",
+    relatedAria: "Pix2Vid 관련 도구",
     footerPromise:
-      "QuickAd AI로 제품 사진을 제품 영상으로 만들어 보세요."
+      "Pix2Vid로 제품 사진을 제품 영상으로 만들어 보세요."
   },
 
   zh: {
@@ -92,10 +92,10 @@ export const SEO_LANDING_UI = {
     createVideo: "制作视频",
     outputAria: "视频输出",
     duration: "最长 60 秒",
-    relatedHeading: "QuickAd AI 相关工具",
-    relatedAria: "QuickAd AI 相关工具",
+    relatedHeading: "Pix2Vid 相关工具",
+    relatedAria: "Pix2Vid 相关工具",
     footerPromise:
-      "使用 QuickAd AI 将产品照片制作成产品视频。"
+      "使用 Pix2Vid 将产品照片制作成产品视频。"
   },
 
   "zh-TW": {
@@ -103,10 +103,10 @@ export const SEO_LANDING_UI = {
     createVideo: "製作影片",
     outputAria: "影片輸出",
     duration: "最長 60 秒",
-    relatedHeading: "QuickAd AI 相關工具",
-    relatedAria: "QuickAd AI 相關工具",
+    relatedHeading: "Pix2Vid 相關工具",
+    relatedAria: "Pix2Vid 相關工具",
     footerPromise:
-      "使用 QuickAd AI 將商品照片製作成商品影片。"
+      "使用 Pix2Vid 將商品照片製作成商品影片。"
   },
 
   tr: {
@@ -114,10 +114,10 @@ export const SEO_LANDING_UI = {
     createVideo: "Video oluştur",
     outputAria: "Video çıktısı",
     duration: "60 saniyeye kadar",
-    relatedHeading: "İlgili QuickAd AI araçları",
-    relatedAria: "İlgili QuickAd AI araçları",
+    relatedHeading: "İlgili Pix2Vid araçları",
+    relatedAria: "İlgili Pix2Vid araçları",
     footerPromise:
-      "QuickAd AI ile ürün fotoğraflarınızdan ürün videoları oluşturun."
+      "Pix2Vid ile ürün fotoğraflarınızdan ürün videoları oluşturun."
   },
 
   hi: {
@@ -125,19 +125,19 @@ export const SEO_LANDING_UI = {
     createVideo: "वीडियो बनाएं",
     outputAria: "वीडियो आउटपुट",
     duration: "60 सेकंड तक",
-    relatedHeading: "संबंधित QuickAd AI टूल",
-    relatedAria: "संबंधित QuickAd AI टूल",
+    relatedHeading: "संबंधित Pix2Vid टूल",
+    relatedAria: "संबंधित Pix2Vid टूल",
     footerPromise:
-      "QuickAd AI से अपने प्रोडक्ट फोटो को प्रोडक्ट वीडियो में बदलें।"
+      "Pix2Vid से अपने प्रोडक्ट फोटो को प्रोडक्ट वीडियो में बदलें।"
   },
 
   ar: {
     brandLocalized: "إعلانات سريعة بالذكاء الاصطناعي",
     createVideo: "أنشئ فيديو",
-    outputAria: "مثال على فيديو تم إنشاؤه بواسطة QuickAd AI",
+    outputAria: "مثال على فيديو تم إنشاؤه بواسطة Pix2Vid",
     duration: "المدة",
     relatedHeading: "اكتشف المزيد من أدوات فيديو المنتجات",
-    relatedAria: "صفحات QuickAd AI ذات الصلة",
+    relatedAria: "صفحات Pix2Vid ذات الصلة",
     footerPromise: "حوّل صور منتجاتك إلى فيديوهات جاهزة للنشر باستخدام الذكاء الاصطناعي."
   }
 };

@@ -1,4 +1,4 @@
-# QuickAd AI
+# Pix2Vid
 
 Turn product photos into ready-to-post vertical promotional videos.
 

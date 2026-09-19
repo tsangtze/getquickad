@@ -286,7 +286,7 @@ function renderRecoverableVideos(videos) {
             "my-video-thumbnail-fallback";
 
           fallback.textContent =
-            "QuickAd AI";
+            "Pix2Vid";
 
           thumbnail.append(fallback);
         },
@@ -304,7 +304,7 @@ function renderRecoverableVideos(videos) {
         "my-video-thumbnail-fallback";
 
       fallback.textContent =
-        "QuickAd AI";
+        "Pix2Vid";
 
       thumbnail.append(fallback);
     }
@@ -323,7 +323,7 @@ function renderRecoverableVideos(videos) {
 
     title.textContent =
       String(video.title ?? "").trim() ||
-      "QuickAd Video";
+      "Pix2Vid Video";
 
     const created =
       document.createElement("p");
@@ -2035,7 +2035,7 @@ function createSceneReviewCard(scene) {
 
       defaultOption.value = "default";
       defaultOption.textContent =
-        uiText("scene.cta_default", "QuickAd default");
+        uiText("scene.cta_default", "Pix2Vid default");
 
       ctaSourceSelect.append(
         uploadedOption,
@@ -2075,7 +2075,7 @@ function createSceneReviewCard(scene) {
         document.createElement("div");
 
       defaultSource.textContent =
-        uiText("scene.cta_default", "QuickAd default");
+        uiText("scene.cta_default", "Pix2Vid default");
 
       ctaSourceLabel.append(
         defaultSource
@@ -3957,7 +3957,7 @@ finalVideoButton.addEventListener(
         result.videoUrl + "?download=1";
 
       downloadLink.download =
-        "quickad-video.mp4";
+        "pix2vid-video.mp4";
 
       downloadLink.className =
         "video-result-link";
@@ -4863,13 +4863,13 @@ function localizedApiError(result) {
     APP_ORIGIN_MISCONFIGURED: {
       key: "api.app_origin_misconfigured",
       fallback:
-        "QuickAd AI is not configured correctly for this request."
+        "Pix2Vid is not configured correctly for this request."
     },
 
     REQUEST_ORIGIN_INVALID: {
       key: "account.api_origin_required",
       fallback:
-        "This request must come from QuickAd AI."
+        "This request must come from Pix2Vid."
     },
 
     PROJECT_ID_INVALID: {
@@ -4947,7 +4947,7 @@ function localizedApiError(result) {
     PROJECT_IMAGE_LIMIT: {
       key: "upload.plan_image_limit",
       fallback:
-        "QuickAd AI supports up to 10 product images."
+        "Pix2Vid supports up to 10 product images."
     },
 
     PROJECT_DURATION_IMAGE_LIMIT: {

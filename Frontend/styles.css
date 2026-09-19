@@ -195,6 +195,10 @@ h1,
   letter-spacing: -0.05em;
 }
 
+html[lang="zh"] #create-view .intro h1,
+html[lang="zh-TW"] #create-view .intro h1 {
+  max-width: 760px;
+}
 .intro-copy {
   max-width: 650px;
   margin-bottom: 0;

@@ -185,7 +185,7 @@ try {
         authConfiguration() {
           return {
             applicationOrigin:
-              "https://getquickad.com"
+              "https://pix2vid.net"
           };
         },
 

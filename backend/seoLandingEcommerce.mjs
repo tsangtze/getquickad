@@ -1,6 +1,6 @@
 export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   en: {
-    title: "AI Ecommerce Video Generator | QuickAd AI",
+    title: "AI Ecommerce Video Generator | Pix2Vid",
     description:
       "Create ecommerce product videos from your photos with AI narration, captions, music, multiple styles, and ready-to-post vertical MP4 output.",
     eyebrow: "Product photos into ecommerce videos.",
@@ -10,7 +10,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "Create product videos for ecommerce without filming",
     benefitsCopy:
-      "QuickAd AI combines your product photos with narration, captions, music, and visual styling to create complete promotional videos for your products.",
+      "Pix2Vid combines your product photos with narration, captions, music, and visual styling to create complete promotional videos for your products.",
     features: [
       "AI narration built around your product message",
       "Captions with important words emphasized",
@@ -31,7 +31,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   es: {
-    title: "Generador de Vídeos para Ecommerce con IA | QuickAd AI",
+    title: "Generador de Vídeos para Ecommerce con IA | Pix2Vid",
     description:
       "Crea vídeos de producto para ecommerce a partir de tus fotos con narración por IA, subtítulos, música, varios estilos y MP4 vertical listo para publicar.",
     eyebrow: "Fotos de producto convertidas en vídeos para ecommerce.",
@@ -41,7 +41,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "Crea vídeos de producto para ecommerce sin grabar",
     benefitsCopy:
-      "QuickAd AI combina tus fotos de producto con narración, subtítulos, música y estilos visuales para crear vídeos promocionales completos.",
+      "Pix2Vid combina tus fotos de producto con narración, subtítulos, música y estilos visuales para crear vídeos promocionales completos.",
     features: [
       "Narración por IA centrada en el mensaje de tu producto",
       "Subtítulos con palabras importantes destacadas",
@@ -62,7 +62,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   pt: {
-    title: "Gerador de Vídeo para E-commerce com IA | QuickAd AI",
+    title: "Gerador de Vídeo para E-commerce com IA | Pix2Vid",
     description:
       "Crie vídeos de produtos para e-commerce a partir das suas fotos com narração por IA, legendas, música, vários estilos e MP4 vertical pronto para publicar.",
     eyebrow: "Fotos de produtos viram vídeos para e-commerce.",
@@ -72,7 +72,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "Crie vídeos de produtos para e-commerce sem filmar",
     benefitsCopy:
-      "O QuickAd AI combina suas fotos de produtos com narração, legendas, música e estilos visuais para criar vídeos promocionais completos.",
+      "O Pix2Vid combina suas fotos de produtos com narração, legendas, música e estilos visuais para criar vídeos promocionais completos.",
     features: [
       "Narração por IA focada na mensagem do produto",
       "Legendas com palavras importantes em destaque",
@@ -93,7 +93,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   fr: {
-    title: "Générateur Vidéo E-commerce IA | QuickAd AI",
+    title: "Générateur Vidéo E-commerce IA | Pix2Vid",
     description:
       "Créez des vidéos produit pour l'e-commerce à partir de vos photos avec narration IA, sous-titres, musique, plusieurs styles et MP4 vertical prêt à publier.",
     eyebrow: "Vos photos produit deviennent des vidéos e-commerce.",
@@ -103,7 +103,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "Créez des vidéos produit e-commerce sans tournage",
     benefitsCopy:
-      "QuickAd AI associe vos photos produit à une narration, des sous-titres, de la musique et des styles visuels pour créer des vidéos promotionnelles complètes.",
+      "Pix2Vid associe vos photos produit à une narration, des sous-titres, de la musique et des styles visuels pour créer des vidéos promotionnelles complètes.",
     features: [
       "Narration IA adaptée au message de votre produit",
       "Sous-titres avec mise en avant des mots importants",
@@ -124,7 +124,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   de: {
-    title: "E-Commerce-Video-Generator mit KI | QuickAd AI",
+    title: "E-Commerce-Video-Generator mit KI | Pix2Vid",
     description:
       "Erstellen Sie E-Commerce-Produktvideos aus Ihren Fotos mit KI-Sprachausgabe, Untertiteln, Musik, verschiedenen Stilen und fertigem Hochkant-MP4.",
     eyebrow: "Produktfotos werden zu E-Commerce-Videos.",
@@ -134,7 +134,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "Erstellen Sie E-Commerce-Produktvideos ohne Dreharbeiten",
     benefitsCopy:
-      "QuickAd AI kombiniert Ihre Produktfotos mit Sprachausgabe, Untertiteln, Musik und visuellen Stilen zu vollständigen Werbevideos.",
+      "Pix2Vid kombiniert Ihre Produktfotos mit Sprachausgabe, Untertiteln, Musik und visuellen Stilen zu vollständigen Werbevideos.",
     features: [
       "KI-Sprachausgabe passend zu Ihrer Produktbotschaft",
       "Untertitel mit hervorgehobenen wichtigen Wörtern",
@@ -155,7 +155,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   it: {
-    title: "Generatore Video per E-commerce con AI | QuickAd AI",
+    title: "Generatore Video per E-commerce con AI | Pix2Vid",
     description:
       "Crea video di prodotto per e-commerce dalle tue foto con narrazione AI, sottotitoli, musica, diversi stili e MP4 verticale pronto da pubblicare.",
     eyebrow: "Le foto dei prodotti diventano video per e-commerce.",
@@ -165,7 +165,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "Crea video di prodotto per e-commerce senza riprese",
     benefitsCopy:
-      "QuickAd AI combina le foto dei prodotti con narrazione, sottotitoli, musica e stili visivi per creare video promozionali completi.",
+      "Pix2Vid combina le foto dei prodotti con narrazione, sottotitoli, musica e stili visivi per creare video promozionali completi.",
     features: [
       "Narrazione AI focalizzata sul messaggio del prodotto",
       "Sottotitoli con parole importanti evidenziate",
@@ -186,7 +186,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   ja: {
-    title: "EC商品動画ジェネレーター | QuickAd AI",
+    title: "EC商品動画ジェネレーター | Pix2Vid",
     description:
       "商品写真から、AIナレーション、字幕、音楽、複数のスタイルを備えたEC向け縦型商品動画を作成できます。",
     eyebrow: "商品写真からEC商品動画へ。",
@@ -196,7 +196,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "撮影なしでEC向け商品動画を作成",
     benefitsCopy:
-      "QuickAd AIは、商品写真にナレーション、字幕、音楽、ビジュアルスタイルを組み合わせて、完成した商品プロモーション動画を作成します。",
+      "Pix2Vidは、商品写真にナレーション、字幕、音楽、ビジュアルスタイルを組み合わせて、完成した商品プロモーション動画を作成します。",
     features: [
       "商品メッセージに合わせたAIナレーション",
       "重要な言葉を強調した字幕",
@@ -217,7 +217,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   ko: {
-    title: "이커머스 상품 영상 생성기 | QuickAd AI",
+    title: "이커머스 상품 영상 생성기 | Pix2Vid",
     description:
       "제품 사진으로 AI 내레이션, 자막, 음악, 다양한 스타일이 포함된 게시용 세로형 이커머스 상품 영상을 만들어 보세요.",
     eyebrow: "제품 사진을 이커머스 영상으로.",
@@ -227,7 +227,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "별도의 촬영 없이 이커머스 상품 영상을 만드세요",
     benefitsCopy:
-      "QuickAd AI는 제품 사진에 내레이션, 자막, 음악, 비주얼 스타일을 결합해 완성된 상품 홍보 영상을 만듭니다.",
+      "Pix2Vid는 제품 사진에 내레이션, 자막, 음악, 비주얼 스타일을 결합해 완성된 상품 홍보 영상을 만듭니다.",
     features: [
       "제품 메시지에 맞춘 AI 내레이션",
       "중요한 단어를 강조한 자막",
@@ -248,7 +248,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   zh: {
-    title: "电商产品视频生成器 | QuickAd AI",
+    title: "电商产品视频生成器 | Pix2Vid",
     description:
       "使用产品照片制作带有 AI 旁白、字幕、音乐和多种风格的竖屏电商产品视频，可直接用于推广。",
     eyebrow: "产品照片变成电商产品视频。",
@@ -258,7 +258,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "无需拍摄即可制作电商产品视频",
     benefitsCopy:
-      "QuickAd AI 将产品照片与旁白、字幕、音乐和视觉风格组合成完整的商品推广视频。",
+      "Pix2Vid 将产品照片与旁白、字幕、音乐和视觉风格组合成完整的商品推广视频。",
     features: [
       "围绕产品卖点生成 AI 旁白",
       "突出重要词语的字幕",
@@ -279,7 +279,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   "zh-TW": {
-    title: "電商產品影片產生器 | QuickAd AI",
+    title: "電商產品影片產生器 | Pix2Vid",
     description:
       "使用商品照片製作帶有 AI 旁白、字幕、音樂和多種風格的直式電商商品影片，可直接用於推廣。",
     eyebrow: "商品照變成電商商品影片。",
@@ -289,7 +289,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "不必拍攝也能製作電商商品影片",
     benefitsCopy:
-      "QuickAd AI 將商品照片與旁白、字幕、音樂和視覺風格組合成完整的商品推廣影片。",
+      "Pix2Vid 將商品照片與旁白、字幕、音樂和視覺風格組合成完整的商品推廣影片。",
     features: [
       "依商品賣點產生 AI 旁白",
       "強調重要詞語的字幕",
@@ -310,7 +310,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   tr: {
-    title: "E-Ticaret Video Oluşturucu | QuickAd AI",
+    title: "E-Ticaret Video Oluşturucu | Pix2Vid",
     description:
       "Ürün fotoğraflarınızdan yapay zekâ anlatımı, altyazılar, müzik, farklı stiller ve yayına hazır dikey MP4 ile e-ticaret videoları oluşturun.",
     eyebrow: "Ürün fotoğraflarını e-ticaret videolarına dönüştürün.",
@@ -320,7 +320,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "Video çekmeden e-ticaret ürün videoları oluşturun",
     benefitsCopy:
-      "QuickAd AI ürün fotoğraflarınızı anlatım, altyazılar, müzik ve görsel stillerle birleştirerek tamamlanmış ürün tanıtım videoları oluşturur.",
+      "Pix2Vid ürün fotoğraflarınızı anlatım, altyazılar, müzik ve görsel stillerle birleştirerek tamamlanmış ürün tanıtım videoları oluşturur.",
     features: [
       "Ürün mesajınıza uygun yapay zekâ anlatımı",
       "Önemli kelimeleri vurgulayan altyazılar",
@@ -341,7 +341,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   hi: {
-    title: "ई-कॉमर्स वीडियो मेकर | QuickAd AI",
+    title: "ई-कॉमर्स वीडियो मेकर | Pix2Vid",
     description:
       "प्रोडक्ट फोटो से AI नैरेशन, कैप्शन, संगीत, कई स्टाइल और पोस्ट करने योग्य वर्टिकल MP4 के साथ ई-कॉमर्स प्रोडक्ट वीडियो बनाएं।",
     eyebrow: "प्रोडक्ट फोटो से ई-कॉमर्स वीडियो तक।",
@@ -351,7 +351,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
     benefitsHeading:
       "बिना शूटिंग के ई-कॉमर्स प्रोडक्ट वीडियो बनाएं",
     benefitsCopy:
-      "QuickAd AI आपके प्रोडक्ट फोटो को नैरेशन, कैप्शन, संगीत और विज़ुअल स्टाइल के साथ जोड़कर पूरा प्रोडक्ट प्रमोशनल वीडियो बनाता है।",
+      "Pix2Vid आपके प्रोडक्ट फोटो को नैरेशन, कैप्शन, संगीत और विज़ुअल स्टाइल के साथ जोड़कर पूरा प्रोडक्ट प्रमोशनल वीडियो बनाता है।",
     features: [
       "प्रोडक्ट मैसेज के अनुसार AI नैरेशन",
       "महत्वपूर्ण शब्दों को हाइलाइट करने वाले कैप्शन",
@@ -372,7 +372,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
   },
 
   ar: {
-    title: "مولد فيديوهات للتجارة الإلكترونية بالذكاء الاصطناعي | QuickAd AI",
+    title: "مولد فيديوهات للتجارة الإلكترونية بالذكاء الاصطناعي | Pix2Vid",
     description:
       "أنشئ فيديوهات للمنتجات من صورك للتجارة الإلكترونية مع تعليق صوتي بالذكاء الاصطناعي وترجمات وموسيقى وأنماط متعددة وملف MP4 عمودي جاهز للنشر.",
     eyebrow: "حوّل صور المنتجات إلى فيديوهات للتجارة الإلكترونية.",
@@ -381,7 +381,7 @@ export const SEO_ECOMMERCE_VIDEO_CONTENT = {
       "حوّل صور منتجاتك إلى فيديوهات عمودية للترويج في متجرك الإلكتروني وإطلاق المنتجات والعروض ووسائل التواصل الاجتماعي.",
     benefitsHeading: "أنشئ فيديوهات لمنتجات متجرك دون تصوير جديد",
     benefitsCopy:
-      "يجمع QuickAd AI صور منتجاتك مع التعليق الصوتي والترجمات والموسيقى والأنماط المرئية لإنشاء فيديوهات ترويجية متكاملة للمنتجات.",
+      "يجمع Pix2Vid صور منتجاتك مع التعليق الصوتي والترجمات والموسيقى والأنماط المرئية لإنشاء فيديوهات ترويجية متكاملة للمنتجات.",
     features: [
       "تعليق صوتي بالذكاء الاصطناعي يناسب رسالة منتجك",
       "ترجمات مع إبراز الكلمات المهمة",
