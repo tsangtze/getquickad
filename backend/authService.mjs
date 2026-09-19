@@ -77,7 +77,8 @@ export function createAuthClient() {
       auth: {
         autoRefreshToken: false,
         detectSessionInUrl: false,
-        persistSession: false
+        persistSession: false,
+        flowType: "implicit"
       }
     }
   );
