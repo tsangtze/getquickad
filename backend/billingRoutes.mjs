@@ -7,6 +7,7 @@ import {
   reconcilePaidEntitlement
 } from "./stripeEntitlement.mjs";
 import { authConfiguration } from "./authService.mjs";
+import { isTrustedApplicationRequest } from "./requestContext.mjs";
 import { getStripeBillingState } from "./usageLimits.mjs";
 
 function cleanEnvironmentValue(value) {
@@ -101,6 +102,23 @@ export function createBillingRouter({
 
   router.use((_request, response, next) => {
     response.set("Cache-Control", "no-store");
+    next();
+  });
+
+  router.use((request, response, next) => {
+    if (
+      !isTrustedApplicationRequest(
+        request,
+        authConfiguration().applicationOrigin
+      )
+    ) {
+      return response.status(403).json({
+        ok: false,
+        code: "BILLING_ORIGIN_REQUIRED",
+        error: "This request must come from Pix2Vid."
+      });
+    }
+
     next();
   });
 

@@ -208,7 +208,9 @@
       options.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`/api/auth/${path}`, options);
+    options.headers = window.Pix2VidRuntime.apiHeaders(options.headers);
+
+    const response = await fetch(window.Pix2VidRuntime.apiUrl(`/api/auth/${path}`), options);
     const data = await response.json();
     return { response, data };
   }

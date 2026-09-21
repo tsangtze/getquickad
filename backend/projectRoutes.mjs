@@ -14,6 +14,7 @@ import {
   reconcilePaidEntitlement
 } from "./stripeEntitlement.mjs";
 import { authConfiguration } from "./authService.mjs";
+import { isTrustedApplicationRequest } from "./requestContext.mjs";
 import crypto from "node:crypto";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -626,7 +627,12 @@ export async function createProjectRouter({
       });
     }
 
-    if (request.get("origin") !== expectedOrigin) {
+    if (
+      !isTrustedApplicationRequest(
+        request,
+        expectedOrigin
+      )
+    ) {
       return response.status(403).json({
         ok: false,
         code: "REQUEST_ORIGIN_INVALID",

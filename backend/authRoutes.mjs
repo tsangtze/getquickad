@@ -6,6 +6,7 @@ import {
   authConfiguration,
   createAuthClient
 } from "./authService.mjs";
+import { isTrustedApplicationRequest } from "./requestContext.mjs";
 
 const accessCookieName = "quickad_access";
 const refreshCookieName = "quickad_refresh";
@@ -292,10 +293,12 @@ export function createAuthRouter() {
       return next();
     }
 
-    const expectedOrigin =
-      new URL(authConfiguration().applicationOrigin).origin;
-
-    if (request.get("origin") !== expectedOrigin) {
+    if (
+      !isTrustedApplicationRequest(
+        request,
+        authConfiguration().applicationOrigin
+      )
+    ) {
       return response.status(403).json({
         ok: false,
         code: "AUTH_ORIGIN_REQUIRED",

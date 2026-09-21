@@ -44,6 +44,38 @@ function sectionBetween(
   );
 }
 
+const requestContextPosition =
+  source.indexOf(
+    "isTrustedApplicationRequest("
+  );
+
+const checkoutRoutePosition =
+  source.indexOf(
+    '"/checkout"'
+  );
+
+const portalRoutePosition =
+  source.indexOf(
+    '"/portal"'
+  );
+
+assert.ok(
+  requestContextPosition >= 0 &&
+  requestContextPosition < checkoutRoutePosition,
+  "Billing request-context guard must run before Checkout."
+);
+
+assert.ok(
+  requestContextPosition >= 0 &&
+  requestContextPosition < portalRoutePosition,
+  "Billing request-context guard must run before Portal."
+);
+
+assert.match(
+  source,
+  /code:\s*"BILLING_ORIGIN_REQUIRED"/
+);
+
 const checkout =
   sectionBetween(
     '"/checkout"',

@@ -233,10 +233,11 @@ async function loadBilling() {
   try {
     const response =
       await fetch(
-        "/api/projects/usage",
+        window.Pix2VidRuntime.apiUrl("/api/projects/usage"),
         {
           credentials: "same-origin",
-          cache: "no-store"
+          cache: "no-store",
+          headers: window.Pix2VidRuntime.apiHeaders()
         }
       );
 
@@ -288,13 +289,13 @@ async function openSubscriptionPortal() {
   try {
     const response =
       await fetch(
-        "/api/billing/portal",
+        window.Pix2VidRuntime.apiUrl("/api/billing/portal"),
         {
           method: "POST",
           credentials: "same-origin",
-          headers: {
+          headers: window.Pix2VidRuntime.apiHeaders({
             "Content-Type": "application/json"
-          },
+          }),
           body: JSON.stringify({
             language:
               window.QuickAdI18n?.currentLang || "en"
@@ -355,13 +356,13 @@ async function startCheckout(button) {
   try {
     const response =
       await fetch(
-        "/api/billing/checkout",
+        window.Pix2VidRuntime.apiUrl("/api/billing/checkout"),
         {
           method: "POST",
           credentials: "same-origin",
-          headers: {
+          headers: window.Pix2VidRuntime.apiHeaders({
             "Content-Type": "application/json"
-          },
+          }),
           body: JSON.stringify({
             planId,
             language:

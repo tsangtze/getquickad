@@ -82,9 +82,9 @@
       byId("confirmation").value = "";
     }
     async function api(path, body) {
-      const response = await fetch(`/api/auth/${path}`, {
+      const response = await fetch(window.Pix2VidRuntime.apiUrl(`/api/auth/${path}`), {
         method: "POST", credentials: "same-origin", cache: "no-store",
-        headers: { "Content-Type": "application/json" },
+        headers: window.Pix2VidRuntime.apiHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body), signal: AbortSignal.timeout(30000)
       });
       return { response, data: await response.json() };
