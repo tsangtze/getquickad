@@ -14,6 +14,8 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1121.0",
+    "@capacitor/android": "^7.6.9",
+    "@capacitor/core": "^7.6.9",
     "@ffprobe-installer/ffprobe": "^2.1.2",
     "@supabase/supabase-js": "^2.109.0",
     "cookie-parser": "^1.4.7",
@@ -25,5 +27,8 @@
     "stripe": "^22.6.0",
     "ws": "^8.21.3",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.9"
   }
 }

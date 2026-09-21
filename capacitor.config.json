@@ -1,0 +1,8 @@
+{
+  "appId": "net.pix2vid.app",
+  "appName": "Pix2Vid",
+  "webDir": "Frontend",
+  "server": {
+    "url": "https://pix2vid.net"
+  }
+}

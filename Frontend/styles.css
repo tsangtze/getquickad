@@ -2254,6 +2254,7 @@ input::placeholder {
   #lang-switcher {
     min-width: 0;
     margin-left: 0;
+    margin-top: 24px;
   }
 
   #lang-current {
@@ -2264,6 +2265,7 @@ input::placeholder {
   .site-nav > .account-button {
     min-width: 0;
     padding: 8px 10px;
+    margin-top: 24px;
   }
 
   .site-nav > a {
