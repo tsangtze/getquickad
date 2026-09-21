@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pix2Vid</string>
+    <string name="title_activity_main">Pix2Vid</string>
+    <string name="package_name">net.pix2vid.app</string>
+    <string name="custom_url_scheme">net.pix2vid.app</string>
+</resources>
