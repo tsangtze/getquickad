@@ -43,6 +43,7 @@ import {
   deleteProjectR2Objects
 } from "./cleanup.mjs";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 
 const MAX_IMAGE_COUNT = 10;
@@ -1853,6 +1854,82 @@ export async function createProjectRouter({
         return response.status(200).json({
           ok: true,
           deletedProjectId: projectId
+        });
+      } catch (error) {
+        if (error?.code === "ENOENT") {
+          return response.status(404).json({
+            ok: false,
+            code: "PROJECT_NOT_FOUND",
+            error: "Project not found."
+          });
+        }
+
+        next(error);
+      }
+    }
+  );
+  router.get(
+    "/:projectId/video/download-url",
+    async (request, response, next) => {
+      const projectId =
+        String(request.params.projectId ?? "");
+
+      try {
+        const project =
+          JSON.parse(
+            await fs.readFile(
+              path.join(
+                projectsDirectory,
+                projectId,
+                "project.json"
+              ),
+              "utf8"
+            )
+          );
+
+        if (
+          project?.id !== projectId ||
+          project?.ownerId !== request.authUser.id
+        ) {
+          return response.status(404).json({
+            ok: false,
+            code: "PROJECT_NOT_FOUND",
+            error: "Project not found."
+          });
+        }
+
+        const r2Key =
+          String(project?.video?.r2Key ?? "");
+
+        if (!r2Key) {
+          return response.status(404).json({
+            ok: false,
+            code: "FINISHED_VIDEO_NOT_FOUND",
+            error: "Finished video not found."
+          });
+        }
+
+        const expiresIn = 5 * 60;
+
+        const downloadUrl =
+          await getSignedUrl(
+            r2Client,
+            new GetObjectCommand({
+              Bucket: R2_BUCKET,
+              Key: r2Key,
+              ResponseContentType: "video/mp4",
+              ResponseContentDisposition:
+                'attachment; filename="pix2vid-video.mp4"'
+            }),
+            {
+              expiresIn
+            }
+          );
+
+        return response.status(200).json({
+          ok: true,
+          downloadUrl,
+          expiresIn
         });
       } catch (error) {
         if (error?.code === "ENOENT") {
