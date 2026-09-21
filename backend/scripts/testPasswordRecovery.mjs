@@ -148,6 +148,13 @@ test("recovery routes inherit origin, JSON and rate-limit protections", () => {
     rateLimit: config => Object.assign(() => {}, { config }),
     createPasswordHandlers: () => ({ recover() {}, link() {}, update() {} }),
     authConfiguration: () => ({ applicationOrigin: "http://localhost:4100" }), URL,
+    isTrustedApplicationRequest: (request, applicationOrigin) => {
+      const expectedOrigin = new URL(applicationOrigin).origin;
+      return (
+        request.get("origin") === expectedOrigin ||
+        request.get("x-pix2vid-native") === "android"
+      );
+    },
     createAuthClient: () => { throw new Error("Unexpected network access"); } };
   vm.runInNewContext(source + "\ncreateAuthRouter();", context);
   const routes = stack.filter(r => ["/recover", "/password-link", "/password-update"].includes(r.path));
@@ -157,12 +164,29 @@ test("recovery routes inherit origin, JSON and rate-limit protections", () => {
   const guard = guards.at(-1).handlers[0];
   for (const [origin, json, expected] of [["https://evil.example", true, 403], ["http://localhost:4100", false, 415]]) {
     const r = fixture().response();
-    guard({ method: "POST", get: () => origin, is: () => json }, r, () => assert.fail("Guard bypassed"));
+    guard({
+      method: "POST",
+      get: name => name.toLowerCase() === "origin" ? origin : undefined,
+      is: () => json
+    }, r, () => assert.fail("Guard bypassed"));
     assert.equal(r.statusCode, expected);
   }
+
   let passed = false;
-  guard({ method: "POST", get: () => "http://localhost:4100", is: () => true }, {}, () => { passed = true; });
+  guard({
+    method: "POST",
+    get: name => name.toLowerCase() === "origin" ? "http://localhost:4100" : undefined,
+    is: () => true
+  }, {}, () => { passed = true; });
   assert(passed);
+
+  let nativePassed = false;
+  guard({
+    method: "POST",
+    get: name => name.toLowerCase() === "x-pix2vid-native" ? "android" : undefined,
+    is: () => true
+  }, {}, () => { nativePassed = true; });
+  assert(nativePassed);
 });
 
 function browserFixture(hash = "", replies = []) {
@@ -178,7 +202,11 @@ function browserFixture(hash = "", replies = []) {
   const window = {
     location: { hash, search: "", pathname: "/password.html", reload() {} },
     history: { replaceState(...args) { calls.push(["clean", ...args]); } },
-    addEventListener(name, fn) { events[name] = fn; }
+    addEventListener(name, fn) { events[name] = fn; },
+    Pix2VidRuntime: {
+      apiUrl: path => path,
+      apiHeaders: headers => headers
+    }
   };
   let ready;
   const document = {

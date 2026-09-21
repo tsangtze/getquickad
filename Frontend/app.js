@@ -485,12 +485,11 @@ Deleting it does not refund credits or restore a free video.`,
 
   try {
     const response =
-      await fetch(
-        `/api/projects/${encodeURIComponent(id)}/video`,
-        {
+      await fetch(window.Pix2VidRuntime.apiUrl(`/api/projects/${encodeURIComponent(id)}/video`), {
           method: "DELETE",
           credentials: "same-origin",
-          cache: "no-store"
+          cache: "no-store",
+          headers: window.Pix2VidRuntime.apiHeaders()
         }
       );
 
@@ -536,11 +535,10 @@ async function loadRecoverableVideos() {
 
   try {
     const response =
-      await fetch(
-        "/api/projects/videos/recoverable",
-        {
+      await fetch(window.Pix2VidRuntime.apiUrl("/api/projects/videos/recoverable"), {
           credentials: "same-origin",
-          cache: "no-store"
+          cache: "no-store",
+          headers: window.Pix2VidRuntime.apiHeaders()
         }
       );
 
@@ -3083,10 +3081,12 @@ function renderPlanBrandingReview(project) {
     renderCurrentScenePlan();
   };
 
-  const requestJson = async (url, options) => {
+  const requestJson = async (url, options = {}) => {
     const response =
-      await fetch(url, options);
-
+      await fetch(window.Pix2VidRuntime.apiUrl(url), {
+        ...options,
+        headers: window.Pix2VidRuntime.apiHeaders(options.headers)
+      });
     const payload =
       await response.json().catch(() => ({}));
 
@@ -4545,10 +4545,11 @@ window.addEventListener("storage", (event) => {
 });
 
 async function quickAdReadSession() {
-  const response = await fetch("/api/auth/session", {
+  const response = await fetch(window.Pix2VidRuntime.apiUrl("/api/auth/session"), {
     credentials: "same-origin",
     cache: "no-store",
-    signal: AbortSignal.timeout(30000)
+    signal: AbortSignal.timeout(30000),
+    headers: window.Pix2VidRuntime.apiHeaders()
   });
 
   if (response.status === 401) return null;
@@ -4578,10 +4579,11 @@ async function quickAdProjectFetch(url, options = {}) {
   }
 
   const requestUserId = user.id;
-  const response = await fetch(url, {
+  const response = await fetch(window.Pix2VidRuntime.apiUrl(url), {
     ...options,
     credentials: "same-origin",
-    cache: "no-store"
+    cache: "no-store",
+    headers: window.Pix2VidRuntime.apiHeaders(options.headers)
   });
 
   // Delay delivery to existing UI code until identity is checked again.
@@ -4741,7 +4743,9 @@ async function updateQuota(){
 
   try{
     const res =
-      await fetch('/api/projects/usage');
+      await fetch(window.Pix2VidRuntime.apiUrl('/api/projects/usage'), {
+        headers: window.Pix2VidRuntime.apiHeaders()
+      });
 
     let usage = null;
 
