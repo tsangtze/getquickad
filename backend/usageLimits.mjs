@@ -209,12 +209,6 @@ export async function getStripeBillingState(
       stripeSubscriptionStatus:
         data.stripeSubscriptionStatus || null,
 
-      currentPeriodStart:
-        data.currentPeriodStart || null,
-
-      currentPeriodEnd:
-        data.currentPeriodEnd || null,
-
       stripeEntitlementVerifiedAt:
         data.stripeEntitlementVerifiedAt || null
     };
@@ -224,335 +218,12 @@ export async function getStripeBillingState(
         stripeCustomerId: null,
         stripeSubscriptionId: null,
         stripeSubscriptionStatus: null,
-        currentPeriodStart: null,
-        currentPeriodEnd: null,
         stripeEntitlementVerifiedAt: null
       };
     }
 
     throw error;
   }
-}
-
-export async function getEarlyRenewalOperation(
-  projectRoot,
-  userId
-) {
-  const file = userFile(projectRoot, userId);
-
-  try {
-    const current =
-      JSON.parse(
-        await fs.readFile(file, "utf8")
-      );
-
-    const operation =
-      current.earlyRenewalOperation;
-
-    if (
-      !operation ||
-      typeof operation !== "object"
-    ) {
-      return null;
-    }
-
-    return {
-      operationId:
-        operation.operationId || null,
-
-      stripeSubscriptionId:
-        operation.stripeSubscriptionId || null,
-
-      periodStart:
-        operation.periodStart || null,
-
-      status:
-        operation.status || null,
-
-      createdAt:
-        operation.createdAt || null,
-
-      completedAt:
-        operation.completedAt || null
-    };
-  } catch (error) {
-    if (error.code === "ENOENT") {
-      return null;
-    }
-
-    throw error;
-  }
-}
-
-export async function reserveEarlyRenewalOperation(
-  projectRoot,
-  userId,
-  {
-    operationId,
-    stripeSubscriptionId,
-    periodStart
-  }
-) {
-  const normalizedOperationId =
-    String(operationId || "").trim();
-
-  const normalizedSubscriptionId =
-    String(stripeSubscriptionId || "").trim();
-
-  const normalizedPeriodStart =
-    String(periodStart || "").trim();
-
-  if (
-    !normalizedOperationId ||
-    !normalizedSubscriptionId ||
-    !normalizedPeriodStart
-  ) {
-    const error =
-      new Error(
-        "Early-renewal operation identity is incomplete."
-      );
-
-    error.code =
-      "EARLY_RENEWAL_OPERATION_INVALID";
-
-    throw error;
-  }
-
-  return withUserUsageMutationLock(
-    projectRoot,
-    userId,
-    async () => {
-      const dir = usersDir(projectRoot);
-
-      await fs.mkdir(
-        dir,
-        { recursive: true }
-      );
-
-      const file =
-        userFile(projectRoot, userId);
-
-      let current = {};
-
-      try {
-        current =
-          JSON.parse(
-            await fs.readFile(
-              file,
-              "utf8"
-            )
-          );
-      } catch (error) {
-        if (error.code !== "ENOENT") {
-          throw error;
-        }
-      }
-
-      const existing =
-        current.earlyRenewalOperation;
-
-      if (
-        existing &&
-        typeof existing === "object" &&
-        existing.stripeSubscriptionId ===
-          normalizedSubscriptionId &&
-        existing.periodStart ===
-          normalizedPeriodStart
-      ) {
-        return {
-          created: false,
-          operation: {
-            operationId:
-              existing.operationId || null,
-
-            stripeSubscriptionId:
-              existing.stripeSubscriptionId ||
-              null,
-
-            periodStart:
-              existing.periodStart || null,
-
-            status:
-              existing.status || null,
-
-            createdAt:
-              existing.createdAt || null
-          }
-        };
-      }
-
-      const now =
-        new Date().toISOString();
-
-      const operation = {
-        operationId:
-          normalizedOperationId,
-
-        stripeSubscriptionId:
-          normalizedSubscriptionId,
-
-        periodStart:
-          normalizedPeriodStart,
-
-        status:
-          "reserved",
-
-        createdAt:
-          now
-      };
-
-      const next = {
-        ...current,
-        earlyRenewalOperation:
-          operation,
-        updatedAt:
-          now
-      };
-
-      await fs.writeFile(
-        file,
-        JSON.stringify(next, null, 2),
-        "utf8"
-      );
-
-      return {
-        created: true,
-        operation
-      };
-    }
-  );
-}
-
-export async function completeEarlyRenewalOperation(
-  projectRoot,
-  userId,
-  {
-    operationId,
-    stripeSubscriptionId,
-    periodStart
-  }
-) {
-  const normalizedOperationId =
-    String(operationId || "").trim();
-
-  const normalizedSubscriptionId =
-    String(stripeSubscriptionId || "").trim();
-
-  const normalizedPeriodStart =
-    String(periodStart || "").trim();
-
-  if (
-    !normalizedOperationId ||
-    !normalizedSubscriptionId ||
-    !normalizedPeriodStart
-  ) {
-    const error =
-      new Error(
-        "Early-renewal completion identity is incomplete."
-      );
-
-    error.code =
-      "EARLY_RENEWAL_OPERATION_INVALID";
-
-    throw error;
-  }
-
-  return withUserUsageMutationLock(
-    projectRoot,
-    userId,
-    async () => {
-      const file =
-        userFile(projectRoot, userId);
-
-      const current =
-        JSON.parse(
-          await fs.readFile(
-            file,
-            "utf8"
-          )
-        );
-
-      const existing =
-        current.earlyRenewalOperation;
-
-      const matches =
-        existing &&
-        typeof existing === "object" &&
-        existing.operationId ===
-          normalizedOperationId &&
-        existing.stripeSubscriptionId ===
-          normalizedSubscriptionId &&
-        existing.periodStart ===
-          normalizedPeriodStart;
-
-      if (!matches) {
-        const error =
-          new Error(
-            "Early-renewal operation does not match the reserved operation."
-          );
-
-        error.code =
-          "EARLY_RENEWAL_OPERATION_MISMATCH";
-
-        throw error;
-      }
-
-      if (existing.status === "completed") {
-        return {
-          completed: false,
-          operation: {
-            ...existing
-          }
-        };
-      }
-
-      if (existing.status !== "reserved") {
-        const error =
-          new Error(
-            "Early-renewal operation is not reserved."
-          );
-
-        error.code =
-          "EARLY_RENEWAL_OPERATION_NOT_RESERVED";
-
-        throw error;
-      }
-
-      const now =
-        new Date().toISOString();
-
-      const operation = {
-        ...existing,
-
-        status:
-          "completed",
-
-        completedAt:
-          now
-      };
-
-      const next = {
-        ...current,
-
-        earlyRenewalOperation:
-          operation,
-
-        updatedAt:
-          now
-      };
-
-      await fs.writeFile(
-        file,
-        JSON.stringify(next, null, 2),
-        "utf8"
-      );
-
-      return {
-        completed: true,
-        operation
-      };
-    }
-  );
 }
 
 export async function updateStripeSubscription(
@@ -566,9 +237,7 @@ export async function updateStripeSubscription(
     currentPeriodStart = null,
     currentPeriodEnd = null,
     cancelAtPeriodEnd = false,
-    stripeEntitlementVerifiedAt = null,
-    resetMonthlyCredits = false,
-    creditsResetInvoiceId = null
+    stripeEntitlementVerifiedAt = null
   }
 ) {
   return withUserUsageMutationLock(
@@ -604,9 +273,25 @@ export async function updateStripeSubscription(
   const now =
     new Date().toISOString();
 
+  const oldPeriodStart =
+    current.currentPeriodStart || null;
+
   const nextPeriodStart =
     currentPeriodStart || null;
 
+  const periodChanged =
+    Boolean(
+      nextPeriodStart &&
+      oldPeriodStart &&
+      nextPeriodStart !== oldPeriodStart
+    );
+
+  const firstPaidPeriod =
+    Boolean(
+      normalizedPlanId !== PLAN_IDS.FREE &&
+      nextPeriodStart &&
+      !oldPeriodStart
+    );
 
   const next = {
     ...current,
@@ -621,20 +306,9 @@ export async function updateStripeSubscription(
       normalizedPlanId,
 
     monthlyCreditsUsed:
-      resetMonthlyCredits &&
-      creditsResetInvoiceId &&
-      creditsResetInvoiceId !==
-        current.lastCreditsResetInvoiceId
+      periodChanged || firstPaidPeriod
         ? 0
         : Number(current.monthlyCreditsUsed) || 0,
-
-    lastCreditsResetInvoiceId:
-      resetMonthlyCredits &&
-      creditsResetInvoiceId &&
-      creditsResetInvoiceId !==
-        current.lastCreditsResetInvoiceId
-        ? creditsResetInvoiceId
-        : current.lastCreditsResetInvoiceId || null,
 
     currentPeriodStart:
       nextPeriodStart,
