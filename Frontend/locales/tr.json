@@ -260,6 +260,8 @@
   "billing.early_renewal_confirm": "Aboneliğinizi şimdi {price} karşılığında yenilemek istiyor musunuz? Normal aylık abonelik ücreti şimdi tahsil edilir ve yeni fatura dönemi hemen başlar.",
   "billing.renewing": "Yenileniyor...",
   "billing.early_renewal_started": "Yenileme başarıyla başlatıldı. Ödeme onaylandıktan sonra kredileriniz güncellenecektir.",
+  "billing.early_renewal_confirmed": "Yenileme onaylandı. Yeni aylık kredileriniz hazır.",
+  "billing.early_renewal_processing": "Yenilemeniz hâlâ onaylanıyor. Ödeme onaylandıktan sonra kredileriniz görünecektir.",
   "billing.early_renewal_error": "Erken yenileme tamamlanamadı. Lütfen tekrar deneyin.",
   "billing.sign_in_plan": "Planınızı görmek için giriş yapın",
   "password.change_uncertain": "Değişiklik doğrulanamadı. Başka bir bağlantı istemeden önce yeni şifrenizle giriş yapmayı deneyin.",

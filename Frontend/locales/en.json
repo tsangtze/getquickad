@@ -272,6 +272,8 @@
   "billing.early_renewal_confirm": "Renew your subscription now for {price}? This charges your normal monthly subscription price now and immediately starts a new billing period.",
   "billing.renewing": "Renewing...",
   "billing.early_renewal_started": "Renewal started successfully. Your credits will update after payment is confirmed.",
+  "billing.early_renewal_confirmed": "Renewal confirmed. Your new monthly credits are ready.",
+  "billing.early_renewal_processing": "Your renewal is still being confirmed. Your credits will appear after payment confirmation.",
   "billing.early_renewal_error": "Early renewal could not be completed. Please try again.",
   "billing.sign_in_plan": "Sign in to see your plan",
   "password.change_uncertain": "The change could not be confirmed. Try signing in with your new password before requesting another link.",

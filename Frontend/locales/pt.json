@@ -265,6 +265,8 @@
   "billing.early_renewal_confirm": "Renovar sua assinatura agora por {price}? O preço mensal normal da assinatura será cobrado agora e um novo período de cobrança começará imediatamente.",
   "billing.renewing": "Renovando...",
   "billing.early_renewal_started": "A renovação foi iniciada com sucesso. Seus créditos serão atualizados após a confirmação do pagamento.",
+  "billing.early_renewal_confirmed": "Renovação confirmada. Seus novos créditos mensais estão disponíveis.",
+  "billing.early_renewal_processing": "Sua renovação ainda está sendo confirmada. Seus créditos aparecerão após a confirmação do pagamento.",
   "billing.early_renewal_error": "Não foi possível concluir a renovação antecipada. Tente novamente.",
   "billing.sign_in_plan": "Entre para ver seu plano",
   "password.change_uncertain": "Não foi possível confirmar a alteração. Tente entrar com sua nova senha antes de solicitar outro link.",

@@ -55,11 +55,11 @@ function billingApiText(data, fallbackKey, fallbackText) {
       key: "billing.api_portal_unavailable",
       fallback: "Subscription management is temporarily unavailable. Please try again."
     },
-    EARLY_RENEWAL_NOT_PAID: {
+    EARLY_RENEWAL_NOT_ACTIVE_PAID: {
       key: "billing.api_early_renewal_not_paid",
       fallback: "Early renewal is available only for an active paid plan."
     },
-    EARLY_RENEWAL_CREDITS_REMAIN: {
+    EARLY_RENEWAL_CREDITS_REMAINING: {
       key: "billing.api_early_renewal_credits_remain",
       fallback: "Early renewal is available after your monthly credits reach zero."
     },
@@ -70,6 +70,10 @@ function billingApiText(data, fallbackKey, fallbackText) {
     EARLY_RENEWAL_OPERATION_UNAVAILABLE: {
       key: "billing.api_early_renewal_operation_unavailable",
       fallback: "Early renewal is not available for this subscription period."
+    },
+    EARLY_RENEWAL_ELIGIBILITY_FAILED: {
+      key: "billing.early_renewal_error",
+      fallback: "Early renewal could not be verified. Please try again."
     },
     EARLY_RENEWAL_PERIOD_START_MISSING: {
       key: "billing.api_early_renewal_period_missing",
@@ -263,6 +267,7 @@ function renderUsage(usage) {
 
     const eligible =
       paidPlan &&
+      !usage.cancelAtPeriodEnd &&
       remaining === 0;
 
     earlyRenewalButton.hidden = !eligible;
@@ -289,6 +294,70 @@ function renderUsage(usage) {
   }
 
   markCurrentPlan(id, usage.cancelAtPeriodEnd, usage.currentPeriodEnd);
+}
+
+function delay(milliseconds) {
+  return new Promise(
+    (resolve) => {
+      window.setTimeout(
+        resolve,
+        milliseconds
+      );
+    }
+  );
+}
+
+async function waitForEarlyRenewalCredits({
+  attempts = 10,
+  intervalMilliseconds = 1500
+} = {}) {
+  for (
+    let attempt = 0;
+    attempt < attempts;
+    attempt += 1
+  ) {
+    if (attempt > 0) {
+      await delay(
+        intervalMilliseconds
+      );
+    }
+
+    try {
+      const response =
+        await fetch(
+          window.Pix2VidRuntime.apiUrl(
+            "/api/projects/usage"
+          ),
+          {
+            credentials: "same-origin",
+            cache: "no-store",
+            headers:
+              window.Pix2VidRuntime.apiHeaders()
+          }
+        );
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data =
+        await response.json();
+
+      if (
+        data.ok &&
+        data.usage &&
+        Number(
+          data.usage.monthlyCreditsRemaining
+        ) > 0
+      ) {
+        return true;
+      }
+    } catch {
+      // Keep waiting for webhook confirmation.
+    }
+  }
+
+  return false;
 }
 
 async function loadBilling() {
@@ -502,7 +571,28 @@ async function startEarlyRenewal() {
       )
     );
 
-    await loadBilling();
+    earlyRenewalButton.hidden = true;
+
+    const creditsConfirmed =
+      await waitForEarlyRenewalCredits();
+
+    if (creditsConfirmed) {
+      await loadBilling();
+
+      setMessage(
+        billingText(
+          "billing.early_renewal_confirmed",
+          "Renewal confirmed. Your new monthly credits are ready."
+        )
+      );
+    } else {
+      setMessage(
+        billingText(
+          "billing.early_renewal_processing",
+          "Your renewal is still being confirmed. Your credits will appear after payment confirmation."
+        )
+      );
+    }
   } catch (error) {
     setMessage(
       error?.message ||
@@ -512,9 +602,11 @@ async function startEarlyRenewal() {
         )
     );
   } finally {
-    earlyRenewalButton.disabled = false;
-    earlyRenewalButton.textContent =
-      originalText;
+    if (!earlyRenewalButton.hidden) {
+      earlyRenewalButton.disabled = false;
+      earlyRenewalButton.textContent =
+        originalText;
+    }
   }
 }
 

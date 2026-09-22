@@ -274,6 +274,8 @@
   "billing.early_renewal_confirm": "Rinnovare ora l’abbonamento per {price}? Verrà addebitato ora il normale prezzo mensile e inizierà immediatamente un nuovo periodo di fatturazione.",
   "billing.renewing": "Rinnovo...",
   "billing.early_renewal_started": "Il rinnovo è stato avviato correttamente. I crediti verranno aggiornati dopo la conferma del pagamento.",
+  "billing.early_renewal_confirmed": "Rinnovo confermato. I tuoi nuovi crediti mensili sono disponibili.",
+  "billing.early_renewal_processing": "Il rinnovo è ancora in fase di conferma. I tuoi crediti appariranno dopo la conferma del pagamento.",
   "billing.early_renewal_error": "Impossibile completare il rinnovo anticipato. Riprova.",
   "billing.sign_in_plan": "Accedi per vedere il tuo piano",
   "password.change_uncertain": "Non è stato possibile confermare la modifica. Prova ad accedere con la nuova password prima di richiedere un altro link.",

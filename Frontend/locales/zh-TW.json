@@ -263,6 +263,8 @@
   "billing.early_renewal_confirm": "現在以 {price} 續訂訂閱嗎？系統將立即收取正常的每月訂閱費用，並立即開始新的計費週期。",
   "billing.renewing": "正在續訂...",
   "billing.early_renewal_started": "續訂已成功開始。付款確認後，您的點數將會更新。",
+  "billing.early_renewal_confirmed": "續訂已確認。您的新每月點數已可使用。",
+  "billing.early_renewal_processing": "您的續訂仍在確認中。付款確認後，您的點數將會顯示。",
   "billing.early_renewal_error": "無法完成提前續訂。請再試一次。",
   "billing.sign_in_plan": "登入以查看您的方案",
   "password.change_uncertain": "無法確認密碼是否已變更。請先嘗試使用新密碼登入，再申請另一個連結。",
