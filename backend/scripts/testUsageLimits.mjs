@@ -10,7 +10,11 @@ import {
   recordSuccessfulVideoPlan,
   getVideoCreditCost,
   canGenerateFinalVideo,
-  recordSuccessfulFinalVideo
+  recordSuccessfulFinalVideo,
+  completeEarlyRenewalOperation,
+  getEarlyRenewalOperation,
+  reserveEarlyRenewalOperation,
+  updateStripeSubscription
 } from "../usageLimits.mjs";
 
 function project() {
@@ -508,6 +512,123 @@ try {
 
   console.log("PASS: Concurrent final-video accounting consumes the last balance exactly once.");
 
+  // A successful paid invoice resets credits exactly once.
+  const invoiceResetUserId =
+    "invoice-reset-test-user";
+
+  const invoiceResetUserFile =
+    path.join(
+      usersDirectory,
+      `${invoiceResetUserId}.json`
+    );
+
+  await fs.writeFile(
+    invoiceResetUserFile,
+    JSON.stringify({
+      planId: PLAN_IDS.STARTER,
+      finalVideoCount: 0,
+      monthlyCreditsUsed: 100
+    }),
+    "utf8"
+  );
+
+  const invoiceId =
+    "in_credit_reset_test";
+
+  let invoiceResetUsage =
+    await updateStripeSubscription(
+      temporaryRoot,
+      invoiceResetUserId,
+      {
+        planId: PLAN_IDS.STARTER,
+        stripeCustomerId: "cus_credit_reset_test",
+        stripeSubscriptionId: "sub_credit_reset_test",
+        stripeSubscriptionStatus: "active",
+        currentPeriodStart:
+          "2026-09-22T00:00:00.000Z",
+        currentPeriodEnd:
+          "2026-10-22T00:00:00.000Z",
+        stripeEntitlementVerifiedAt:
+          "2026-09-22T00:00:01.000Z",
+        resetMonthlyCredits: true,
+        creditsResetInvoiceId: invoiceId
+      }
+    );
+
+  assert.equal(
+    invoiceResetUsage.monthlyCreditsUsed,
+    0
+  );
+
+  assert.equal(
+    invoiceResetUsage.lastCreditsResetInvoiceId,
+    invoiceId
+  );
+
+  invoiceResetUsage =
+    await recordSuccessfulFinalVideo(
+      temporaryRoot,
+      invoiceResetUserId,
+      30
+    );
+
+  assert.equal(
+    invoiceResetUsage.usage.monthlyCreditsUsed,
+    10
+  );
+
+  const duplicateReset =
+    await updateStripeSubscription(
+      temporaryRoot,
+      invoiceResetUserId,
+      {
+        planId: PLAN_IDS.STARTER,
+        stripeCustomerId: "cus_credit_reset_test",
+        stripeSubscriptionId: "sub_credit_reset_test",
+        stripeSubscriptionStatus: "active",
+        currentPeriodStart:
+          "2026-09-22T00:00:00.000Z",
+        currentPeriodEnd:
+          "2026-10-22T00:00:00.000Z",
+        stripeEntitlementVerifiedAt:
+          "2026-09-22T00:00:02.000Z",
+        resetMonthlyCredits: true,
+        creditsResetInvoiceId: invoiceId
+      }
+    );
+
+  assert.equal(
+    duplicateReset.monthlyCreditsUsed,
+    10
+  );
+
+  assert.equal(
+    duplicateReset.lastCreditsResetInvoiceId,
+    invoiceId
+  );
+
+  const storedInvoiceResetUser =
+    JSON.parse(
+      await fs.readFile(
+        invoiceResetUserFile,
+        "utf8"
+      )
+    );
+
+  assert.equal(
+    storedInvoiceResetUser.monthlyCreditsUsed,
+    10
+  );
+
+  assert.equal(
+    storedInvoiceResetUser.lastCreditsResetInvoiceId,
+    invoiceId
+  );
+
+  console.log(
+    "PASS: Paid invoice resets credits once and duplicate delivery cannot restore spent credits."
+  );
+
   await assert.rejects(
     recordSuccessfulFinalVideo(
       temporaryRoot,
@@ -534,7 +655,229 @@ try {
 
   console.log("PASS: Accounting rejects Free video over 30 seconds.");
 
-  console.log("PASS: All usage accounting tests passed.");
+
+const earlyRenewalUserId =
+  "early-renewal-reservation-user";
+
+const earlyRenewalUserFile =
+  path.join(
+    temporaryRoot,
+    "users",
+    `${earlyRenewalUserId}.json`
+  );
+
+await fs.writeFile(
+  earlyRenewalUserFile,
+  JSON.stringify(
+    {
+      planId: PLAN_IDS.STARTER,
+      monthlyCreditsUsed: 100,
+      stripeSubscriptionId:
+        "sub_early_renewal_test",
+      stripeSubscriptionStatus:
+        "active",
+      currentPeriodStart:
+        "2026-09-01T00:00:00.000Z",
+      currentPeriodEnd:
+        "2026-10-01T00:00:00.000Z"
+    },
+    null,
+    2
+  ),
+  "utf8"
+);
+
+const earlyRenewalReservations =
+  await Promise.all([
+    reserveEarlyRenewalOperation(
+      temporaryRoot,
+      earlyRenewalUserId,
+      {
+        operationId:
+          "early-renewal-operation-a",
+        stripeSubscriptionId:
+          "sub_early_renewal_test",
+        periodStart:
+          "2026-09-01T00:00:00.000Z"
+      }
+    ),
+    reserveEarlyRenewalOperation(
+      temporaryRoot,
+      earlyRenewalUserId,
+      {
+        operationId:
+          "early-renewal-operation-b",
+        stripeSubscriptionId:
+          "sub_early_renewal_test",
+        periodStart:
+          "2026-09-01T00:00:00.000Z"
+      }
+    )
+  ]);
+
+assert.equal(
+  earlyRenewalReservations.filter(
+    (result) => result.created
+  ).length,
+  1,
+  "Exactly one concurrent Early Renewal reservation must be created."
+);
+
+assert.equal(
+  earlyRenewalReservations.filter(
+    (result) => !result.created
+  ).length,
+  1,
+  "The duplicate concurrent Early Renewal reservation must reuse the existing operation."
+);
+
+const earlyRenewalOperationIds =
+  new Set(
+    earlyRenewalReservations.map(
+      (result) =>
+        result.operation.operationId
+    )
+  );
+
+assert.equal(
+  earlyRenewalOperationIds.size,
+  1,
+  "Concurrent Early Renewal reservations must resolve to one operation ID."
+);
+
+const storedEarlyRenewalOperation =
+  await getEarlyRenewalOperation(
+    temporaryRoot,
+    earlyRenewalUserId
+  );
+
+assert.ok(
+  storedEarlyRenewalOperation,
+  "Early Renewal operation must be persisted."
+);
+
+assert.equal(
+  storedEarlyRenewalOperation.operationId,
+  earlyRenewalReservations[0]
+    .operation.operationId
+);
+
+assert.equal(
+  storedEarlyRenewalOperation.stripeSubscriptionId,
+  "sub_early_renewal_test"
+);
+
+assert.equal(
+  storedEarlyRenewalOperation.periodStart,
+  "2026-09-01T00:00:00.000Z"
+);
+
+assert.equal(
+  storedEarlyRenewalOperation.status,
+  "reserved"
+);
+
+const repeatedEarlyRenewal =
+  await reserveEarlyRenewalOperation(
+    temporaryRoot,
+    earlyRenewalUserId,
+    {
+      operationId:
+        "early-renewal-operation-c",
+      stripeSubscriptionId:
+        "sub_early_renewal_test",
+      periodStart:
+        "2026-09-01T00:00:00.000Z"
+    }
+  );
+
+assert.equal(
+  repeatedEarlyRenewal.created,
+  false,
+  "A later retry in the same billing period must not create another operation."
+);
+
+assert.equal(
+  repeatedEarlyRenewal.operation.operationId,
+  storedEarlyRenewalOperation.operationId,
+  "A later retry must return the original operation."
+);
+
+const completedEarlyRenewal =
+  await completeEarlyRenewalOperation(
+    temporaryRoot,
+    earlyRenewalUserId,
+    {
+      operationId:
+        storedEarlyRenewalOperation.operationId,
+
+      stripeSubscriptionId:
+        storedEarlyRenewalOperation.stripeSubscriptionId,
+
+      periodStart:
+        storedEarlyRenewalOperation.periodStart
+    }
+  );
+
+assert.equal(
+  completedEarlyRenewal.completed,
+  true
+);
+
+assert.equal(
+  completedEarlyRenewal.operation.status,
+  "completed"
+);
+
+assert.ok(
+  completedEarlyRenewal.operation.completedAt
+);
+
+const completedEarlyRenewalAgain =
+  await completeEarlyRenewalOperation(
+    temporaryRoot,
+    earlyRenewalUserId,
+    {
+      operationId:
+        storedEarlyRenewalOperation.operationId,
+
+      stripeSubscriptionId:
+        storedEarlyRenewalOperation.stripeSubscriptionId,
+
+      periodStart:
+        storedEarlyRenewalOperation.periodStart
+    }
+  );
+
+assert.equal(
+  completedEarlyRenewalAgain.completed,
+  false,
+  "Completing the same Early Renewal operation twice must be idempotent."
+);
+
+const storedCompletedEarlyRenewal =
+  await getEarlyRenewalOperation(
+    temporaryRoot,
+    earlyRenewalUserId
+  );
+
+assert.equal(
+  storedCompletedEarlyRenewal.status,
+  "completed"
+);
+
+assert.ok(
+  storedCompletedEarlyRenewal.completedAt
+);
+
+console.log(
+  "PASS: Early Renewal completion consumes the reserved operation exactly once."
+);
+
+console.log(
+  "PASS: Concurrent Early Renewal reservations create one durable operation per subscription period."
+);
+console.log("PASS: All usage accounting tests passed.");
 } finally {
   await fs.rm(temporaryRoot, {
     recursive: true,

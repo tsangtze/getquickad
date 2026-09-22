@@ -7,8 +7,11 @@ import Stripe from "stripe";
 
 import {
   PLAN_IDS,
+  getEarlyRenewalOperation,
   getStripeBillingState,
-  getUserUsage
+  getUserUsage,
+  recordSuccessfulFinalVideo,
+  reserveEarlyRenewalOperation
 } from "../usageLimits.mjs";
 
 import {
@@ -127,10 +130,31 @@ async function main() {
   const app =
     express();
 
+  const retrievedSubscriptions =
+    new Map();
+
+  const webhookStripeClient = {
+    webhooks: stripe.webhooks,
+    subscriptions: {
+      async retrieve(subscriptionId) {
+        if (!retrievedSubscriptions.has(subscriptionId)) {
+          throw new Error(
+            `Unexpected subscription retrieval: ${subscriptionId}`
+          );
+        }
+
+        return retrievedSubscriptions.get(
+          subscriptionId
+        );
+      }
+    }
+  };
+
   app.post(
     "/api/billing/webhook",
     ...createStripeWebhookHandler({
-      projectRoot
+      projectRoot,
+      stripeClient: webhookStripeClient
     })
   );
 
@@ -295,6 +319,379 @@ async function main() {
 
     console.log(
       "PASS: Signed deleted webhook removes paid entitlement and records verification time."
+    );
+
+    const invoiceUserId =
+      "invoice-reset-user";
+
+    const invoiceSubscription =
+      subscription({
+        userId: invoiceUserId,
+        id: "sub_invoice_reset",
+        customer: "cus_invoice_reset",
+        status: "active"
+      });
+
+    retrievedSubscriptions.set(
+      invoiceSubscription.id,
+      invoiceSubscription
+    );
+
+    const invoiceSubscriptionResult =
+      await sendSignedWebhook(
+        baseUrl,
+        {
+          id: "evt_invoice_subscription",
+          object: "event",
+          type:
+            "customer.subscription.updated",
+          data: {
+            object: invoiceSubscription
+          }
+        }
+      );
+
+    assert.equal(
+      invoiceSubscriptionResult.status,
+      200
+    );
+
+    for (let index = 0; index < 5; index += 1) {
+      await recordSuccessfulFinalVideo(
+        projectRoot,
+        invoiceUserId,
+        60
+      );
+    }
+
+    const exhaustedUsage =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      exhaustedUsage.monthlyCreditsUsed,
+      100
+    );
+
+    const successfulInvoiceEvent = {
+      id: "evt_invoice_paid",
+      object: "event",
+      type: "invoice.payment_succeeded",
+      data: {
+        object: {
+          id: "in_invoice_reset_once",
+          billing_reason:
+            "subscription_cycle",
+          parent: {
+            subscription_details: {
+              subscription:
+                invoiceSubscription.id
+            }
+          }
+        }
+      }
+    };
+
+    const firstInvoiceResult =
+      await sendSignedWebhook(
+        baseUrl,
+        successfulInvoiceEvent
+      );
+
+    assert.equal(
+      firstInvoiceResult.status,
+      200
+    );
+
+    const resetUsage =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      resetUsage.monthlyCreditsUsed,
+      0
+    );
+
+    await recordSuccessfulFinalVideo(
+      projectRoot,
+      invoiceUserId,
+      30
+    );
+
+    const spentAfterReset =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      spentAfterReset.monthlyCreditsUsed,
+      10
+    );
+
+    const duplicateInvoiceResult =
+      await sendSignedWebhook(
+        baseUrl,
+        successfulInvoiceEvent
+      );
+
+    assert.equal(
+      duplicateInvoiceResult.status,
+      200
+    );
+
+    const afterDuplicate =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      afterDuplicate.monthlyCreditsUsed,
+      10
+    );
+
+    const usageBeforeUnrelatedUpdate =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      usageBeforeUnrelatedUpdate.monthlyCreditsUsed,
+      10
+    );
+
+    const unrelatedUpdateInvoiceResult =
+      await sendSignedWebhook(
+        baseUrl,
+        {
+          id:
+            "evt_unrelated_subscription_update_invoice",
+          object: "event",
+          type: "invoice.payment_succeeded",
+          data: {
+            object: {
+              id:
+                "in_unrelated_subscription_update",
+              billing_reason:
+                "subscription_update",
+              parent: {
+                subscription_details: {
+                  subscription:
+                    invoiceSubscription.id
+                }
+              }
+            }
+          }
+        }
+      );
+
+    assert.equal(
+      unrelatedUpdateInvoiceResult.status,
+      200
+    );
+
+    const usageAfterUnrelatedUpdate =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      usageAfterUnrelatedUpdate.monthlyCreditsUsed,
+      10,
+      "An unrelated subscription_update invoice must not reset monthly credits."
+    );
+
+    console.log(
+      "PASS: Uncorrelated subscription_update invoice does not reset credits."
+    );
+
+    const correlatedOperation =
+      await reserveEarlyRenewalOperation(
+        projectRoot,
+        invoiceUserId,
+        {
+          operationId:
+            "webhook-early-renewal-operation",
+          stripeSubscriptionId:
+            invoiceSubscription.id,
+          periodStart:
+            new Date(
+              invoiceSubscription.current_period_start *
+                1000
+            ).toISOString()
+        }
+      );
+
+    assert.equal(
+      correlatedOperation.created,
+      true
+    );
+
+    const renewedSubscription = {
+      ...invoiceSubscription,
+
+      current_period_start:
+        invoiceSubscription.current_period_start +
+        86400,
+
+      current_period_end:
+        invoiceSubscription.current_period_end +
+        86400
+    };
+
+    retrievedSubscriptions.set(
+      renewedSubscription.id,
+      renewedSubscription
+    );
+
+    const correlatedEarlyRenewalResult =
+      await sendSignedWebhook(
+        baseUrl,
+        {
+          id:
+            "evt_correlated_early_renewal",
+
+          object: "event",
+
+          type:
+            "invoice.payment_succeeded",
+
+          data: {
+            object: {
+              id:
+                "in_correlated_early_renewal",
+
+              billing_reason:
+                "subscription_update",
+
+              parent: {
+                subscription_details: {
+                  subscription:
+                    renewedSubscription.id
+                }
+              }
+            }
+          }
+        }
+      );
+
+    assert.equal(
+      correlatedEarlyRenewalResult.status,
+      200
+    );
+
+    const usageAfterCorrelatedEarlyRenewal =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      usageAfterCorrelatedEarlyRenewal.monthlyCreditsUsed,
+      0,
+      "A correlated Early Renewal subscription_update invoice must reset monthly credits."
+    );
+
+    console.log(
+      "PASS: Correlated Early Renewal subscription_update invoice resets credits."
+    );
+
+    const completedWebhookOperation =
+      await getEarlyRenewalOperation(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      completedWebhookOperation.status,
+      "completed",
+      "Successful correlated Early Renewal invoice must consume its reservation."
+    );
+
+    assert.ok(
+      completedWebhookOperation.completedAt,
+      "Completed Early Renewal operation must record completedAt."
+    );
+
+    await recordSuccessfulFinalVideo(
+      projectRoot,
+      invoiceUserId,
+      30
+    );
+
+    const usageBeforeConsumedReplay =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      usageBeforeConsumedReplay.monthlyCreditsUsed,
+      10
+    );
+
+    const consumedReservationReplay =
+      await sendSignedWebhook(
+        baseUrl,
+        {
+          id:
+            "evt_consumed_early_renewal_replay",
+
+          object:
+            "event",
+
+          type:
+            "invoice.payment_succeeded",
+
+          data: {
+            object: {
+              id:
+                "in_consumed_early_renewal_replay",
+
+              billing_reason:
+                "subscription_update",
+
+              parent: {
+                subscription_details: {
+                  subscription:
+                    renewedSubscription.id
+                }
+              }
+            }
+          }
+        }
+      );
+
+    assert.equal(
+      consumedReservationReplay.status,
+      200
+    );
+
+    const usageAfterConsumedReplay =
+      await getUserUsage(
+        projectRoot,
+        invoiceUserId
+      );
+
+    assert.equal(
+      usageAfterConsumedReplay.monthlyCreditsUsed,
+      10,
+      "A completed Early Renewal reservation must not authorize another subscription_update credit reset."
+    );
+
+    console.log(
+      "PASS: Completed Early Renewal reservation cannot authorize another subscription_update invoice."
+    );
+
+    console.log(
+      "PASS: Successful invoice resets credits once and duplicate delivery cannot reset spent credits."
     );
 
     const invalidResponse =
