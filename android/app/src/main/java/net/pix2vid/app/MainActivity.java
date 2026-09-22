@@ -13,6 +13,8 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(Pix2VidDownloadPlugin.class);
+
         super.onCreate(savedInstanceState);
 
         View content = findViewById(android.R.id.content);

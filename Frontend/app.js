@@ -71,7 +71,11 @@ function playQuickAdTone(
 function playQuickAdSound(type) {
   try {
     if (type === "click") {
-      playQuickAdTone(520, 0.045, 0.025);
+      if (window.Pix2VidRuntime?.isNativeAndroid) {
+        playQuickAdTone(620, 0.09, 0.08);
+      } else {
+        playQuickAdTone(520, 0.045, 0.025);
+      }
       return;
     }
 
@@ -264,15 +268,73 @@ function renderRecoverableVideos(videos) {
       "my-video-thumbnail";
 
     const thumbnailUrl =
-      String(video.thumbnailUrl ?? "").trim();
+      String(video.thumbnailUrl || "");
 
     if (thumbnailUrl) {
       const image =
         document.createElement("img");
 
-      image.src = thumbnailUrl;
       image.alt = "";
       image.loading = "lazy";
+
+      if (
+        window.Pix2VidRuntime.isNativeAndroid &&
+        thumbnailUrl.startsWith("/api/")
+      ) {
+        fetch(
+          window.Pix2VidRuntime.apiUrl(
+            thumbnailUrl
+          ),
+          {
+            method: "GET",
+            headers:
+              window.Pix2VidRuntime.apiHeaders()
+          }
+        )
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `Thumbnail request failed with ${response.status}.`
+              );
+            }
+
+            return response.blob();
+          })
+          .then((blob) => {
+            const objectUrl =
+              URL.createObjectURL(blob);
+
+            const revokeObjectUrl = () => {
+              URL.revokeObjectURL(
+                objectUrl
+              );
+            };
+
+            image.addEventListener(
+              "load",
+              revokeObjectUrl,
+              { once: true }
+            );
+
+            image.addEventListener(
+              "error",
+              revokeObjectUrl,
+              { once: true }
+            );
+
+            image.src = objectUrl;
+          })
+          .catch(() => {
+            image.dispatchEvent(
+              new Event("error")
+            );
+          });
+      } else {
+        image.src =
+          window.Pix2VidRuntime.mediaUrl(
+            thumbnailUrl
+          );
+      }
 
       image.addEventListener(
         "error",
@@ -373,43 +435,331 @@ function renderRecoverableVideos(videos) {
     actions.className =
       "my-video-actions";
 
-    const watchUrl =
-      String(video.watchUrl ?? "").trim();
+    const watchPath =
+      String(video.watchUrl || "");
 
-    if (watchUrl) {
+    if (watchPath) {
       const watch =
         document.createElement("a");
 
       watch.className =
         "my-video-action";
 
-      watch.href = watchUrl;
-      watch.target = "_blank";
-      watch.rel = "noopener";
-      watch.textContent = uiText("result.watch", "Watch Video");
+      watch.textContent =
+        uiText("result.watch", "Watch Video");
+
+      if (
+        window.Pix2VidRuntime.isNativeAndroid &&
+        watchPath.startsWith("/api/")
+      ) {
+        watch.href = "#";
+
+        watch.addEventListener(
+          "click",
+          async (event) => {
+            event.preventDefault();
+
+            if (
+              watch.getAttribute("aria-disabled") ===
+              "true"
+            ) {
+              return;
+            }
+
+            watch.setAttribute(
+              "aria-disabled",
+              "true"
+            );
+
+            try {
+              const response =
+                await fetch(
+                  window.Pix2VidRuntime.apiUrl(
+                    watchPath
+                  ),
+                  {
+                    method: "GET",
+                    headers:
+                      window.Pix2VidRuntime.apiHeaders(),
+                    redirect: "follow"
+                  }
+                );
+
+              if (!response.ok) {
+                throw new Error(
+                  `Video request failed with ${response.status}.`
+                );
+              }
+
+              const blob =
+                await response.blob();
+
+              const objectUrl =
+                URL.createObjectURL(blob);
+
+              const overlay =
+                document.createElement("div");
+
+              overlay.style.position = "fixed";
+              overlay.style.inset = "0";
+              overlay.style.background = "black";
+              overlay.style.zIndex = "99999";
+              overlay.style.display = "flex";
+              overlay.style.alignItems = "center";
+              overlay.style.justifyContent = "center";
+
+              const player =
+                document.createElement("video");
+
+              player.controls = true;
+              player.playsInline = true;
+              player.autoplay = true;
+              player.style.width = "100%";
+              player.style.height = "100%";
+              player.style.objectFit = "contain";
+
+              const close =
+                document.createElement("button");
+
+              close.type = "button";
+              close.textContent = "×";
+              close.setAttribute(
+                "aria-label",
+                "Close video"
+              );
+              close.style.position = "absolute";
+              close.style.top = "12px";
+              close.style.right = "12px";
+              close.style.zIndex = "1";
+              close.style.width = "44px";
+              close.style.height = "44px";
+              close.style.border = "0";
+              close.style.borderRadius = "22px";
+              close.style.fontSize = "32px";
+              close.style.lineHeight = "40px";
+              close.style.cursor = "pointer";
+
+              let closed = false;
+
+              const closePlayer = () => {
+                if (closed) {
+                  return;
+                }
+
+                closed = true;
+                player.pause();
+                player.removeAttribute("src");
+                player.load();
+                overlay.remove();
+
+                URL.revokeObjectURL(
+                  objectUrl
+                );
+              };
+
+              close.addEventListener(
+                "click",
+                closePlayer,
+                { once: true }
+              );
+
+              player.addEventListener(
+                "ended",
+                closePlayer,
+                { once: true }
+              );
+
+              player.addEventListener(
+                "error",
+                closePlayer,
+                { once: true }
+              );
+
+              player.src = objectUrl;
+
+              overlay.append(
+                player,
+                close
+              );
+
+              document.body.append(overlay);
+
+              try {
+                await player.play();
+              } catch {
+                // Controls remain available if autoplay
+                // requires another user gesture.
+              }
+            } catch (error) {
+              console.error(
+                "Native video playback failed:",
+                error
+              );
+
+              window.alert(
+                uiText(
+                  "errors.generic",
+                  "Something went wrong. Please try again."
+                )
+              );
+            } finally {
+              watch.removeAttribute(
+                "aria-disabled"
+              );
+            }
+          }
+        );
+      } else {
+        const watchUrl =
+          window.Pix2VidRuntime.mediaUrl(
+            watchPath
+          );
+
+        watch.href = watchUrl;
+        watch.target = "_blank";
+        watch.rel = "noopener";
+      }
 
       actions.append(watch);
     }
 
-    const downloadUrl =
-      String(video.downloadUrl ?? "").trim();
+    const projectId =
+      String(video.projectId ?? "").trim();
 
-    if (downloadUrl) {
+    const downloadPath =
+      String(video.downloadUrl || "");
+
+    if (downloadPath) {
       const download =
         document.createElement("a");
 
       download.className =
         "my-video-action";
 
-      download.href = downloadUrl;
       download.textContent =
         uiText("result.download", "Download MP4");
 
+      if (
+        window.Pix2VidRuntime.isNativeAndroid &&
+        downloadPath.startsWith("/api/")
+      ) {
+        download.href = "#";
+
+        download.addEventListener(
+          "click",
+          async (event) => {
+            event.preventDefault();
+
+            if (
+              download.getAttribute("aria-disabled") ===
+              "true"
+            ) {
+              return;
+            }
+
+            download.setAttribute(
+              "aria-disabled",
+              "true"
+            );
+
+            const originalText =
+              download.textContent;
+
+            download.textContent =
+              "Downloading...";
+
+            try {
+              if (!projectId) {
+                throw new Error(
+                  "Missing project ID."
+                );
+              }
+
+              const signedResponse =
+                await fetch(
+                  window.Pix2VidRuntime.apiUrl(
+                    `/api/projects/${projectId}/video/download-url`
+                  ),
+                  {
+                    method: "GET",
+                    headers:
+                      window.Pix2VidRuntime.apiHeaders()
+                  }
+                );
+
+              const signedData =
+                await signedResponse.json();
+
+              if (
+                !signedResponse.ok ||
+                !signedData?.ok ||
+                typeof signedData.downloadUrl !==
+                  "string" ||
+                !signedData.downloadUrl
+              ) {
+                throw new Error(
+                  signedData?.error ||
+                  "Unable to prepare video download."
+                );
+              }
+
+              const plugins =
+            window.Capacitor?.Plugins;
+
+          const publicDownload =
+            plugins?.Pix2VidDownload;
+
+          if (!publicDownload) {
+            throw new Error(
+              "Native public download plugin is unavailable."
+            );
+          }
+
+          const fileName =
+            `pix2vid-video-${Date.now()}.mp4`;
+
+          const saved =
+            await publicDownload.saveVideo({
+              url: signedData.downloadUrl,
+              fileName
+            });
+
+          if (!saved?.relativePath) {
+            throw new Error(
+              "Video download did not return a saved path."
+            );
+          }
+
+              download.textContent =
+                "Downloaded";
+            } catch (error) {
+              console.error(
+                "Video download failed:",
+                error
+              );
+
+              download.textContent =
+                originalText;
+
+              alert(
+                "Unable to download the video. Please try again."
+              );
+            } finally {
+              download.removeAttribute(
+                "aria-disabled"
+              );
+            }
+          }
+        );
+      } else {
+        download.href =
+          window.Pix2VidRuntime.mediaUrl(
+            downloadPath
+          );
+      }
+
       actions.append(download);
     }
-
-    const projectId =
-      String(video.projectId ?? "").trim();
 
     if (projectId) {
       const deleteButton =
@@ -2170,7 +2520,9 @@ function createSceneReviewCard(scene) {
           }
 
           reviewUploadedCtaImageUrl =
-            result.ctaImageUrl;
+            window.Pix2VidRuntime.mediaUrl(
+              result.ctaImageUrl
+            );
 
           reviewCtaImageSource =
             "uploaded";
@@ -3127,11 +3479,13 @@ function renderPlanBrandingReview(project) {
       "plan-branding-logo";
 
     logoImage.src =
-      `/api/projects/${encodeURIComponent(
-        projectId
-      )}/assets/${encodeURIComponent(
-        logoAsset.storedName
-      )}`;
+      window.Pix2VidRuntime.mediaUrl(
+        `/api/projects/${encodeURIComponent(
+          projectId
+        )}/assets/${encodeURIComponent(
+          logoAsset.storedName
+        )}`
+      );
 
     logoImage.alt =
       uiText(
@@ -3698,11 +4052,13 @@ function renderVideoPlanReview(
     uploadedCtaAsset?.storedName
   ) {
     reviewUploadedCtaImageUrl =
-      `/api/projects/${encodeURIComponent(
-        project.id
-      )}/assets/${encodeURIComponent(
-        uploadedCtaAsset.storedName
-      )}`;
+      window.Pix2VidRuntime.mediaUrl(
+        `/api/projects/${encodeURIComponent(
+          project.id
+        )}/assets/${encodeURIComponent(
+          uploadedCtaAsset.storedName
+        )}`
+      );
   }
 
   reviewCtaImageSource =
@@ -4330,9 +4686,9 @@ form.addEventListener("submit", async (event) => {
                 return "";
               }
 
-              return (
+              return window.Pix2VidRuntime.mediaUrl(
                 `/api/projects/${result.project.id}` +
-                `/assets/${encodeURIComponent(storedName)}`
+                  `/assets/${encodeURIComponent(storedName)}`
               );
             })
             .filter(Boolean)

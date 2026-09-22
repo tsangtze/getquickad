@@ -32,10 +32,30 @@
     return result;
   }
 
+  function mediaUrl(value) {
+    const url =
+      typeof value === "string"
+        ? value.trim()
+        : "";
+
+    if (!url) {
+      return "";
+    }
+
+    if (
+      isNativeAndroid &&
+      url.startsWith("/api/")
+    ) {
+      return `${productionOrigin}${url}`;
+    }
+
+    return url;
+  }
   window.Pix2VidRuntime = Object.freeze({
     productionOrigin,
     isNativeAndroid,
     apiUrl,
-    apiHeaders
+    apiHeaders,
+    mediaUrl
   });
 })();

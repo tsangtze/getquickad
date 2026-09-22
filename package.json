@@ -19,6 +19,7 @@
     "@capacitor/core": "^7.6.9",
     "@capacitor/file-transfer": "^1.0.12",
     "@capacitor/filesystem": "^7.1.8",
+    "@capacitor/haptics": "7.0.5",
     "@ffprobe-installer/ffprobe": "^2.1.2",
     "@supabase/supabase-js": "^2.109.0",
     "cookie-parser": "^1.4.7",
