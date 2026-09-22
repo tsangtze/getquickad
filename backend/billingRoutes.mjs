@@ -104,7 +104,9 @@ function stripeLocaleForLanguage(language) {
 }
 
 export function createBillingRouter({
-  projectRoot
+  projectRoot,
+  stripeClientFactory = createStripeClient,
+  requireUserMiddleware = requireUser
 }) {
   const router = express.Router();
 
@@ -134,7 +136,7 @@ export function createBillingRouter({
 
   router.post(
     "/checkout",
-    requireUser,
+    requireUserMiddleware,
     async (request, response) => {
       try {
         const planId =
@@ -172,7 +174,7 @@ export function createBillingRouter({
         }
 
         const stripe =
-          createStripeClient();
+          stripeClientFactory();
 
         const userId =
           String(request.authUser.id);
@@ -297,11 +299,11 @@ export function createBillingRouter({
 
   router.post(
     "/early-renewal",
-    requireUser,
+    requireUserMiddleware,
     async (request, response) => {
       try {
         const stripe =
-          createStripeClient();
+          stripeClientFactory();
 
         const userId =
           String(request.authUser.id);
@@ -515,7 +517,7 @@ export function createBillingRouter({
   );
   router.post(
     "/portal",
-    requireUser,
+    requireUserMiddleware,
     async (request, response) => {
       try {
         const userId =
@@ -527,7 +529,7 @@ export function createBillingRouter({
               .trim()
           );
         const stripe =
-          createStripeClient();
+          stripeClientFactory();
 
         await reconcilePaidEntitlement(
           projectRoot,
