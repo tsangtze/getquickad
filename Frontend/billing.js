@@ -18,6 +18,9 @@ const message =
 const manageSubscriptionButton =
   document.getElementById("manage-subscription-button");
 
+const earlyRenewalButton =
+  document.getElementById("early-renewal-button");
+
 function billingText(key, fallback, params = {}) {
   const translated = window.QuickAdI18n?.t?.(key, params);
 
@@ -51,6 +54,30 @@ function billingApiText(data, fallbackKey, fallbackText) {
     BILLING_PORTAL_UNAVAILABLE: {
       key: "billing.api_portal_unavailable",
       fallback: "Subscription management is temporarily unavailable. Please try again."
+    },
+    EARLY_RENEWAL_NOT_PAID: {
+      key: "billing.api_early_renewal_not_paid",
+      fallback: "Early renewal is available only for an active paid plan."
+    },
+    EARLY_RENEWAL_CREDITS_REMAIN: {
+      key: "billing.api_early_renewal_credits_remain",
+      fallback: "Early renewal is available after your monthly credits reach zero."
+    },
+    EARLY_RENEWAL_PAYMENT_UNAVAILABLE: {
+      key: "billing.api_early_renewal_payment_unavailable",
+      fallback: "Early renewal could not be completed. Please try again."
+    },
+    EARLY_RENEWAL_OPERATION_UNAVAILABLE: {
+      key: "billing.api_early_renewal_operation_unavailable",
+      fallback: "Early renewal is not available for this subscription period."
+    },
+    EARLY_RENEWAL_PERIOD_START_MISSING: {
+      key: "billing.api_early_renewal_period_missing",
+      fallback: "The current subscription period could not be verified."
+    },
+    BILLING_VERIFICATION_UNAVAILABLE: {
+      key: "billing.api_verification_unavailable",
+      fallback: "Subscription verification is temporarily unavailable."
     }
   };
 
@@ -226,6 +253,41 @@ function renderUsage(usage) {
         : "0%";
   }
 
+  if (earlyRenewalButton) {
+    const paidPlan =
+      id === "starter" ||
+      id === "pro";
+
+    const remaining =
+      Number(usage.monthlyCreditsRemaining) || 0;
+
+    const eligible =
+      paidPlan &&
+      remaining === 0;
+
+    earlyRenewalButton.hidden = !eligible;
+
+    if (eligible) {
+      const price =
+        id === "starter"
+          ? "$9"
+          : "$29";
+
+      earlyRenewalButton.textContent =
+        billingText(
+          "billing.renew_now_price",
+          `Renew Now — ${price}`,
+          { price }
+        );
+
+      earlyRenewalButton.dataset.planId = id;
+      earlyRenewalButton.dataset.price = price;
+    } else {
+      earlyRenewalButton.dataset.planId = "";
+      earlyRenewalButton.dataset.price = "";
+    }
+  }
+
   markCurrentPlan(id, usage.cancelAtPeriodEnd, usage.currentPeriodEnd);
 }
 
@@ -358,6 +420,104 @@ async function openSubscriptionPortal() {
   }
 }
 
+async function startEarlyRenewal() {
+  if (
+    !earlyRenewalButton ||
+    earlyRenewalButton.hidden ||
+    earlyRenewalButton.disabled
+  ) {
+    return;
+  }
+
+  const price =
+    earlyRenewalButton.dataset.price || "";
+
+  const confirmed =
+    window.confirm(
+      billingText(
+        "billing.early_renewal_confirm",
+        `Renew your subscription now for ${price}? This charges your normal monthly subscription price now and immediately starts a new billing period.`,
+        { price }
+      )
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const originalText =
+    earlyRenewalButton.textContent;
+
+  earlyRenewalButton.disabled = true;
+  earlyRenewalButton.textContent =
+    billingText(
+      "billing.renewing",
+      "Renewing..."
+    );
+
+  setMessage("");
+
+  try {
+    const response =
+      await fetch(
+        window.Pix2VidRuntime.apiUrl(
+          "/api/billing/early-renewal"
+        ),
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers:
+            window.Pix2VidRuntime.apiHeaders({
+              "Content-Type": "application/json"
+            }),
+          body: JSON.stringify({
+            language:
+              window.QuickAdI18n?.currentLang ||
+              "en"
+          })
+        }
+      );
+
+    const data =
+      await response.json().catch(() => ({}));
+
+    if (
+      !response.ok ||
+      !data.ok ||
+      !data.renewalStarted
+    ) {
+      throw new Error(
+        billingApiText(
+          data,
+          "billing.early_renewal_error",
+          "Early renewal could not be completed."
+        )
+      );
+    }
+
+    setMessage(
+      billingText(
+        "billing.early_renewal_started",
+        "Renewal started successfully. Your credits will update after payment is confirmed."
+      )
+    );
+
+    await loadBilling();
+  } catch (error) {
+    setMessage(
+      error?.message ||
+        billingText(
+          "billing.early_renewal_error",
+          "Early renewal could not be completed. Please try again."
+        )
+    );
+  } finally {
+    earlyRenewalButton.disabled = false;
+    earlyRenewalButton.textContent =
+      originalText;
+  }
+}
+
 async function startCheckout(button) {
   if (button.disabled) return;
 
@@ -453,6 +613,13 @@ if (manageSubscriptionButton) {
   manageSubscriptionButton.addEventListener(
     "click",
     openSubscriptionPortal
+  );
+}
+
+if (earlyRenewalButton) {
+  earlyRenewalButton.addEventListener(
+    "click",
+    startEarlyRenewal
   );
 }
 

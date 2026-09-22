@@ -269,6 +269,12 @@
   "billing.checkout_error": "Impossible d'ouvrir le paiement.",
   "billing.title": "Facturation et forfaits",
   "billing.credits_remaining": "{remaining} crédits restants sur {total}",
+
+  "billing.renew_now_price": "Renouveler maintenant — {price}",
+  "billing.early_renewal_confirm": "Renouveler votre abonnement maintenant pour {price} ? Le tarif mensuel normal sera débité maintenant et une nouvelle période de facturation commencera immédiatement.",
+  "billing.renewing": "Renouvellement...",
+  "billing.early_renewal_started": "Le renouvellement a bien démarré. Vos crédits seront mis à jour après confirmation du paiement.",
+  "billing.early_renewal_error": "Le renouvellement anticipé n’a pas pu être effectué. Réessayez.",
   "billing.sign_in_plan": "Connectez-vous pour voir votre forfait",
   "password.change_uncertain": "La modification n'a pas pu être confirmée. Essayez de vous connecter avec votre nouveau mot de passe avant de demander un autre lien.",
   "password.confirm_label": "Confirmer le nouveau mot de passe",

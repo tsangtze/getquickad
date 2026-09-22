@@ -46,6 +46,18 @@
   margin: 0;
 }
 
+.current-plan-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.current-plan-actions .plan-button {
+  width: auto;
+  min-width: 180px;
+  padding: 0 18px;
+}
+
 .usage-meter {
   height: 10px;
   margin-top: 18px;
@@ -187,5 +199,13 @@
 
   .billing-shell {
     padding-top: 32px;
+  }
+
+  .current-plan-actions {
+    flex-direction: column;
+  }
+
+  .current-plan-actions .plan-button {
+    width: 100%;
   }
 }

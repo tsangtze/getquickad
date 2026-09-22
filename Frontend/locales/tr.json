@@ -255,6 +255,12 @@
   "billing.checkout_error": "Ödeme sayfası açılamadı.",
   "billing.title": "Faturalandırma ve Planlar",
   "billing.credits_remaining": "{total} krediden {remaining} kaldı",
+
+  "billing.renew_now_price": "Şimdi Yenile — {price}",
+  "billing.early_renewal_confirm": "Aboneliğinizi şimdi {price} karşılığında yenilemek istiyor musunuz? Normal aylık abonelik ücreti şimdi tahsil edilir ve yeni fatura dönemi hemen başlar.",
+  "billing.renewing": "Yenileniyor...",
+  "billing.early_renewal_started": "Yenileme başarıyla başlatıldı. Ödeme onaylandıktan sonra kredileriniz güncellenecektir.",
+  "billing.early_renewal_error": "Erken yenileme tamamlanamadı. Lütfen tekrar deneyin.",
   "billing.sign_in_plan": "Planınızı görmek için giriş yapın",
   "password.change_uncertain": "Değişiklik doğrulanamadı. Başka bir bağlantı istemeden önce yeni şifrenizle giriş yapmayı deneyin.",
   "password.confirm_label": "Yeni şifreyi doğrula",
