@@ -4,89 +4,106 @@ import {
 import {
   SEO_ECOMMERCE_VIDEO_CONTENT
 } from "./seoLandingEcommerce.mjs";
+import {
+  SEO_SLIDESHOW_VIDEO_CONTENT
+} from "./seoLandingSlideshow.mjs";
 export const SEO_LANDING_INTENTS = [
   "photoToVideo",
   "adVideo",
-  "ecommerceVideo"
+  "ecommerceVideo",
+  "slideshowVideo"
 ];
 
 export const SEO_LANDING_ROUTES = {
   en: {
     photoToVideo: "product-photo-to-video",
     adVideo: "ai-ad-video-generator",
-    ecommerceVideo: "ecommerce-video-generator"
+    ecommerceVideo: "ecommerce-video-generator",
+    slideshowVideo: "photo-slideshow-maker"
   },
 
   es: {
     photoToVideo: "foto-de-producto-a-video",
     adVideo: "generador-de-videos-publicitarios-ia",
-    ecommerceVideo: "generador-de-videos-ecommerce"
+    ecommerceVideo: "generador-de-videos-ecommerce",
+    slideshowVideo: "creador-de-presentaciones-de-fotos"
   },
 
   pt: {
     photoToVideo: "foto-de-produto-para-video",
     adVideo: "gerador-de-anuncios-em-video-ia",
-    ecommerceVideo: "gerador-de-video-ecommerce"
+    ecommerceVideo: "gerador-de-video-ecommerce",
+    slideshowVideo: "criador-de-slideshow-de-fotos"
   },
 
   fr: {
     photoToVideo: "photo-produit-en-video",
     adVideo: "generateur-de-videos-publicitaires-ia",
-    ecommerceVideo: "generateur-video-ecommerce"
+    ecommerceVideo: "generateur-video-ecommerce",
+    slideshowVideo: "createur-de-diaporama-photo"
   },
 
   de: {
     photoToVideo: "produktfoto-in-video",
     adVideo: "ki-werbevideo-generator",
-    ecommerceVideo: "e-commerce-video-generator"
+    ecommerceVideo: "e-commerce-video-generator",
+    slideshowVideo: "foto-slideshow-erstellen"
   },
 
   it: {
     photoToVideo: "foto-prodotto-in-video",
     adVideo: "generatore-video-pubblicitari-ai",
-    ecommerceVideo: "generatore-video-ecommerce"
+    ecommerceVideo: "generatore-video-ecommerce",
+    slideshowVideo: "creatore-di-slideshow-foto"
   },
 
   ja: {
     photoToVideo: "product-photo-video",
     adVideo: "ai-ad-video",
-    ecommerceVideo: "ec-product-video"
+    ecommerceVideo: "ec-product-video",
+    slideshowVideo: "photo-slideshow-maker"
   },
 
   ko: {
     photoToVideo: "product-photo-video",
     adVideo: "ai-ad-video",
-    ecommerceVideo: "ecommerce-product-video"
+    ecommerceVideo: "ecommerce-product-video",
+    slideshowVideo: "photo-slideshow-maker"
   },
 
   zh: {
     photoToVideo: "product-photo-video",
     adVideo: "ai-ad-video",
-    ecommerceVideo: "ecommerce-product-video"
+    ecommerceVideo: "ecommerce-product-video",
+    slideshowVideo: "photo-slideshow-maker"
   },
 
   "zh-TW": {
     photoToVideo: "product-photo-video",
     adVideo: "ai-ad-video",
-    ecommerceVideo: "ecommerce-product-video"
+    ecommerceVideo: "ecommerce-product-video",
+    slideshowVideo: "photo-slideshow-maker"
   },
 
   tr: {
     photoToVideo: "urun-fotografini-videoya-donustur",
     adVideo: "yapay-zeka-reklam-videosu",
-    ecommerceVideo: "e-ticaret-video-olusturucu"
+    ecommerceVideo: "e-ticaret-video-olusturucu",
+    slideshowVideo: "fotograf-slayt-video-olusturucu"
   },
 
   hi: {
     photoToVideo: "product-photo-to-video",
     adVideo: "ai-ad-video-generator",
-    ecommerceVideo: "ecommerce-video-maker"
+    ecommerceVideo: "ecommerce-video-maker",
+    slideshowVideo: "photo-slideshow-maker"
   },
 
   ar: {
     photoToVideo: "product-photo-to-video",
     adVideo: "ai-ad-video-generator",
-    ecommerceVideo: "ecommerce-video-generator"
+    ecommerceVideo: "ecommerce-video-generator",
+    slideshowVideo: "photo-slideshow-maker"
   }
 };
 
@@ -536,6 +553,13 @@ export function getSeoLandingContent(
   if (intent === "ecommerceVideo") {
     return (
       SEO_ECOMMERCE_VIDEO_CONTENT[language] ||
+      null
+    );
+  }
+
+  if (intent === "slideshowVideo") {
+    return (
+      SEO_SLIDESHOW_VIDEO_CONTENT[language] ||
       null
     );
   }
