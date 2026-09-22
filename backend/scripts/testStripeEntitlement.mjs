@@ -96,6 +96,8 @@ function subscription({
     items: {
       data: [
         {
+          current_period_start: periodStart,
+          current_period_end: periodEnd,
           price: {
             id: priceId
           }
@@ -105,8 +107,6 @@ function subscription({
     metadata: {
       planId
     },
-    current_period_start: periodStart,
-    current_period_end: periodEnd,
     cancel_at_period_end: cancelAtPeriodEnd,
     cancel_at: cancelAt
   };

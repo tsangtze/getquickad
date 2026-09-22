@@ -83,13 +83,11 @@ function fakeSubscription() {
     customer: customerId,
     status: "active",
     cancel_at_period_end: false,
-    current_period_start:
-      periodStartSeconds,
-    current_period_end:
-      periodEndSeconds,
     items: {
       data: [
         {
+          current_period_start: periodStartSeconds,
+          current_period_end: periodEndSeconds,
           price: {
             id: starterPriceId
           }

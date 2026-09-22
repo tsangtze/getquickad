@@ -57,10 +57,6 @@ function subscription({
     cancel_at_period_end:
       cancelAtPeriodEnd,
     cancel_at: null,
-    current_period_start:
-      1788220800,
-    current_period_end:
-      1790812800,
     metadata: {
       quickadUserId: userId,
       quickadPlanId:
@@ -71,6 +67,8 @@ function subscription({
     items: {
       data: [
         {
+          current_period_start: 1788220800,
+          current_period_end: 1790812800,
           price: {
             id: priceId
           }
@@ -523,7 +521,7 @@ async function main() {
             invoiceSubscription.id,
           periodStart:
             new Date(
-              invoiceSubscription.current_period_start *
+              invoiceSubscription.items.data[0].current_period_start *
                 1000
             ).toISOString()
         }
@@ -537,13 +535,24 @@ async function main() {
     const renewedSubscription = {
       ...invoiceSubscription,
 
-      current_period_start:
-        invoiceSubscription.current_period_start +
-        86400,
+      items: {
+        ...invoiceSubscription.items,
 
-      current_period_end:
-        invoiceSubscription.current_period_end +
-        86400
+        data:
+          invoiceSubscription.items.data.map(
+            (item) => ({
+              ...item,
+
+              current_period_start:
+                item.current_period_start +
+                86400,
+
+              current_period_end:
+                item.current_period_end +
+                86400
+            })
+          )
+      }
     };
 
     retrievedSubscriptions.set(

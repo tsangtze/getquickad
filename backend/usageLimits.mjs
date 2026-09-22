@@ -209,6 +209,12 @@ export async function getStripeBillingState(
       stripeSubscriptionStatus:
         data.stripeSubscriptionStatus || null,
 
+      currentPeriodStart:
+        data.currentPeriodStart || null,
+
+      currentPeriodEnd:
+        data.currentPeriodEnd || null,
+
       stripeEntitlementVerifiedAt:
         data.stripeEntitlementVerifiedAt || null
     };
@@ -218,6 +224,8 @@ export async function getStripeBillingState(
         stripeCustomerId: null,
         stripeSubscriptionId: null,
         stripeSubscriptionStatus: null,
+        currentPeriodStart: null,
+        currentPeriodEnd: null,
         stripeEntitlementVerifiedAt: null
       };
     }
