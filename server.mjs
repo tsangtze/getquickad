@@ -494,67 +494,80 @@ function getSeoLandingLinkLabels(language) {
     en: {
       photoToVideo: "Product photo to video",
       adVideo: "AI ad video generator",
-      ecommerceVideo: "Ecommerce video generator"
+      ecommerceVideo: "Ecommerce video generator",
+      slideshowVideo: "Photo slideshow maker"
     },
     es: {
       photoToVideo: "Foto de producto a vídeo",
       adVideo: "Vídeos publicitarios con IA",
-      ecommerceVideo: "Vídeos para ecommerce"
+      ecommerceVideo: "Vídeos para ecommerce",
+      slideshowVideo: "Creador de presentaciones de fotos"
     },
     pt: {
       photoToVideo: "Foto de produto para vídeo",
       adVideo: "Anúncios em vídeo com IA",
-      ecommerceVideo: "Vídeos para e-commerce"
+      ecommerceVideo: "Vídeos para e-commerce",
+      slideshowVideo: "Criador de slideshow de fotos"
     },
     fr: {
       photoToVideo: "Photo produit en vidéo",
       adVideo: "Vidéos publicitaires IA",
-      ecommerceVideo: "Vidéos e-commerce"
+      ecommerceVideo: "Vidéos e-commerce",
+      slideshowVideo: "Créateur de diaporama photo"
     },
     de: {
       photoToVideo: "Produktfoto in Video",
       adVideo: "KI-Werbevideos",
-      ecommerceVideo: "E-Commerce-Videos"
+      ecommerceVideo: "E-Commerce-Videos",
+      slideshowVideo: "Foto-Slideshow erstellen"
     },
     it: {
       photoToVideo: "Foto prodotto in video",
       adVideo: "Video pubblicitari AI",
-      ecommerceVideo: "Video per e-commerce"
+      ecommerceVideo: "Video per e-commerce",
+      slideshowVideo: "Creatore di slideshow foto"
     },
     ja: {
       photoToVideo: "商品写真から動画",
       adVideo: "AI広告動画",
-      ecommerceVideo: "EC商品動画"
+      ecommerceVideo: "EC商品動画",
+      slideshowVideo: "写真スライドショー動画"
     },
     ko: {
       photoToVideo: "제품 사진으로 영상 만들기",
       adVideo: "AI 광고 영상",
-      ecommerceVideo: "이커머스 상품 영상"
+      ecommerceVideo: "이커머스 상품 영상",
+      slideshowVideo: "사진 슬라이드쇼 동영상"
     },
     zh: {
       photoToVideo: "产品照片转视频",
       adVideo: "AI 广告视频",
-      ecommerceVideo: "电商产品视频"
+      ecommerceVideo: "电商产品视频",
+      slideshowVideo: "照片幻灯片视频"
     },
     "zh-TW": {
       photoToVideo: "商品照轉影片",
       adVideo: "AI 廣告影片",
-      ecommerceVideo: "電商產品影片"
+      ecommerceVideo: "電商產品影片",
+      slideshowVideo: "照片幻燈片影片"
     },
     tr: {
       photoToVideo: "Ürün fotoğrafını videoya dönüştürme",
       adVideo: "Yapay zekâ reklam videosu",
-      ecommerceVideo: "E-ticaret videosu"
+      ecommerceVideo: "E-ticaret videosu",
+      slideshowVideo: "Fotoğraf slayt videosu"
     },
     hi: {
       photoToVideo: "प्रोडक्ट फोटो से वीडियो",
       adVideo: "AI विज्ञापन वीडियो",
-      ecommerceVideo: "ई-कॉमर्स वीडियो"
+      ecommerceVideo: "ई-कॉमर्स वीडियो",
+      slideshowVideo: "फोटो स्लाइडशो वीडियो"
     },
     ar: {
       photoToVideo: "تحويل صور المنتجات إلى فيديو",
       adVideo: "فيديوهات إعلانية بالذكاء الاصطناعي",
-      ecommerceVideo: "فيديوهات للتجارة الإلكترونية"
+      ecommerceVideo: "فيديوهات للتجارة الإلكترونية",
+      slideshowVideo: "فيديو عرض شرائح للصور"
     }
   };
 
@@ -856,11 +869,11 @@ const seoLandingPaths = Object.keys(SEO_LANDING_ROUTES)
   .filter(Boolean);
 
 if (
-  seoLandingPaths.length !== 39 ||
-  new Set(seoLandingPaths).size !== 39
+  seoLandingPaths.length !== 52 ||
+  new Set(seoLandingPaths).size !== 52
 ) {
   throw new Error(
-    "SEO landing route registration must contain 39 unique paths."
+    "SEO landing route registration must contain 52 unique paths."
   );
 }
 
@@ -872,11 +885,11 @@ const seoLandingPathsWithoutTrailingSlash =
   );
 
 if (
-  seoLandingPathsWithoutTrailingSlash.length !== 39 ||
-  new Set(seoLandingPathsWithoutTrailingSlash).size !== 39
+  seoLandingPathsWithoutTrailingSlash.length !== 52 ||
+  new Set(seoLandingPathsWithoutTrailingSlash).size !== 52
 ) {
   throw new Error(
-    "SEO landing no-slash registration must contain 39 unique paths."
+    "SEO landing no-slash registration must contain 52 unique paths."
   );
 }
 
