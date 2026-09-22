@@ -1,6 +1,10 @@
 import Stripe from "stripe";
 
 import {
+  stripeSubscriptionPeriodEnd,
+  stripeSubscriptionPeriodStart
+} from "./stripeSubscriptionPeriod.mjs";
+import {
   PLAN_IDS,
   getUserUsage,
   getStripeBillingState,
@@ -309,13 +313,13 @@ export async function reconcilePaidEntitlement(
 
       currentPeriodStart:
         unixTimeToIso(
-          subscription.current_period_start
+          stripeSubscriptionPeriodStart(subscription)
         ),
 
       currentPeriodEnd:
         unixTimeToIso(
           subscription.cancel_at ||
-          subscription.current_period_end
+          stripeSubscriptionPeriodEnd(subscription)
         ),
 
       cancelAtPeriodEnd:

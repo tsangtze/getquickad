@@ -2,6 +2,10 @@ import express from "express";
 import Stripe from "stripe";
 
 import {
+  stripeSubscriptionPeriodEnd,
+  stripeSubscriptionPeriodStart
+} from "./stripeSubscriptionPeriod.mjs";
+import {
   PLAN_IDS,
   completeEarlyRenewalOperation,
   getEarlyRenewalOperation,
@@ -221,7 +225,7 @@ async function applySuccessfulInvoicePayment(
 
     const newPeriodStart =
       unixTimeToIso(
-        subscription.current_period_start
+        stripeSubscriptionPeriodStart(subscription)
       );
 
     const correlatedEarlyRenewal =
@@ -264,13 +268,13 @@ async function applySuccessfulInvoicePayment(
 
       currentPeriodStart:
         unixTimeToIso(
-          subscription.current_period_start
+          stripeSubscriptionPeriodStart(subscription)
         ),
 
       currentPeriodEnd:
         unixTimeToIso(
           subscription.cancel_at ||
-          subscription.current_period_end
+          stripeSubscriptionPeriodEnd(subscription)
         ),
 
       cancelAtPeriodEnd:
@@ -353,13 +357,13 @@ async function applySubscription(
 
       currentPeriodStart:
         unixTimeToIso(
-          subscription.current_period_start
+          stripeSubscriptionPeriodStart(subscription)
         ),
 
       currentPeriodEnd:
         unixTimeToIso(
           subscription.cancel_at ||
-          subscription.current_period_end
+          stripeSubscriptionPeriodEnd(subscription)
         ),
 
       cancelAtPeriodEnd:
