@@ -274,6 +274,32 @@ async function loadBilling() {
   }
 }
 
+async function openBillingUrl(url) {
+  if (
+    window.Pix2VidRuntime.isNativeAndroid
+  ) {
+    const browser =
+      window.Capacitor?.Plugins?.Browser;
+
+    if (
+      !browser ||
+      typeof browser.open !== "function"
+    ) {
+      throw new Error(
+        "Native browser is unavailable."
+      );
+    }
+
+    await browser.open({
+      url
+    });
+
+    return;
+  }
+
+  window.location.assign(url);
+}
+
 async function openSubscriptionPortal() {
   if (!manageSubscriptionButton) return;
 
@@ -316,7 +342,7 @@ async function openSubscriptionPortal() {
       );
     }
 
-    window.location.assign(data.url);
+    await openBillingUrl(data.url);
   } catch (error) {
     setMessage(
       billingText(
@@ -395,7 +421,7 @@ async function startCheckout(button) {
       );
     }
 
-    window.location.assign(data.url);
+    await openBillingUrl(data.url);
   } catch (error) {
     setMessage(
       billingText(
@@ -430,4 +456,95 @@ if (manageSubscriptionButton) {
   );
 }
 
-loadBilling();
+/* Keep account-specific billing state synchronized with the signed-in user. */
+let billingAccountUserId = null;
+let billingAccountIdentityKnown = false;
+let billingAccountPageLeaving = false;
+const billingAuthSignalKey = "quickadAuthChangeV1";
+
+function reloadBillingForAccountChange() {
+  if (billingAccountPageLeaving) return;
+
+  billingAccountPageLeaving = true;
+  document.body.style.visibility = "hidden";
+  window.location.reload();
+}
+
+window.quickAdAccountChanged = (user) => {
+  const nextId =
+    typeof user?.id === "string"
+      ? user.id
+      : null;
+
+  if (
+    billingAccountIdentityKnown &&
+    nextId !== billingAccountUserId
+  ) {
+    reloadBillingForAccountChange();
+    return;
+  }
+
+  billingAccountIdentityKnown = true;
+  billingAccountUserId = nextId;
+};
+
+window.quickAdNotifyAccountChange = () => {
+  try {
+    localStorage.setItem(
+      billingAuthSignalKey,
+      crypto.randomUUID()
+    );
+  } catch {
+    // Same-page account identity checks remain active.
+  }
+};
+
+window.addEventListener("storage", (event) => {
+  if (event.key === billingAuthSignalKey) {
+    reloadBillingForAccountChange();
+  }
+});
+
+async function initializeBilling() {
+  try {
+    const response =
+      await fetch(
+        window.Pix2VidRuntime.apiUrl("/api/auth/session"),
+        {
+          credentials: "same-origin",
+          cache: "no-store",
+          signal: AbortSignal.timeout(30000),
+          headers: window.Pix2VidRuntime.apiHeaders()
+        }
+      );
+
+    if (response.status === 401) {
+      window.quickAdAccountChanged(null);
+    } else {
+      const data = await response.json();
+
+      if (
+        !response.ok ||
+        !data.ok ||
+        !data.user?.id
+      ) {
+        throw new Error(
+          "Billing session could not be verified."
+        );
+      }
+
+      window.quickAdAccountChanged(data.user);
+    }
+  } catch {
+    /*
+     * loadBilling() still owns the visible billing error state.
+     * Do not invent an identity when session verification fails.
+     */
+  }
+
+  if (!billingAccountPageLeaving) {
+    await loadBilling();
+  }
+}
+
+initializeBilling();
