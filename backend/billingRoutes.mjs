@@ -1,24 +1,14 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import Stripe from "stripe";
-import { randomUUID } from "node:crypto";
 
 import { requireUser } from "./authRoutes.mjs";
 import {
   reconcilePaidEntitlement
 } from "./stripeEntitlement.mjs";
 import { authConfiguration } from "./authService.mjs";
-import {
-  startEarlyRenewalStripePeriod
-} from "./earlyRenewalStripe.mjs";
 import { isTrustedApplicationRequest } from "./requestContext.mjs";
-import {
-  getPlan,
-  getStripeBillingState,
-  getUserUsage,
-  PLAN_IDS,
-  reserveEarlyRenewalOperation
-} from "./usageLimits.mjs";
+import { getStripeBillingState } from "./usageLimits.mjs";
 
 function cleanEnvironmentValue(value) {
   return String(value ?? "").trim();
@@ -104,9 +94,7 @@ function stripeLocaleForLanguage(language) {
 }
 
 export function createBillingRouter({
-  projectRoot,
-  stripeClientFactory = createStripeClient,
-  requireUserMiddleware = requireUser
+  projectRoot
 }) {
   const router = express.Router();
 
@@ -136,7 +124,7 @@ export function createBillingRouter({
 
   router.post(
     "/checkout",
-    requireUserMiddleware,
+    requireUser,
     async (request, response) => {
       try {
         const planId =
@@ -174,7 +162,7 @@ export function createBillingRouter({
         }
 
         const stripe =
-          stripeClientFactory();
+          createStripeClient();
 
         const userId =
           String(request.authUser.id);
@@ -298,226 +286,8 @@ export function createBillingRouter({
   );
 
   router.post(
-    "/early-renewal",
-    requireUserMiddleware,
-    async (request, response) => {
-      try {
-        const stripe =
-          stripeClientFactory();
-
-        const userId =
-          String(request.authUser.id);
-
-        await reconcilePaidEntitlement(
-          projectRoot,
-          userId,
-          {
-            retrieveSubscription:
-              (id) =>
-                stripe.subscriptions.retrieve(id),
-            force: true,
-            requireFreshVerification: true
-          }
-        );
-
-        const [
-          usage,
-          billingState
-        ] = await Promise.all([
-          getUserUsage(
-            projectRoot,
-            userId
-          ),
-          getStripeBillingState(
-            projectRoot,
-            userId
-          )
-        ]);
-
-        const plan =
-          getPlan(usage.planId);
-
-        const creditsRemaining =
-          Math.max(
-            0,
-            Number(plan.monthlyCredits) -
-              Number(
-                usage.monthlyCreditsUsed
-              )
-          );
-
-        const subscriptionStatus =
-          String(
-            billingState
-              .stripeSubscriptionStatus ||
-            ""
-          )
-            .trim()
-            .toLowerCase();
-
-        const activePaidSubscription =
-          (
-            usage.planId ===
-              PLAN_IDS.STARTER ||
-            usage.planId ===
-              PLAN_IDS.PRO
-          ) &&
-          (
-            subscriptionStatus ===
-              "active" ||
-            subscriptionStatus ===
-              "trialing"
-          ) &&
-          Boolean(
-            billingState
-              .stripeSubscriptionId
-          );
-
-        if (!activePaidSubscription) {
-          return response.status(409).json({
-            ok: false,
-            code:
-              "EARLY_RENEWAL_NOT_ACTIVE_PAID",
-            error:
-              "An active paid subscription is required."
-          });
-        }
-
-        if (creditsRemaining !== 0) {
-          return response.status(409).json({
-            ok: false,
-            code:
-              "EARLY_RENEWAL_CREDITS_REMAINING",
-            error:
-              "Early renewal is available only after all monthly credits have been used.",
-            creditsRemaining
-          });
-        }
-
-        const stripeSubscriptionId =
-          String(
-            billingState.stripeSubscriptionId ||
-              ""
-          ).trim();
-
-        const periodStart =
-          String(
-            usage.currentPeriodStart ||
-              billingState.currentPeriodStart ||
-              ""
-          ).trim();
-
-        if (!periodStart) {
-          return response.status(409).json({
-            ok: false,
-            code:
-              "EARLY_RENEWAL_PERIOD_START_MISSING",
-            error:
-              "The current subscription period could not be verified."
-          });
-        }
-
-        const reservation =
-          await reserveEarlyRenewalOperation(
-            projectRoot,
-            userId,
-            {
-              operationId:
-                randomUUID(),
-
-              stripeSubscriptionId,
-              periodStart
-            }
-          );
-
-        const operation =
-          reservation.operation;
-
-        if (
-          !operation ||
-          operation.status !== "reserved"
-        ) {
-          return response.status(409).json({
-            ok: false,
-            code:
-              "EARLY_RENEWAL_OPERATION_UNAVAILABLE",
-            error:
-              "Early renewal is not available for this subscription period."
-          });
-        }
-
-        let updatedSubscription;
-
-        try {
-          updatedSubscription =
-            await startEarlyRenewalStripePeriod({
-              stripeSubscriptionId:
-                operation.stripeSubscriptionId,
-
-              operationId:
-                operation.operationId,
-
-              updateSubscription:
-                (subscriptionId, parameters, options) =>
-                  stripe.subscriptions.update(
-                    subscriptionId,
-                    parameters,
-                    options
-                  )
-            });
-        } catch (error) {
-          console.error(
-            "Stripe Early Renewal payment failed:",
-            error
-          );
-
-          return response.status(503).json({
-            ok: false,
-            code:
-              "EARLY_RENEWAL_PAYMENT_UNAVAILABLE",
-            error:
-              "Early renewal could not be completed. Please try again."
-          });
-        }
-
-        return response.status(202).json({
-          ok: true,
-          renewalStarted: true,
-          operationId:
-            operation.operationId,
-          subscriptionId:
-            updatedSubscription?.id ||
-            operation.stripeSubscriptionId
-        });
-      } catch (error) {
-        console.error(
-          "Early Renewal request failed before payment:",
-          error
-        );
-
-        const unavailable =
-          error?.code ===
-            "STRIPE_ENTITLEMENT_UNAVAILABLE";
-
-        return response
-          .status(unavailable ? 503 : 500)
-          .json({
-            ok: false,
-            code:
-              unavailable
-                ? "BILLING_VERIFICATION_UNAVAILABLE"
-                : "EARLY_RENEWAL_ELIGIBILITY_FAILED",
-            error:
-              unavailable
-                ? "Subscription verification is temporarily unavailable."
-                : "Unable to verify early renewal eligibility."
-          });
-      }
-    }
-  );
-  router.post(
     "/portal",
-    requireUserMiddleware,
+    requireUser,
     async (request, response) => {
       try {
         const userId =
@@ -529,7 +299,7 @@ export function createBillingRouter({
               .trim()
           );
         const stripe =
-          stripeClientFactory();
+          createStripeClient();
 
         await reconcilePaidEntitlement(
           projectRoot,
