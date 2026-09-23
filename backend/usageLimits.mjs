@@ -1,10 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-// TEMPORARY GOOGLE PLAY CLOSED-TESTING LIMIT.
-// Restore the production default from 50 to 2 before public Play release.
+// Production default is 2; Render may override this for controlled testing.
 export const FREE_FINAL_VIDEOS =
-  Number.parseInt(process.env.FREE_FINAL_VIDEOS || "50", 10);
+  Number.parseInt(process.env.FREE_FINAL_VIDEOS || "2", 10);
 
 export const PLAN_IDS = Object.freeze({
   FREE: "free",
@@ -116,9 +115,9 @@ export function getPlan(planId) {
   return PLANS[normalizePlanId(planId)];
 }
 
-// TEMPORARY GOOGLE PLAY CLOSED-TESTING LIMIT.
-// Restore the production limit from 100 to 10 before public Play release.
-export const FREE_VIDEO_PLANS = 100;
+// Production default is 10; Render may override this for controlled testing.
+export const FREE_VIDEO_PLANS =
+  Number.parseInt(process.env.FREE_VIDEO_PLANS || "10", 10);
 
 export function getVideoCreditCost(durationSeconds) {
   const seconds = Number(durationSeconds);
