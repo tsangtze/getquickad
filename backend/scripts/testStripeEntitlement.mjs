@@ -537,6 +537,91 @@ await runTest(
 );
 
 await runTest(
+  "Starter overage then same-period Pro upgrade leaves 300 credits",
+  async (root) => {
+    const userId =
+      "starter-overage-upgrade-user";
+
+    await seedPaidUser(
+      root,
+      userId
+    );
+
+    const userFile =
+      path.join(
+        root,
+        "users",
+        `${userId}.json`
+      );
+
+    const seededUser =
+      JSON.parse(
+        await fs.readFile(
+          userFile,
+          "utf8"
+        )
+      );
+
+    seededUser.monthlyCreditsUsed = 95;
+
+    await fs.writeFile(
+      userFile,
+      JSON.stringify(
+        seededUser,
+        null,
+        2
+      ),
+      "utf8"
+    );
+
+    const finalization =
+      await recordSuccessfulFinalVideo(
+        root,
+        userId,
+        60
+      );
+
+    assert.equal(
+      finalization.creditCost,
+      5
+    );
+
+    assert.equal(
+      finalization.usage.monthlyCreditsUsed,
+      100
+    );
+
+    const upgradedUsage =
+      await reconcilePaidEntitlement(
+        root,
+        userId,
+        {
+          retrieveSubscription:
+            async () =>
+              subscription({
+                priceId: "price_test_pro",
+                planId: "pro"
+              })
+        }
+      );
+
+    assert.equal(
+      upgradedUsage.planId,
+      PLAN_IDS.PRO
+    );
+
+    assert.equal(
+      upgradedUsage.monthlyCreditsUsed,
+      100
+    );
+
+    assert.equal(
+      400 - upgradedUsage.monthlyCreditsUsed,
+      300
+    );
+  }
+);
+await runTest(
   "Cancel at period end remains paid while active",
   async (root) => {
     await seedPaidUser(

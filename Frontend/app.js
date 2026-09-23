@@ -4426,32 +4426,63 @@ finalVideoButton.addEventListener(
       let recoveredFinalVideo = false;
 
       try {
-        const statusResponse =
-          await quickAdProjectFetch(
-            `/api/projects/${currentProjectId}/finalization-status`,
-            {
-              method: "GET"
-            }
-          );
+        const reconciliationAttempts = 12;
+        const reconciliationDelayMs = 5000;
 
-        const statusResult =
-          await statusResponse.json();
-
-        if (
-          statusResponse.ok &&
-          statusResult?.ok === true &&
-          statusResult?.project?.id ===
-            currentProjectId &&
-          statusResult?.project?.status ===
-            "video_ready" &&
-          statusResult?.video &&
-          statusResult?.videoUrl
+        for (
+          let attempt = 1;
+          attempt <= reconciliationAttempts;
+          attempt += 1
         ) {
-          showFinalVideoReady(
-            statusResult
-          );
+          const statusResponse =
+            await quickAdProjectFetch(
+              `/api/projects/${currentProjectId}/finalization-status`,
+              {
+                method: "GET"
+              }
+            );
 
-          recoveredFinalVideo = true;
+          const statusResult =
+            await statusResponse.json();
+
+          if (
+            statusResponse.ok &&
+            statusResult?.ok === true &&
+            statusResult?.project?.id ===
+              currentProjectId &&
+            statusResult?.project?.status ===
+              "video_ready" &&
+            statusResult?.video &&
+            statusResult?.videoUrl
+          ) {
+            showFinalVideoReady(
+              statusResult
+            );
+
+            recoveredFinalVideo = true;
+            break;
+          }
+
+          if (
+            !statusResponse.ok ||
+            statusResult?.ok !== true ||
+            statusResult?.project?.id !==
+              currentProjectId ||
+            statusResult?.project?.status !==
+              "rendering_video"
+          ) {
+            break;
+          }
+
+          if (attempt < reconciliationAttempts) {
+            await new Promise(
+              resolve =>
+                setTimeout(
+                  resolve,
+                  reconciliationDelayMs
+                )
+            );
+          }
         }
       } catch (reconciliationError) {
         console.warn(
@@ -4459,7 +4490,6 @@ finalVideoButton.addEventListener(
           reconciliationError
         );
       }
-
       if (!recoveredFinalVideo) {
         window.quickAdMusic.lock("");
         finalVideoButton.disabled = false;

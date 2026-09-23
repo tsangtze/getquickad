@@ -35,6 +35,40 @@ assert.match(
   "Existing confirmed account/session-change protection must remain."
 );
 
+assert.match(
+  source,
+  /const reconciliationAttempts\s*=\s*12;\s*const reconciliationDelayMs\s*=\s*5000;/s,
+  "Finalization recovery must use bounded polling."
+);
+
+assert.match(
+  source,
+  /statusResult\?\.project\?\.status !==\s*"rendering_video"/s,
+  "Finalization recovery must continue polling only while rendering is still in progress."
+);
+
+assert.match(
+  source,
+  /statusResult\?\.project\?\.status ===\s*"video_ready"[\s\S]*?showFinalVideoReady\(\s*statusResult\s*\);[\s\S]*?recoveredFinalVideo = true;[\s\S]*?break;/s,
+  "Persisted video_ready recovery must enter the normal final-video-ready UI."
+);
+
+assert.match(
+  source,
+  /if \(attempt < reconciliationAttempts\)\s*\{\s*await new Promise\([\s\S]*?setTimeout\([\s\S]*?reconciliationDelayMs[\s\S]*?\);?\s*\}/s,
+  "Rendering recovery must wait between bounded status checks."
+);
+
+const finalizeEndpointRefs =
+  source.match(
+    /`\/api\/projects\/\$\{currentProjectId\}\/finalize`/g
+  ) || [];
+
+assert.equal(
+  finalizeEndpointRefs.length,
+  1,
+  "Recovery must not introduce another finalization request."
+);
 console.log("PASS: transient session failure does not destructively reload.");
 console.log("PASS: successful final video response bypasses redundant session recheck.");
 console.log("PASS: confirmed account/session-change protection remains.");
