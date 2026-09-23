@@ -5212,6 +5212,7 @@ async function updateQuota(){
       });
 
     let usage = null;
+    let limits = null;
 
     if(res.ok){
       const data =
@@ -5219,6 +5220,9 @@ async function updateQuota(){
 
       usage =
         data.usage || null;
+
+      limits =
+        data.limits || null;
 
     }
 
@@ -5236,11 +5240,15 @@ async function updateQuota(){
           usage.monthlyCreditsTotal ?? 0
       });
     } else {
+      const freeVideoTotal =
+        Number(limits?.FREE_FINAL_VIDEOS) || 2;
+
       renderQuotaBanner({
         type: 'free',
         remaining:
-          usage?.freeVideosRemaining ?? 2,
-        total: 2
+          usage?.freeVideosRemaining ?? freeVideoTotal,
+        total:
+          freeVideoTotal
       });
     }
   }catch(e){
