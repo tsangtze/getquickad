@@ -1166,6 +1166,85 @@ export async function createProjectRouter({
 
 
   router.get(
+    "/:projectId/finalization-status",
+    async (request, response, next) => {
+      const projectId =
+        String(request.params.projectId ?? "").trim();
+
+      if (!/^[0-9a-f-]{36}$/i.test(projectId)) {
+        return response.status(404).json({
+          ok: false,
+          code: "PROJECT_NOT_FOUND",
+          error: "Project not found."
+        });
+      }
+
+      try {
+        const projectPath =
+          path.join(
+            projectsDirectory,
+            projectId,
+            "project.json"
+          );
+
+        const raw =
+          await fs.readFile(
+            projectPath,
+            "utf8"
+          );
+
+        const project =
+          JSON.parse(raw);
+
+        if (
+          String(project.ownerId ?? "") !==
+          String(request.authUser.id)
+        ) {
+          return response.status(404).json({
+            ok: false,
+            code: "PROJECT_NOT_FOUND",
+            error: "Project not found."
+          });
+        }
+
+        const status =
+          String(project.status ?? "");
+
+        const videoReady =
+          status === "video_ready" &&
+          Boolean(project.video);
+
+        return response.status(200).json({
+          ok: true,
+          project: {
+            id: projectId,
+            status
+          },
+          video:
+            videoReady
+              ? project.video
+              : null,
+          videoUrl:
+            videoReady
+              ? `/api/projects/${projectId}/video`
+              : null
+        });
+      } catch (error) {
+        if (error?.code === "ENOENT") {
+          return response.status(404).json({
+            ok: false,
+            code: "PROJECT_NOT_FOUND",
+            error: "Project not found."
+          });
+        }
+
+        next(error);
+      }
+    }
+  );
+
+
+  router.get(
     "/videos/recoverable",
     async (request, response, next) => {
       try {
@@ -2350,9 +2429,9 @@ export async function createProjectRouter({
         // Manual caption edits may not exceed the narration capacity
         // established by the server-persisted AI original.
         //
-        // Whitespace-delimited languages use the original word count.
-        // Chinese, Japanese, and Korean use Unicode letters/numbers so
-        // punctuation and spacing do not consume the editing allowance.
+        // All languages use Unicode letters/numbers from the AI original so
+        // continuous text cannot bypass the editing allowance; punctuation
+        // and spacing do not consume the allowance.
         const originalStoryboard =
           existingStoryboardRecord?.storyboard;
 
