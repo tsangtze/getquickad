@@ -1664,6 +1664,36 @@ const CTA_REVIEW_IMAGE_BY_PRESET = {
   custom: "/assets/cta/cta-custom.png"
 };
 
+async function resolveReviewImageUrl(imagePath) {
+  const value = String(imagePath || "");
+
+  if (
+    !value ||
+    !window.Pix2VidRuntime?.isNativeAndroid ||
+    !value.startsWith("/api/")
+  ) {
+    return window.Pix2VidRuntime.mediaUrl(value);
+  }
+
+  const response = await fetch(
+    window.Pix2VidRuntime.apiUrl(value),
+    {
+      method: "GET",
+      headers: window.Pix2VidRuntime.apiHeaders()
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Review image request failed with ${response.status}.`
+    );
+  }
+
+  const blob = await response.blob();
+
+  return URL.createObjectURL(blob);
+}
+
 function clearReviewImageUrls() {
   window.quickAdMusic.stop();
   reviewImageUrls.forEach((imageUrl) => {
@@ -1863,41 +1893,12 @@ function splitSceneCaptionText(
   return chunks;
 }
 
-function usesCharacterBasedEditLimit(text) {
+function countSceneEditUnits(text) {
   const value = String(text ?? "");
-
-  const cjkCount =
-    (
-      value.match(
-        /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu
-      ) ?? []
-    ).length;
-
-  const letterNumberCount =
-    (
-      value.match(/[\p{L}\p{N}]/gu) ?? []
-    ).length;
 
   return (
-    letterNumberCount > 0 &&
-    cjkCount / letterNumberCount >= 0.5
-  );
-}
-
-function countSceneEditUnits(text, characterBased) {
-  const value = String(text ?? "");
-
-  if (characterBased) {
-    return (
-      value.match(/[\p{L}\p{N}]/gu) ?? []
-    ).length;
-  }
-
-  return value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .length;
+    value.match(/[\p{L}\p{N}]/gu) ?? []
+  ).length;
 }
 
 function countNarrationWords(scenes) {
@@ -2520,7 +2521,7 @@ function createSceneReviewCard(scene) {
           }
 
           reviewUploadedCtaImageUrl =
-            window.Pix2VidRuntime.mediaUrl(
+            await resolveReviewImageUrl(
               result.ctaImageUrl
             );
 
@@ -2643,15 +2644,9 @@ function createSceneReviewCard(scene) {
   let manualCaptionValue = "";
   let editLimitWasBlocked = false;
 
-  const originalEditLimitUsesCharacters =
-    usesCharacterBasedEditLimit(
-      originalAiCaptionState.narration
-    );
-
   const originalEditLimit =
     countSceneEditUnits(
-      originalAiCaptionState.narration,
-      originalEditLimitUsesCharacters
+      originalAiCaptionState.narration
     );
 
   const proposedCaptionFitsOriginalLimit = (
@@ -2659,8 +2654,7 @@ function createSceneReviewCard(scene) {
   ) => {
     if (
       countSceneEditUnits(
-        proposedCaption,
-        originalEditLimitUsesCharacters
+        proposedCaption
       ) > originalEditLimit
     ) {
       return false;
@@ -2814,15 +2808,35 @@ function createSceneReviewCard(scene) {
           false;
       }
 
-      manualCaptionValue =
+      const proposedManualCaptionValue =
         captionInput.value;
+
+      const proposedCompleteCaption =
+        proposedManualCaptionValue
+          .trim()
+          .replace(/\s+/gu, " ");
+
+      if (
+        !proposedCaptionFitsOriginalLimit(
+          proposedCompleteCaption
+        )
+      ) {
+        captionInput.value =
+          manualCaptionValue ||
+          originalAiCaptionState.narration;
+
+        showEditLimitReached();
+
+        return;
+      }
+
+      manualCaptionValue =
+        proposedManualCaptionValue;
 
       editLimitWasBlocked = false;
 
       const completeCaption =
-        manualCaptionValue
-          .trim()
-          .replace(/\s+/gu, " ");
+        proposedCompleteCaption;
 
       scene.narration =
         completeCaption;
@@ -3229,9 +3243,22 @@ function createSceneReviewCard(scene) {
     () => {
       const caption =
         String(scene.caption ?? "").trim();
+
+      const narration =
+        String(scene.narration ?? "")
+          .trim()
+          .replace(/\s+/gu, " ");
+
+      const narrationFitsOriginalLimit =
+        !captionWasEdited ||
+        proposedCaptionFitsOriginalLimit(
+          narration
+        );
+
       const validScene =
         caption.length > 0 &&
         caption.length <= 60 &&
+        narrationFitsOriginalLimit &&
         Number.isInteger(scene.imageIndex) &&
         scene.imageIndex >= 1 &&
         scene.imageIndex <= currentReviewImageCount;
@@ -3994,7 +4021,171 @@ function renderPlanBrandingReview(project) {
 
   planBrandingReview.hidden = false;
 }
-function renderVideoPlanReview(
+function showFinalVideoReady(result) {
+  window.quickAdMusic.lock("ready");
+
+  planBrandingContent
+    ?.querySelectorAll(
+      ".plan-branding-button"
+    )
+    .forEach((button) => {
+      button.hidden = true;
+    });
+
+  planBrandingContent
+    ?.querySelectorAll(
+      ".plan-branding-website-input"
+    )
+    .forEach((input) => {
+      input.disabled = true;
+    });
+  finalVideoButton.textContent =
+    uiText("result.video_ready", "Video Ready");
+
+
+  planStatus.classList.add(
+    "approved",
+    "video-result-card"
+  );
+
+  playQuickAdSound("video-ready");
+
+  const resultHeading =
+    document.createElement("strong");
+
+  resultHeading.className =
+    "video-result-heading";
+
+  resultHeading.textContent =
+    uiText("result.final_ready", "Your final video is ready");
+
+  const resultSummary =
+    document.createElement("span");
+
+  resultSummary.className =
+    "video-result-summary";
+
+  const renderedDurationSeconds =
+    Math.round(
+      Number(
+        result.video?.durationSeconds
+      ) ||
+      Number(
+        currentStoryboard.totalDurationSeconds
+      ) ||
+      30
+    );
+
+  resultSummary.textContent =
+    uiText("result.summary_complete", `${currentStoryboard.scenes.length} scenes · ${renderedDurationSeconds}-second MP4 · AI narration complete`, { count: currentStoryboard.scenes.length, seconds: renderedDurationSeconds });
+
+  const resultActions =
+    document.createElement("span");
+
+  resultActions.className =
+    "video-result-actions";
+
+  const watchLink =
+    document.createElement("a");
+
+  watchLink.href =
+    result.videoUrl;
+
+  watchLink.target = "_blank";
+  watchLink.rel = "noopener";
+  watchLink.className =
+    "video-result-link primary";
+
+  watchLink.textContent =
+    uiText("result.watch", "Watch Video");
+
+  const downloadLink =
+    document.createElement("a");
+
+  downloadLink.href =
+    result.videoUrl + "?download=1";
+
+  downloadLink.download =
+    "pix2vid-video.mp4";
+
+  downloadLink.className =
+    "video-result-link";
+
+  downloadLink.textContent =
+    uiText("result.download", "Download MP4");
+
+  resultActions.append(
+    watchLink,
+    downloadLink
+  );
+
+  planStatus.replaceChildren(
+    resultHeading,
+    resultSummary,
+    resultActions
+  );
+
+  const successMark =
+    document.createElement("span");
+
+  successMark.className =
+    "success-mark";
+
+  successMark.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  successMark.textContent = "✓";
+
+  const successContent =
+    document.createElement("div");
+
+  const successTitle =
+    document.createElement("strong");
+
+  successTitle.textContent =
+    uiText("result.final_ready", "Your final video is ready");
+
+  const successDetails =
+    document.createElement("span");
+
+  successDetails.textContent =
+    uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · ${renderedDurationSeconds}-second MP4`, { count: currentStoryboard.scenes.length, seconds: renderedDurationSeconds });
+
+  successContent.append(
+    successTitle,
+    successDetails
+  );
+
+  formMessage.replaceChildren(
+    successMark,
+    successContent
+  );
+
+  formMessage.classList.remove(
+    "error"
+  );
+
+  const planApproval =
+    planStatus.closest(".plan-approval");
+
+  if (planApproval) {
+    planApproval.before(formMessage);
+  }
+
+  formMessage.classList.add(
+    "visible",
+    "success-card"
+  );
+
+  formMessage.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest"
+  });
+}
+
+async function renderVideoPlanReview(
   project,
   storyboard,
   savedImageUrls = null
@@ -4052,7 +4243,7 @@ function renderVideoPlanReview(
     uploadedCtaAsset?.storedName
   ) {
     reviewUploadedCtaImageUrl =
-      window.Pix2VidRuntime.mediaUrl(
+      await resolveReviewImageUrl(
         `/api/projects/${encodeURIComponent(
           project.id
         )}/assets/${encodeURIComponent(
@@ -4229,184 +4420,63 @@ finalVideoButton.addEventListener(
         );
       }
 
-      window.quickAdMusic.lock("ready");
-
-      planBrandingContent
-        ?.querySelectorAll(
-          ".plan-branding-button"
-        )
-        .forEach((button) => {
-          button.hidden = true;
-        });
-
-      planBrandingContent
-        ?.querySelectorAll(
-          ".plan-branding-website-input"
-        )
-        .forEach((input) => {
-          input.disabled = true;
-        });
-      finalVideoButton.textContent =
-        uiText("result.video_ready", "Video Ready");
-
-
-      planStatus.classList.add(
-        "approved",
-        "video-result-card"
-      );
-
-      playQuickAdSound("video-ready");
-
-      const resultHeading =
-        document.createElement("strong");
-
-      resultHeading.className =
-        "video-result-heading";
-
-      resultHeading.textContent =
-        uiText("result.final_ready", "Your final video is ready");
-
-      const resultSummary =
-        document.createElement("span");
-
-      resultSummary.className =
-        "video-result-summary";
-
-      const renderedDurationSeconds =
-        Math.round(
-          Number(
-            result.video?.durationSeconds
-          ) ||
-          Number(
-            currentStoryboard.totalDurationSeconds
-          ) ||
-          30
-        );
-
-      resultSummary.textContent =
-        uiText("result.summary_complete", `${currentStoryboard.scenes.length} scenes · ${renderedDurationSeconds}-second MP4 · AI narration complete`, { count: currentStoryboard.scenes.length, seconds: renderedDurationSeconds });
-
-      const resultActions =
-        document.createElement("span");
-
-      resultActions.className =
-        "video-result-actions";
-
-      const watchLink =
-        document.createElement("a");
-
-      watchLink.href =
-        result.videoUrl;
-
-      watchLink.target = "_blank";
-      watchLink.rel = "noopener";
-      watchLink.className =
-        "video-result-link primary";
-
-      watchLink.textContent =
-        uiText("result.watch", "Watch Video");
-
-      const downloadLink =
-        document.createElement("a");
-
-      downloadLink.href =
-        result.videoUrl + "?download=1";
-
-      downloadLink.download =
-        "pix2vid-video.mp4";
-
-      downloadLink.className =
-        "video-result-link";
-
-      downloadLink.textContent =
-        uiText("result.download", "Download MP4");
-
-      resultActions.append(
-        watchLink,
-        downloadLink
-      );
-
-      planStatus.replaceChildren(
-        resultHeading,
-        resultSummary,
-        resultActions
-      );
-
-      const successMark =
-        document.createElement("span");
-
-      successMark.className =
-        "success-mark";
-
-      successMark.setAttribute(
-        "aria-hidden",
-        "true"
-      );
-
-      successMark.textContent = "✓";
-
-      const successContent =
-        document.createElement("div");
-
-      const successTitle =
-        document.createElement("strong");
-
-      successTitle.textContent =
-        uiText("result.final_ready", "Your final video is ready");
-
-      const successDetails =
-        document.createElement("span");
-
-      successDetails.textContent =
-        uiText("result.summary_saved", `${currentStoryboard.scenes.length} scenes · AI narration · ${renderedDurationSeconds}-second MP4`, { count: currentStoryboard.scenes.length, seconds: renderedDurationSeconds });
-
-      successContent.append(
-        successTitle,
-        successDetails
-      );
-
-      formMessage.replaceChildren(
-        successMark,
-        successContent
-      );
-
-      formMessage.classList.remove(
-        "error"
-      );
-
-      const planApproval =
-        planStatus.closest(".plan-approval");
-
-      if (planApproval) {
-        planApproval.before(formMessage);
-      }
-
-      formMessage.classList.add(
-        "visible",
-        "success-card"
-      );
-
-      formMessage.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest"
-      });
+      showFinalVideoReady(result);
 
     } catch (error) {
-      window.quickAdMusic.lock("");
-      finalVideoButton.disabled = false;
-      finalVideoButton.textContent =
-        originalButtonText;
+      let recoveredFinalVideo = false;
 
-      planStatus.classList.remove(
-        "approved"
-      );
+      try {
+        const statusResponse =
+          await quickAdProjectFetch(
+            `/api/projects/${currentProjectId}/finalization-status`,
+            {
+              method: "GET"
+            }
+          );
 
-      planStatus.textContent =
-        String(error?.message || "").trim() ||
-        uiText(
-          "api.final_video_generation_failed",
-          "The final video could not be created. Please try again."
+        const statusResult =
+          await statusResponse.json();
+
+        if (
+          statusResponse.ok &&
+          statusResult?.ok === true &&
+          statusResult?.project?.id ===
+            currentProjectId &&
+          statusResult?.project?.status ===
+            "video_ready" &&
+          statusResult?.video &&
+          statusResult?.videoUrl
+        ) {
+          showFinalVideoReady(
+            statusResult
+          );
+
+          recoveredFinalVideo = true;
+        }
+      } catch (reconciliationError) {
+        console.warn(
+          "Final video status reconciliation failed:",
+          reconciliationError
         );
+      }
+
+      if (!recoveredFinalVideo) {
+        window.quickAdMusic.lock("");
+        finalVideoButton.disabled = false;
+        finalVideoButton.textContent =
+          originalButtonText;
+
+        planStatus.classList.remove(
+          "approved"
+        );
+
+        planStatus.textContent =
+          String(error?.message || "").trim() ||
+          uiText(
+            "api.final_video_generation_failed",
+            "The final video could not be created. Please try again."
+          );
+      }
     }
 
     planStatus.scrollIntoView({
@@ -4669,7 +4739,7 @@ form.addEventListener("submit", async (event) => {
     const sceneCount =
       result.storyboard.scenes.length;
 
-    const newProjectImageUrls =
+    const newProjectImagePaths =
       Array.isArray(
         result.project?.assets
           ?.productImages
@@ -4686,7 +4756,7 @@ form.addEventListener("submit", async (event) => {
                 return "";
               }
 
-              return window.Pix2VidRuntime.mediaUrl(
+              return (
                 `/api/projects/${result.project.id}` +
                   `/assets/${encodeURIComponent(storedName)}`
               );
@@ -4694,8 +4764,16 @@ form.addEventListener("submit", async (event) => {
             .filter(Boolean)
         : [];
 
+    const newProjectImageUrls =
+      await Promise.all(
+        newProjectImagePaths.map(
+          (imagePath) =>
+            resolveReviewImageUrl(imagePath)
+        )
+      );
 
-    renderVideoPlanReview(
+
+    await renderVideoPlanReview(
       result.project,
       result.storyboard,
       newProjectImageUrls

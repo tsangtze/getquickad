@@ -1,7 +1,6 @@
 import {
   countSceneEditUnits,
   findSceneExceedingAiOriginal,
-  usesCharacterBasedSceneEditLimit
 } from "../sceneEditLimit.mjs";
 
 function requireContract(
@@ -24,57 +23,27 @@ function scene(
 }
 
 // ------------------------------------------------------------
-// ORIGINAL TEXT SELECTS COUNTING MODE
-// ------------------------------------------------------------
-
-requireContract(
-  !usesCharacterBasedSceneEditLimit(
-    "Make every morning brighter today"
-  ),
-  "Latin-heavy AI original must use word counting."
-);
-
-requireContract(
-  usesCharacterBasedSceneEditLimit(
-    "每天轻松开始"
-  ),
-  "CJK-heavy AI original must use character counting."
-);
-
-requireContract(
-  usesCharacterBasedSceneEditLimit(
-    "每天 AI 轻松开始"
-  ),
-  "Mixed text that is at least 50% CJK letters/numbers must use character counting."
-);
-
-requireContract(
-  !usesCharacterBasedSceneEditLimit(
-    "Pix2Vid makes 视频 easy today"
-  ),
-  "Mixed text below 50% CJK letters/numbers must use word counting."
-);
-
-console.log(
-  "PASS: AI-original text selects edit-limit counting mode."
-);
-
-// ------------------------------------------------------------
-// WORD MODE
+// ALL LANGUAGES USE CHARACTER COUNTING
 // ------------------------------------------------------------
 
 requireContract(
   countSceneEditUnits(
-    "Make   every morning brighter today!",
-    false
-  ) === 5,
-  "Word mode must use whitespace-delimited words."
+    "Make every morning brighter today"
+  ) === 29,
+  "Latin text must count Unicode letters/numbers, not words."
+);
+
+requireContract(
+  countSceneEditUnits(
+    "A B, C!"
+  ) === 3,
+  "Spaces and punctuation must not consume the edit allowance."
 );
 
 const originalEnglish = [
   scene(
     1,
-    "Make every morning brighter today"
+    "Keep hydration close with a bottle for life on the go"
   )
 ];
 
@@ -85,46 +54,32 @@ requireContract(
     editedScenes: [
       scene(
         1,
-        "Start each new morning happier"
+        "Keep hydration close with a bottle for life on go"
       )
     ]
   }) === null,
-  "Same-word-count edit must be accepted."
+  "Shorter character-count edit must be accepted."
 );
 
-requireContract(
+const englishNoSpaceOverflow =
   findSceneExceedingAiOriginal({
     originalScenes:
       originalEnglish,
     editedScenes: [
       scene(
         1,
-        "Make mornings brighter now"
-      )
-    ]
-  }) === null,
-  "Shorter word-count edit must be accepted."
-);
-
-const englishOverflow =
-  findSceneExceedingAiOriginal({
-    originalScenes:
-      originalEnglish,
-    editedScenes: [
-      scene(
-        1,
-        "Make every single morning much brighter"
+        "Keep hydration close with a bottle for life on the gomoreovermorewordffgghhh"
       )
     ]
   });
 
 requireContract(
-  englishOverflow?.sceneNumber === 1,
-  "Edit above AI-original word allowance must be rejected."
+  englishNoSpaceOverflow?.sceneNumber === 1,
+  "Appending characters without spaces must not bypass the AI-original allowance."
 );
 
 console.log(
-  "PASS: word-based AI-original allowance enforced."
+  "PASS: all-language character-based AI-original allowance enforced."
 );
 
 // ------------------------------------------------------------
@@ -139,12 +94,10 @@ const chineseDecorated =
 
 requireContract(
   countSceneEditUnits(
-    chinesePlain,
-    true
+    chinesePlain
   ) ===
     countSceneEditUnits(
-      chineseDecorated,
-      true
+      chineseDecorated
     ),
   "Character mode must exclude punctuation and spaces."
 );
@@ -233,8 +186,8 @@ const numberedOriginal = [
 ];
 
 const reorderedEdited = [
-  scene(2, "alpha beta gamma delta epsilon"),
-  scene(1, "alpha beta gamma")
+  scene(2, "one two three four five"),
+  scene(1, "one two three")
 ];
 
 requireContract(
