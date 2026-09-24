@@ -1036,7 +1036,9 @@ export async function createProjectRouter({
           const storyboardRecord = {
             projectId:
               project.id,
-            ...result
+            ...result,
+            aiOriginalStoryboard:
+              result.storyboard
           };
 
           await fs.writeFile(
@@ -2437,7 +2439,10 @@ export async function createProjectRouter({
         // continuous text cannot bypass the editing allowance; punctuation
         // and spacing do not consume the allowance.
         const originalStoryboard =
-          existingStoryboardRecord?.storyboard;
+          existingStoryboardRecord
+            ?.aiOriginalStoryboard ??
+          existingStoryboardRecord
+            ?.storyboard;
 
 
         if (
