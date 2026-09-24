@@ -802,6 +802,15 @@ export async function correctNarrationToDurationBudget({
   const correctionTargetSeconds =
     durationTierSeconds * 0.85;
 
+  const correctionDurationRatio =
+    correctionTargetSeconds / measuredDuration;
+  const correctionShorteningRatio =
+    1 - correctionDurationRatio;
+  const correctionDurationPercent =
+    correctionDurationRatio * 100;
+  const correctionShorteningPercent =
+    correctionShorteningRatio * 100;
+
   const languageDescription =
     describeLanguage(language);
 
@@ -847,6 +856,7 @@ export async function correctNarrationToDurationBudget({
             `Hard maximum natural narration budget: ${budgetSeconds} seconds.\n` +
             `Correction target natural narration duration: ${correctionTargetSeconds} seconds.\n` +
             `Measured natural narration before correction: ${measuredDuration} seconds.\n` +
+            `Required measured shortening: reduce the combined narration to approximately ${correctionDurationPercent.toFixed(2)}% of its current natural spoken duration, or approximately ${correctionShorteningPercent.toFixed(2)}% shorter than the current narration.\n` +
             `Target language: ${languageDescription}.\n\n` +
             "Shorten these scene narrations while preserving their meaning:\n" +
             JSON.stringify(
@@ -927,6 +937,8 @@ export async function correctNarrationToDurationBudget({
       durationTierSeconds,
       budgetSeconds,
       correctionTargetSeconds,
+      correctionDurationRatio,
+      correctionShorteningRatio,
       measuredBeforeSeconds:
         measuredDuration
     }

@@ -458,6 +458,67 @@ console.log(
     "PASS: Narration correction targets 25.5/38.25/51 seconds while preserving the 90% hard ceiling."
   );
 }
+{
+  const durationTierSeconds = 30;
+  const measuredDuration = 30.552;
+  const correctionTargetSeconds =
+    durationTierSeconds * 0.85;
+
+  const correctionDurationRatio =
+    correctionTargetSeconds / measuredDuration;
+  const correctionShorteningRatio =
+    1 - correctionDurationRatio;
+
+  const correctionDurationPercent =
+    correctionDurationRatio * 100;
+  const correctionShorteningPercent =
+    correctionShorteningRatio * 100;
+
+  if (
+    correctionDurationPercent.toFixed(2) !==
+    "83.46"
+  ) {
+    throw new Error(
+      `Expected measured correction duration target 83.46%; received ${correctionDurationPercent.toFixed(2)}%.`
+    );
+  }
+
+  if (
+    correctionShorteningPercent.toFixed(2) !==
+    "16.54"
+  ) {
+    throw new Error(
+      `Expected measured correction shortening 16.54%; received ${correctionShorteningPercent.toFixed(2)}%.`
+    );
+  }
+
+  const source =
+    await fs.readFile(
+      new URL(
+        "../storyboardGenerator.mjs",
+        import.meta.url
+      ),
+      "utf8"
+    );
+
+  for (const required of [
+    "correctionTargetSeconds / measuredDuration",
+    "1 - correctionDurationRatio",
+    "correctionDurationPercent.toFixed(2)",
+    "correctionShorteningPercent.toFixed(2)",
+    "Required measured shortening:"
+  ]) {
+    if (!source.includes(required)) {
+      throw new Error(
+        `Measured shortening runtime contract missing: ${required}`
+      );
+    }
+  }
+
+  console.log(
+    "PASS: Production 30.552s case requests 83.46% remaining duration / 16.54% measured shortening toward the 25.5s target."
+  );
+}
   const forbiddenFragments = [
     "Use concise, natural  marketing language.",
     "Duration tier:  seconds.",
