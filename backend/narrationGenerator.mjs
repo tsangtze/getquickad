@@ -39,6 +39,292 @@ function countWords(text) {
 
 const MAX_SCENE_AUDIO_TEMPO = 1.21;
 
+function redistributeSceneDurations({
+  sceneTimings,
+  totalDurationSeconds,
+  maxTempo = MAX_SCENE_AUDIO_TEMPO
+}) {
+  if (
+    !Array.isArray(sceneTimings) ||
+    sceneTimings.length === 0
+  ) {
+    throw new Error(
+      "Scene timings are required for redistribution."
+    );
+  }
+
+  const totalDuration =
+    Number(totalDurationSeconds);
+
+  const tempoLimit =
+    Number(maxTempo);
+
+  if (
+    !Number.isFinite(totalDuration) ||
+    totalDuration <= 0
+  ) {
+    throw new Error(
+      "Total video duration must be positive."
+    );
+  }
+
+  if (
+    !Number.isFinite(tempoLimit) ||
+    tempoLimit < 1
+  ) {
+    throw new Error(
+      "Maximum scene audio tempo must be at least 1."
+    );
+  }
+
+  const normalized =
+    sceneTimings.map((timing, index) => {
+      const plannedDuration =
+        Number(timing.sceneDurationSeconds);
+
+      const spokenDuration =
+        Number(timing.spokenDurationSeconds);
+
+      if (
+        !Number.isFinite(plannedDuration) ||
+        plannedDuration <= 0 ||
+        !Number.isFinite(spokenDuration) ||
+        spokenDuration < 0
+      ) {
+        throw new Error(
+          `Scene ${index + 1} has invalid timing data.`
+        );
+      }
+
+      return {
+        sceneNumber:
+          Number(timing.sceneNumber) ||
+          index + 1,
+        plannedDuration,
+        spokenDuration,
+        minimumDuration:
+          spokenDuration / tempoLimit
+      };
+    });
+
+  const plannedTotal =
+    normalized.reduce(
+      (sum, timing) =>
+        sum + timing.plannedDuration,
+      0
+    );
+
+  if (
+    Math.abs(
+      plannedTotal - totalDuration
+    ) > 1e-6
+  ) {
+    throw new Error(
+      "Planned scene durations must equal the total video duration."
+    );
+  }
+
+  const deficits =
+    normalized.map((timing) =>
+      Math.max(
+        0,
+        timing.minimumDuration -
+          timing.plannedDuration
+      )
+    );
+
+  const donorSlack =
+    normalized.map((timing) =>
+      Math.max(
+        0,
+        timing.plannedDuration -
+          timing.minimumDuration
+      )
+    );
+
+  const totalDeficit =
+    deficits.reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+  const totalDonorSlack =
+    donorSlack.reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+  if (
+    totalDeficit >
+    totalDonorSlack + 1e-9
+  ) {
+    const worstIndex =
+      deficits.reduce(
+        (
+          bestIndex,
+          value,
+          index,
+          values
+        ) =>
+          value > values[bestIndex]
+            ? index
+            : bestIndex,
+        0
+      );
+
+    const error =
+      new Error(
+        "Narration cannot fit within the total video duration at the allowed audio tempo."
+      );
+
+    error.code =
+      "NARRATION_TOTAL_TOO_LONG";
+
+    error.sceneNumber =
+      normalized[worstIndex].sceneNumber;
+
+    error.requiredExtraSeconds =
+      totalDeficit -
+      totalDonorSlack;
+
+    error.totalDurationSeconds =
+      totalDuration;
+
+    return {
+      ok: false,
+      error
+    };
+  }
+
+  if (totalDeficit <= 1e-9) {
+    let cursor = 0;
+
+    return {
+      ok: true,
+      redistributed: false,
+      totalDurationSeconds:
+        totalDuration,
+      borrowedDurationSeconds: 0,
+      sceneTimings:
+        normalized.map(
+          (timing, index) => {
+            const startSeconds =
+              cursor;
+
+            const endSeconds =
+              index ===
+              normalized.length - 1
+                ? totalDuration
+                : cursor +
+                  timing.plannedDuration;
+
+            cursor = endSeconds;
+
+            return {
+              sceneNumber:
+                timing.sceneNumber,
+              originalDurationSeconds:
+                timing.plannedDuration,
+              spokenDurationSeconds:
+                timing.spokenDuration,
+              minimumDurationSeconds:
+                timing.minimumDuration,
+              durationSeconds:
+                endSeconds -
+                startSeconds,
+              startSeconds,
+              endSeconds
+            };
+          }
+        )
+    };
+  }
+
+  const adjustedDurations =
+    normalized.map(
+      (timing, index) =>
+        timing.plannedDuration +
+        deficits[index]
+    );
+
+  for (
+    let index = 0;
+    index < adjustedDurations.length;
+    index += 1
+  ) {
+    if (donorSlack[index] <= 0) {
+      continue;
+    }
+
+    const contribution =
+      totalDeficit *
+      (
+        donorSlack[index] /
+        totalDonorSlack
+      );
+
+    adjustedDurations[index] -=
+      contribution;
+  }
+
+  const assignedTotal =
+    adjustedDurations.reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+  adjustedDurations[
+    adjustedDurations.length - 1
+  ] +=
+    totalDuration - assignedTotal;
+
+  let cursor = 0;
+
+  const adjustedSceneTimings =
+    normalized.map(
+      (timing, index) => {
+        const startSeconds =
+          cursor;
+
+        const endSeconds =
+          index ===
+          normalized.length - 1
+            ? totalDuration
+            : cursor +
+              adjustedDurations[index];
+
+        cursor = endSeconds;
+
+        return {
+          sceneNumber:
+            timing.sceneNumber,
+          originalDurationSeconds:
+            timing.plannedDuration,
+          spokenDurationSeconds:
+            timing.spokenDuration,
+          minimumDurationSeconds:
+            timing.minimumDuration,
+          durationSeconds:
+            endSeconds -
+            startSeconds,
+          startSeconds,
+          endSeconds
+        };
+      }
+    );
+
+  return {
+    ok: true,
+    redistributed: true,
+    totalDurationSeconds:
+      totalDuration,
+    borrowedDurationSeconds:
+      totalDeficit,
+    sceneTimings:
+      adjustedSceneTimings
+  };
+}
+
 function buildSceneAudioFilter({
   inputIndex,
   duration,
@@ -338,6 +624,51 @@ export async function generateNarration({
       }
     );
 
+    const timingRedistribution =
+      redistributeSceneDurations({
+        totalDurationSeconds:
+          storyboard.totalDurationSeconds,
+        sceneTimings:
+          storyboard.scenes.map(
+            (scene, sceneIndex) => ({
+              sceneNumber:
+                scene.sceneNumber,
+              sceneDurationSeconds:
+                Number(scene.endSeconds) -
+                Number(scene.startSeconds),
+              spokenDurationSeconds:
+                sceneAudioPaths[
+                  sceneIndex
+                ].spokenDurationSeconds
+            })
+          )
+      });
+
+    if (!timingRedistribution.ok) {
+      throw timingRedistribution.error;
+    }
+
+    const adjustedSceneTimings =
+      timingRedistribution.sceneTimings;
+
+    const adjustedStoryboard = {
+      ...storyboard,
+      scenes:
+        storyboard.scenes.map(
+          (scene, sceneIndex) => ({
+            ...scene,
+            startSeconds:
+              adjustedSceneTimings[
+                sceneIndex
+              ].startSeconds,
+            endSeconds:
+              adjustedSceneTimings[
+                sceneIndex
+              ].endSeconds
+          })
+        )
+    };
+
     const ffmpegArguments = [
       "-y"
     ];
@@ -354,7 +685,10 @@ export async function generateNarration({
         (sceneAudio, sceneIndex) =>
           buildSceneAudioFilter({
             inputIndex: sceneIndex,
-            duration: sceneAudio.duration,
+            duration:
+              adjustedSceneTimings[
+                sceneIndex
+              ].durationSeconds,
             spokenDurationSeconds:
               sceneAudio.spokenDurationSeconds,
             sceneNumber:
@@ -467,19 +801,25 @@ export async function generateNarration({
     sceneCount:
       storyboard.scenes.length,
     sceneTimings:
-      storyboard.scenes.map(
-        (scene, sceneIndex) => ({
+      adjustedSceneTimings.map(
+        (timing) => ({
           sceneNumber:
-            scene.sceneNumber,
+            timing.sceneNumber,
           sceneDurationSeconds:
-            scene.endSeconds -
-            scene.startSeconds,
+            timing.durationSeconds,
           spokenDurationSeconds:
-            sceneAudioPaths[
-              sceneIndex
-            ].spokenDurationSeconds
+            timing.spokenDurationSeconds,
+          startSeconds:
+            timing.startSeconds,
+          endSeconds:
+            timing.endSeconds
         })
       ),
+    timingRedistributed:
+      timingRedistribution.redistributed,
+    borrowedDurationSeconds:
+      timingRedistribution.borrowedDurationSeconds,
+    adjustedStoryboard,
     durationSeconds:
       storyboard.totalDurationSeconds,
     disclosure:
@@ -488,5 +828,6 @@ export async function generateNarration({
 }
 export const __narrationGeneratorTestHelpers = {
   buildSceneAudioFilter,
+  redistributeSceneDurations,
   MAX_SCENE_AUDIO_TEMPO
 };
