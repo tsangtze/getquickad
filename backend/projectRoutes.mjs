@@ -2666,6 +2666,7 @@ export async function createProjectRouter({
           await renderVideo({
             project,
             storyboard:
+              narration.adjustedStoryboard ??
               approvedStoryboard,
             projectDirectory,
             narrationMetadata: narration,
@@ -2847,6 +2848,41 @@ export async function createProjectRouter({
             JSON.stringify(project, null, 2),
             "utf8"
           ).catch(() => {});
+        }
+
+        if (
+          error?.code ===
+          "NARRATION_TOTAL_TOO_LONG"
+        ) {
+          const sceneNumber =
+            Number(error?.sceneNumber);
+
+          response.status(400).json({
+            ok: false,
+            code:
+              "NARRATION_TOTAL_TOO_LONG",
+            sceneNumber:
+              Number.isInteger(sceneNumber) &&
+              sceneNumber > 0
+                ? sceneNumber
+                : null,
+            params:
+              Number.isInteger(sceneNumber) &&
+              sceneNumber > 0
+                ? {
+                    number:
+                      sceneNumber
+                  }
+                : {},
+            error:
+              Number.isInteger(sceneNumber) &&
+              sceneNumber > 0
+                ? `Automatic timing adjustment could not fit Scene ${sceneNumber} narration naturally within the selected video duration. Shorten that scene's caption slightly, then confirm the scene again.`
+                : "Automatic timing adjustment could not fit the narration naturally within the selected video duration. Shorten the longest scene caption slightly, then confirm the scene again.",
+            stage:
+              generationStage
+          });
+          return;
         }
 
         if (

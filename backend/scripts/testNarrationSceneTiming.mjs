@@ -117,3 +117,172 @@ console.log(
 console.log(
   "PASS: Narration requiring more than 1.21x tempo is rejected instead of truncated."
 );
+
+{
+  const {
+    redistributeSceneDurations
+  } = __narrationGeneratorTestHelpers;
+
+  const result =
+    redistributeSceneDurations({
+      totalDurationSeconds: 45,
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 7,
+          spokenDurationSeconds: 6
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 7,
+          spokenDurationSeconds: 6
+        },
+        {
+          sceneNumber: 3,
+          sceneDurationSeconds: 6,
+          spokenDurationSeconds: 5
+        },
+        {
+          sceneNumber: 4,
+          sceneDurationSeconds: 6,
+          spokenDurationSeconds: 7.5
+        },
+        {
+          sceneNumber: 5,
+          sceneDurationSeconds: 9,
+          spokenDurationSeconds: 8
+        },
+        {
+          sceneNumber: 6,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 9
+        }
+      ]
+    });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.redistributed, true);
+
+  assert.ok(
+    result.sceneTimings[3].durationSeconds >
+      6,
+    "Scene 4 must receive borrowed time."
+  );
+
+  assert.ok(
+    Math.abs(
+      result.sceneTimings.at(-1).endSeconds -
+        45
+    ) < 1e-9,
+    "Final timeline must remain exactly 45 seconds."
+  );
+
+  for (const timing of result.sceneTimings) {
+    assert.ok(
+      timing.durationSeconds + 1e-9 >=
+        timing.minimumDurationSeconds,
+      `Scene ${timing.sceneNumber} exceeds the allowed tempo after redistribution.`
+    );
+  }
+
+  console.log(
+    "PASS: Global spare scene time rescues an overlong scene."
+  );
+}
+
+{
+  const {
+    redistributeSceneDurations
+  } = __narrationGeneratorTestHelpers;
+
+  const result =
+    redistributeSceneDurations({
+      totalDurationSeconds: 45,
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 7,
+          spokenDurationSeconds: 6
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 7,
+          spokenDurationSeconds: 6
+        },
+        {
+          sceneNumber: 3,
+          sceneDurationSeconds: 6,
+          spokenDurationSeconds: 5
+        },
+        {
+          sceneNumber: 4,
+          sceneDurationSeconds: 6,
+          spokenDurationSeconds: 6
+        },
+        {
+          sceneNumber: 5,
+          sceneDurationSeconds: 9,
+          spokenDurationSeconds: 8
+        },
+        {
+          sceneNumber: 6,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 9
+        }
+      ]
+    });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.redistributed, false);
+
+  assert.deepEqual(
+    result.sceneTimings.map(
+      (timing) => timing.durationSeconds
+    ),
+    [7, 7, 6, 6, 9, 10]
+  );
+
+  console.log(
+    "PASS: Original AI scene timing remains unchanged when redistribution is unnecessary."
+  );
+}
+
+{
+  const {
+    redistributeSceneDurations
+  } = __narrationGeneratorTestHelpers;
+
+  const result =
+    redistributeSceneDurations({
+      totalDurationSeconds: 10,
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 13
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 13
+        }
+      ]
+    });
+
+  assert.equal(result.ok, false);
+
+  assert.equal(
+    result.error.code,
+    "NARRATION_TOTAL_TOO_LONG"
+  );
+
+  assert.ok(
+    Number.isInteger(
+      result.error.sceneNumber
+    )
+  );
+
+  console.log(
+    "PASS: Impossible total narration remains a controlled failure."
+  );
+}
