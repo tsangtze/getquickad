@@ -286,3 +286,76 @@ console.log(
     "PASS: Impossible total narration remains a controlled failure."
   );
 }
+{
+  const generatorSource =
+    await import("node:fs/promises")
+      .then(({ readFile }) =>
+        readFile(
+          new URL(
+            "../narrationGenerator.mjs",
+            import.meta.url
+          ),
+          "utf8"
+        )
+      );
+
+  const sceneAudioDeclaration =
+    generatorSource.indexOf(
+      "  const sceneAudioPaths = [];"
+    );
+
+  const tryStart =
+    generatorSource.indexOf(
+      "  try {",
+      sceneAudioDeclaration
+    );
+
+  assert.ok(
+    sceneAudioDeclaration >= 0 &&
+      tryStart > sceneAudioDeclaration,
+    "generateNarration try block must be locatable."
+  );
+
+  const beforeTry =
+    generatorSource.slice(
+      sceneAudioDeclaration,
+      tryStart
+    );
+
+  assert.match(
+    beforeTry,
+    /let timingRedistribution;/
+  );
+
+  assert.match(
+    beforeTry,
+    /let adjustedSceneTimings;/
+  );
+
+  assert.match(
+    beforeTry,
+    /let adjustedStoryboard;/
+  );
+
+  const afterTry =
+    generatorSource.slice(tryStart);
+
+  assert.doesNotMatch(
+    afterTry,
+    /const timingRedistribution\s*=/
+  );
+
+  assert.doesNotMatch(
+    afterTry,
+    /const adjustedSceneTimings\s*=/
+  );
+
+  assert.doesNotMatch(
+    afterTry,
+    /const adjustedStoryboard\s*=/
+  );
+
+  console.log(
+    "PASS: generateNarration redistribution state survives the try/finally scope."
+  );
+}
