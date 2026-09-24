@@ -99,7 +99,31 @@ function t(key, params = {}){
   }
   return value;
 }
+function applyLocalizedDemoVideo(){
+  const video =
+    document.getElementById('localized-demo-video');
+
+  const source =
+    document.getElementById('localized-demo-source');
+
+  if(!video || !source) return;
+
+  const demoVideos = {
+    en: '/assets/01-en.mp4',
+    es: '/assets/02-es.mp4'
+  };
+
+  const nextSrc =
+    demoVideos[currentLang] || demoVideos.en;
+
+  if(source.getAttribute('src') !== nextSrc){
+    source.setAttribute('src', nextSrc);
+    video.load();
+  }
+}
+
 function applyTranslations(){
+  applyLocalizedDemoVideo();
   const brandLocalized = document.querySelector('.brand-localized');
   if (brandLocalized) {
     brandLocalized.hidden = false;
