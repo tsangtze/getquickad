@@ -522,6 +522,9 @@ export async function generateNarration({
   );
 
   const sceneAudioPaths = [];
+  let timingRedistribution;
+  let adjustedSceneTimings;
+  let adjustedStoryboard;
 
   try {
     for (
@@ -624,7 +627,7 @@ export async function generateNarration({
       }
     );
 
-    const timingRedistribution =
+    timingRedistribution =
       redistributeSceneDurations({
         totalDurationSeconds:
           storyboard.totalDurationSeconds,
@@ -648,10 +651,10 @@ export async function generateNarration({
       throw timingRedistribution.error;
     }
 
-    const adjustedSceneTimings =
+    adjustedSceneTimings =
       timingRedistribution.sceneTimings;
 
-    const adjustedStoryboard = {
+    adjustedStoryboard = {
       ...storyboard,
       scenes:
         storyboard.scenes.map(
