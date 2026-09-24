@@ -729,6 +729,7 @@ function mergeNarrationCorrection({
 
 export async function correctNarrationToDurationBudget({
   storyboard,
+  imageCount,
   durationTierSeconds,
   measuredNarrationDurationSeconds,
   language = "en",
@@ -737,6 +738,16 @@ export async function correctNarrationToDurationBudget({
     process.env.OPENAI_MODEL ||
     "gpt-5.6-luna"
 }) {
+  if (
+    !Number.isInteger(imageCount) ||
+    imageCount < 1 ||
+    imageCount > 10
+  ) {
+    throw new Error(
+      "imageCount must be an integer from 1 through 10."
+    );
+  }
+
   const allowedDurationTiers =
     [30, 45, 60];
 
@@ -871,14 +882,7 @@ export async function correctNarrationToDurationBudget({
     validateStoryboard(
       correctedStoryboard,
       {
-        imageCount:
-          Math.max(
-            1,
-            ...correctedStoryboard.scenes.map(
-              (scene) =>
-                Number(scene.imageIndex) + 1
-            )
-          ),
+        imageCount,
         minDurationSeconds:
           getTargetDurationFloor(
             durationTierSeconds

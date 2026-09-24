@@ -48,6 +48,12 @@ assert.match(
 
 assert.match(
   routeSource,
+  /await\s+correctNarrationToDurationBudget\(\{[\s\S]*?imageCount:\s*project\.assets\.productImages\.length,[\s\S]*?durationTierSeconds:\s*selectedMaxDurationSeconds/,
+  "Narration correction must use the project's actual uploaded product-image count."
+);
+
+assert.match(
+  routeSource,
   /finalStoryboard\s*=\s*correction\.storyboard/,
   "The corrected synchronized storyboard must become the working storyboard."
 );

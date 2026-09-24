@@ -2634,6 +2634,8 @@ export async function createProjectRouter({
             await correctNarrationToDurationBudget({
               storyboard:
                 finalStoryboard,
+              imageCount:
+                project.assets.productImages.length,
               durationTierSeconds:
                 selectedMaxDurationSeconds,
               measuredNarrationDurationSeconds:
