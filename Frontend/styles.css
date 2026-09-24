@@ -3280,7 +3280,7 @@ input::placeholder {
     grid-row: 2;
     width: 100%;
     min-width: 0;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     grid-template-rows: auto auto;
     column-gap: 8px;
     row-gap: 12px;
@@ -3306,8 +3306,15 @@ input::placeholder {
     white-space: nowrap;
   }
 
+  #lang-dropdown {
+    left: 0;
+    right: auto !important;
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
+  }
+
   .site-nav > .account-button {
-    grid-column: 3 / 5;
+    grid-column: 3 / 4;
     grid-row: 1;
     width: 100%;
     min-width: 0;
@@ -3318,7 +3325,7 @@ input::placeholder {
   }
 
   .site-nav > a[data-i18n="nav.billing"] {
-    grid-column: 5 / 7;
+    grid-column: 4 / 6;
     grid-row: 1;
   }
 
@@ -3328,7 +3335,7 @@ input::placeholder {
   }
 
   #my-videos-nav {
-    grid-column: 4 / 7;
+    grid-column: 4 / 6;
     grid-row: 2;
   }
 
