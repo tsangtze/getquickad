@@ -389,7 +389,8 @@ console.log(
   const requiredFragments = [
     '${languageDescription} marketing language',
     'Duration tier: ${durationTierSeconds} seconds.',
-    'Maximum natural narration budget: ${budgetSeconds} seconds.',
+    'Hard maximum natural narration budget: ${budgetSeconds} seconds.',
+    'Correction target natural narration duration: ${correctionTargetSeconds} seconds.',
     'Measured natural narration before correction: ${measuredDuration} seconds.',
     'Target language: ${languageDescription}.',
     '${validation.errors.join("; ")}'
@@ -403,10 +404,65 @@ console.log(
     }
   }
 
+{
+  const correctionTargetRatio = 0.85;
+
+  for (const [durationTierSeconds, expectedTargetSeconds] of [
+    [30, 25.5],
+    [45, 38.25],
+    [60, 51]
+  ]) {
+    const correctionTargetSeconds =
+      durationTierSeconds * correctionTargetRatio;
+
+    if (
+      correctionTargetSeconds !==
+      expectedTargetSeconds
+    ) {
+      throw new Error(
+        `Unexpected narration correction target for ${durationTierSeconds}s tier: ${correctionTargetSeconds}s.`
+      );
+    }
+  }
+
+  const source =
+    await fs.readFile(
+      new URL(
+        "../storyboardGenerator.mjs",
+        import.meta.url
+      ),
+      "utf8"
+    );
+
+  if (
+    !source.includes(
+      "durationTierSeconds * 0.85"
+    )
+  ) {
+    throw new Error(
+      "Narration correction runtime no longer uses the 85% target."
+    );
+  }
+
+  if (
+    !source.includes(
+      "durationTierSeconds * 0.9"
+    )
+  ) {
+    throw new Error(
+      "Narration correction runtime no longer preserves the 90% hard ceiling."
+    );
+  }
+
+  console.log(
+    "PASS: Narration correction targets 25.5/38.25/51 seconds while preserving the 90% hard ceiling."
+  );
+}
   const forbiddenFragments = [
     "Use concise, natural  marketing language.",
     "Duration tier:  seconds.",
-    "Maximum natural narration budget:  seconds.",
+    "Hard maximum natural narration budget:  seconds.",
+    "Correction target natural narration duration:  seconds.",
     "Measured natural narration before correction:  seconds.",
     "Target language: ."
   ];

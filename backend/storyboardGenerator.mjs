@@ -799,6 +799,9 @@ export async function correctNarrationToDurationBudget({
   const budgetSeconds =
     durationTierSeconds * 0.9;
 
+  const correctionTargetSeconds =
+    durationTierSeconds * 0.85;
+
   const languageDescription =
     describeLanguage(language);
 
@@ -833,7 +836,7 @@ export async function correctNarrationToDurationBudget({
             "Each caption segment must be 1-60 characters and contain 1-2 emphasis terms copied exactly from that segment text. " +
             "Every spoken word must appear in the caption segments in the same order. " +
             "The joined caption segments become the complete narration for that scene. " +
-            "Shorten the combined narration enough that its natural spoken duration is comfortably at or below the supplied duration budget. " +
+            "Shorten the combined narration toward the supplied correction target. The correction target is the desired natural spoken duration; the hard maximum is only the backend acceptance ceiling. Keep the corrected narration at or below the correction target when possible, and never intentionally target the hard maximum. " +
             `Use concise, natural ${languageDescription} marketing language. ` +
             "Do not mention this correction process."
         },
@@ -841,7 +844,8 @@ export async function correctNarrationToDurationBudget({
           role: "user",
           content:
             `Duration tier: ${durationTierSeconds} seconds.\n` +
-            `Maximum natural narration budget: ${budgetSeconds} seconds.\n` +
+            `Hard maximum natural narration budget: ${budgetSeconds} seconds.\n` +
+            `Correction target natural narration duration: ${correctionTargetSeconds} seconds.\n` +
             `Measured natural narration before correction: ${measuredDuration} seconds.\n` +
             `Target language: ${languageDescription}.\n\n` +
             "Shorten these scene narrations while preserving their meaning:\n" +
@@ -922,6 +926,7 @@ export async function correctNarrationToDurationBudget({
         "narration_duration_budget",
       durationTierSeconds,
       budgetSeconds,
+      correctionTargetSeconds,
       measuredBeforeSeconds:
         measuredDuration
     }
