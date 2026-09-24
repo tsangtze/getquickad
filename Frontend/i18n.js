@@ -109,15 +109,31 @@ function applyLocalizedDemoVideo(){
   if(!video || !source) return;
 
   const demoVideos = {
-    en: '/assets/01-en.mp4',
-    es: '/assets/02-es.mp4'
+    en: {
+      src: '/assets/01-en.mp4',
+      poster: '/assets/01-en-poster.jpg'
+    },
+    es: {
+      src: '/assets/02-es.mp4',
+      poster: '/assets/02-es-poster.jpg'
+    }
   };
 
-  const nextSrc =
+  const demo =
     demoVideos[currentLang] || demoVideos.en;
 
-  if(source.getAttribute('src') !== nextSrc){
-    source.setAttribute('src', nextSrc);
+  const sourceChanged =
+    source.getAttribute('src') !== demo.src;
+
+  if(sourceChanged){
+    source.setAttribute('src', demo.src);
+  }
+
+  if(video.getAttribute('poster') !== demo.poster){
+    video.setAttribute('poster', demo.poster);
+  }
+
+  if(sourceChanged){
     video.load();
   }
 }
