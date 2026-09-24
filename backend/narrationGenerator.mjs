@@ -395,6 +395,85 @@ function buildSceneAudioFilter({
     `[sceneAudio${inputIndex}]`
   );
 }
+const NARRATION_DURATION_BUDGET_RATIO = 0.9;
+
+function getNarrationDurationBudget(
+  totalDurationSeconds
+) {
+  const duration =
+    Number(totalDurationSeconds);
+
+  if (
+    !Number.isFinite(duration) ||
+    duration <= 0
+  ) {
+    throw new Error(
+      "Video duration must be positive."
+    );
+  }
+
+  return (
+    duration *
+    NARRATION_DURATION_BUDGET_RATIO
+  );
+}
+function createNarrationDurationBudgetError({
+  measuredDurationSeconds,
+  budgetSeconds,
+  durationTierSeconds
+}) {
+  const error = new Error(
+    `Measured natural narration duration ${Number(measuredDurationSeconds).toFixed(3)}s exceeds the ${Number(budgetSeconds).toFixed(3)}s narration budget for the ${Number(durationTierSeconds)}s duration tier.`
+  );
+
+  error.code =
+    "NARRATION_DURATION_BUDGET_EXCEEDED";
+
+  error.measuredDurationSeconds =
+    Number(measuredDurationSeconds);
+
+  error.budgetSeconds =
+    Number(budgetSeconds);
+
+  error.durationTierSeconds =
+    Number(durationTierSeconds);
+
+  error.budgetRatio =
+    NARRATION_DURATION_BUDGET_RATIO;
+
+  return error;
+}
+
+function evaluateNarrationDurationBudget({
+  measuredDurationSeconds,
+  totalDurationSeconds
+}) {
+  const measuredDuration =
+    Number(measuredDurationSeconds);
+
+  if (
+    !Number.isFinite(measuredDuration) ||
+    measuredDuration < 0
+  ) {
+    throw new Error(
+      "Measured narration duration must be non-negative."
+    );
+  }
+
+  const budgetSeconds =
+    getNarrationDurationBudget(
+      totalDurationSeconds
+    );
+
+  return {
+    measuredDurationSeconds:
+      measuredDuration,
+    budgetSeconds,
+    exceeded:
+      measuredDuration > budgetSeconds
+  };
+}
+
 function buildNarrationText(storyboard) {
   if (
     !Array.isArray(storyboard?.scenes) ||
@@ -469,6 +548,7 @@ function selectVoice(
 export async function generateNarration({
   storyboard,
   projectDirectory,
+  durationTierSeconds,
   narratorChoice = "automatic",
   apiKey = process.env.OPENAI_API_KEY,
   model =
@@ -521,7 +601,23 @@ export async function generateNarration({
     storedName
   );
 
+  const resolvedDurationTierSeconds =
+    Number(durationTierSeconds);
+
+  if (
+    ![30, 45, 60].includes(
+      resolvedDurationTierSeconds
+    )
+  ) {
+    throw new Error(
+      "durationTierSeconds must be 30, 45, or 60."
+    );
+  }
+
   const sceneAudioPaths = [];
+  let measuredNarrationDurationSeconds;
+  let narrationDurationBudgetSeconds;
+  let narrationDurationBudgetExceeded;
   let timingRedistribution;
   let adjustedSceneTimings;
   let adjustedStoryboard;
@@ -626,6 +722,41 @@ export async function generateNarration({
         force: true
       }
     );
+
+    measuredNarrationDurationSeconds =
+      sceneAudioPaths.reduce(
+        (sum, sceneAudio) =>
+          sum +
+          Number(
+            sceneAudio.spokenDurationSeconds
+          ),
+        0
+      );
+
+    const narrationBudgetEvaluation =
+      evaluateNarrationDurationBudget({
+        measuredDurationSeconds:
+          measuredNarrationDurationSeconds,
+        totalDurationSeconds:
+          resolvedDurationTierSeconds
+      });
+
+    narrationDurationBudgetSeconds =
+      narrationBudgetEvaluation.budgetSeconds;
+
+    narrationDurationBudgetExceeded =
+      narrationBudgetEvaluation.exceeded;
+
+    if (narrationDurationBudgetExceeded) {
+      throw createNarrationDurationBudgetError({
+        measuredDurationSeconds:
+          measuredNarrationDurationSeconds,
+        budgetSeconds:
+          narrationDurationBudgetSeconds,
+        durationTierSeconds:
+          resolvedDurationTierSeconds
+      });
+    }
 
     timingRedistribution =
       redistributeSceneDurations({
@@ -818,6 +949,11 @@ export async function generateNarration({
             timing.endSeconds
         })
       ),
+    measuredNarrationDurationSeconds,
+    narrationDurationBudgetSeconds,
+    narrationDurationBudgetExceeded,
+    narrationDurationBudgetRatio:
+      NARRATION_DURATION_BUDGET_RATIO,
     timingRedistributed:
       timingRedistribution.redistributed,
     borrowedDurationSeconds:
@@ -830,7 +966,11 @@ export async function generateNarration({
   };
 }
 export const __narrationGeneratorTestHelpers = {
+  createNarrationDurationBudgetError,
   buildSceneAudioFilter,
   redistributeSceneDurations,
+  getNarrationDurationBudget,
+  evaluateNarrationDurationBudget,
+  NARRATION_DURATION_BUDGET_RATIO,
   MAX_SCENE_AUDIO_TEMPO
 };

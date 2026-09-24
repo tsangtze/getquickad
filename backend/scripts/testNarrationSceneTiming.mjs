@@ -6,12 +6,112 @@ import {
 
 const {
   buildSceneAudioFilter,
+  getNarrationDurationBudget,
+  evaluateNarrationDurationBudget,
+  createNarrationDurationBudgetError,
+  NARRATION_DURATION_BUDGET_RATIO,
   MAX_SCENE_AUDIO_TEMPO
 } = __narrationGeneratorTestHelpers;
 
 assert.equal(
   MAX_SCENE_AUDIO_TEMPO,
   1.21
+);
+
+assert.equal(
+  NARRATION_DURATION_BUDGET_RATIO,
+  0.9
+);
+
+assert.equal(
+  getNarrationDurationBudget(30),
+  27
+);
+
+assert.equal(
+  getNarrationDurationBudget(45),
+  40.5
+);
+
+assert.equal(
+  getNarrationDurationBudget(60),
+  54
+);
+
+assert.throws(
+  () => getNarrationDurationBudget(0),
+  /Video duration must be positive/
+);
+
+console.log(
+  "PASS: Narration duration budget is capped at 90% of video duration."
+);
+
+const narrationBudgetUnder =
+  evaluateNarrationDurationBudget({
+    measuredDurationSeconds: 26.999,
+    totalDurationSeconds: 30
+  });
+
+assert.equal(
+  narrationBudgetUnder.budgetSeconds,
+  27
+);
+
+assert.equal(
+  narrationBudgetUnder.exceeded,
+  false
+);
+
+const narrationBudgetExact =
+  evaluateNarrationDurationBudget({
+    measuredDurationSeconds: 27,
+    totalDurationSeconds: 30
+  });
+
+assert.equal(
+  narrationBudgetExact.exceeded,
+  false
+);
+
+const narrationBudgetOver =
+  evaluateNarrationDurationBudget({
+    measuredDurationSeconds: 27.001,
+    totalDurationSeconds: 30
+  });
+
+assert.equal(
+  narrationBudgetOver.exceeded,
+  true
+);
+
+const koreanProductionCase =
+  evaluateNarrationDurationBudget({
+    measuredDurationSeconds: 33.072,
+    totalDurationSeconds: 30
+  });
+
+assert.equal(
+  koreanProductionCase.budgetSeconds,
+  27
+);
+
+assert.equal(
+  koreanProductionCase.exceeded,
+  true
+);
+
+assert.throws(
+  () =>
+    evaluateNarrationDurationBudget({
+      measuredDurationSeconds: -1,
+      totalDurationSeconds: 30
+    }),
+  /Measured narration duration must be non-negative/
+);
+
+console.log(
+  "PASS: Measured natural narration is evaluated against the 90% tier budget."
 );
 
 const natural =
@@ -357,5 +457,48 @@ console.log(
 
   console.log(
     "PASS: generateNarration redistribution state survives the try/finally scope."
+  );
+}
+
+{
+  const error =
+    createNarrationDurationBudgetError({
+      measuredDurationSeconds: 33.072,
+      budgetSeconds: 27,
+      durationTierSeconds: 30
+    });
+
+  assert.equal(
+    error.code,
+    "NARRATION_DURATION_BUDGET_EXCEEDED"
+  );
+
+  assert.equal(
+    error.measuredDurationSeconds,
+    33.072
+  );
+
+  assert.equal(
+    error.budgetSeconds,
+    27
+  );
+
+  assert.equal(
+    error.durationTierSeconds,
+    30
+  );
+
+  assert.equal(
+    error.budgetRatio,
+    0.9
+  );
+
+  assert.match(
+    error.message,
+    /33\.072s exceeds the 27\.000s narration budget/
+  );
+
+  console.log(
+    "PASS: Measured narration above 90% produces a controlled correction request."
   );
 }

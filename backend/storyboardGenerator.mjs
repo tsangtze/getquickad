@@ -22,6 +22,32 @@ const AutoStoryboardResultSchema = z
   })
   .strict();
 
+const NarrationCorrectionSchema = z
+  .object({
+    scenes: z.array(
+      z
+        .object({
+          sceneNumber: z.number().int(),
+          captionSegments: z
+            .array(
+              z
+                .object({
+                  text: z.string(),
+                  emphasisWords: z
+                    .array(z.string())
+                    .min(1)
+                    .max(2)
+                })
+                .strict()
+            )
+            .min(1)
+            .max(3)
+        })
+        .strict()
+    )
+  })
+  .strict();
+
 function countWords(text) {
   return String(text)
     .trim()
@@ -144,6 +170,10 @@ ${durationMode === "manual"
 - Every caption-segment emphasisWords item must appear exactly in that segment's text. Do not invent, translate, reword, or change the capitalization of the selected text.
 - Keep caption-segment emphasisWords appropriate for the target language, including Chinese, Japanese, and Korean.
 - COMPATIBILITY FIELDS: For each newly generated scene, set caption exactly equal to captionSegments[0].text and set the scene-level emphasisWords exactly equal to captionSegments[0].emphasisWords.
+- GLOBAL NARRATION BUDGET: Estimate the natural spoken duration of all narration across the complete video in the target language. Keep the combined natural narration duration at or below 90% of the selected duration tier.
+- For a 30-second duration tier, target no more than 27 seconds of natural narration. For 45 seconds, target no more than 40.5 seconds. For 60 seconds, target no more than 54 seconds.
+- Treat this as a speaking-duration budget, not merely a word-count budget. Account for the target language, punctuation, phrasing, numbers, and natural speaking rhythm. This is especially important for Chinese, Japanese, Korean, and other languages where whitespace word counts do not reliably predict spoken duration.
+- Leave the remaining time as natural breathing room for transitions and visual pacing. Do not deliberately fill the full video duration with continuous narration.
 - Keep each scene narration short enough to be spoken naturally within that scene's assigned duration.
 - When a scene would otherwise contain too little narration for its assigned duration, enrich the caption/narration with useful, truthful details supported by the customer's supplied information or clearly visible image content.
 - If there is not enough truthful material to enrich that scene naturally, shorten that scene and redistribute the available time among other scenes that can support useful narration.
@@ -582,7 +612,10 @@ function normalizeGeneratedCaptionSegments(storyboard) {
   };
 }
 export const __storyboardGeneratorTestHelpers = {
+  buildSystemInstructions,
   normalizeGeneratedCaptionSegments,
+  mergeNarrationCorrection,
+  normalizeGeneratedStoryboard,
   splitCaptionText
 };
 function normalizeWordCount(storyboard) {
@@ -594,6 +627,300 @@ function normalizeWordCount(storyboard) {
     ...storyboard,
     narrationWordCount:
       countWords(narration)
+  };
+}
+
+function normalizeGeneratedStoryboard(
+  storyboard
+) {
+  return normalizeWordCount(
+    normalizeGeneratedCaptionSegments(
+      storyboard
+    )
+  );
+}
+
+function mergeNarrationCorrection({
+  storyboard,
+  correctedScenes
+}) {
+  if (
+    !storyboard ||
+    !Array.isArray(storyboard.scenes)
+  ) {
+    throw new Error(
+      "Storyboard is required for narration correction."
+    );
+  }
+
+  if (
+    !Array.isArray(correctedScenes) ||
+    correctedScenes.length !==
+      storyboard.scenes.length
+  ) {
+    throw new Error(
+      "Narration correction must contain exactly one entry for every scene."
+    );
+  }
+
+  const correctionBySceneNumber =
+    new Map();
+
+  for (const correction of correctedScenes) {
+    const sceneNumber =
+      Number(correction?.sceneNumber);
+
+    if (
+      !Number.isInteger(sceneNumber) ||
+      correctionBySceneNumber.has(
+        sceneNumber
+      )
+    ) {
+      throw new Error(
+        "Narration correction scene numbers must be unique integers."
+      );
+    }
+
+    if (
+      !Array.isArray(
+        correction.captionSegments
+      ) ||
+      correction.captionSegments.length < 1 ||
+      correction.captionSegments.length > 3
+    ) {
+      throw new Error(
+        `Scene ${sceneNumber} narration correction must contain 1-3 caption segments.`
+      );
+    }
+
+    correctionBySceneNumber.set(
+      sceneNumber,
+      correction.captionSegments
+    );
+  }
+
+  const correctedStoryboard = {
+    ...storyboard,
+    scenes: storyboard.scenes.map(
+      (scene) => {
+        const captionSegments =
+          correctionBySceneNumber.get(
+            scene.sceneNumber
+          );
+
+        if (!captionSegments) {
+          throw new Error(
+            `Narration correction is missing scene ${scene.sceneNumber}.`
+          );
+        }
+
+        return {
+          ...scene,
+          captionSegments
+        };
+      }
+    )
+  };
+
+  return normalizeGeneratedStoryboard(
+    correctedStoryboard
+  );
+}
+
+export async function correctNarrationToDurationBudget({
+  storyboard,
+  durationTierSeconds,
+  measuredNarrationDurationSeconds,
+  language = "en",
+  apiKey = process.env.OPENAI_API_KEY,
+  model =
+    process.env.OPENAI_MODEL ||
+    "gpt-5.6-luna"
+}) {
+  const allowedDurationTiers =
+    [30, 45, 60];
+
+  if (
+    !allowedDurationTiers.includes(
+      durationTierSeconds
+    )
+  ) {
+    throw new Error(
+      "durationTierSeconds must be 30, 45, or 60."
+    );
+  }
+
+  const measuredDuration =
+    Number(
+      measuredNarrationDurationSeconds
+    );
+
+  if (
+    !Number.isFinite(measuredDuration) ||
+    measuredDuration < 0
+  ) {
+    throw new Error(
+      "Measured narration duration must be non-negative."
+    );
+  }
+
+  if (
+    !storyboard ||
+    !Array.isArray(storyboard.scenes) ||
+    storyboard.scenes.length === 0
+  ) {
+    throw new Error(
+      "Storyboard is required for narration correction."
+    );
+  }
+
+  if (!apiKey) {
+    const error = new Error(
+      "OPENAI_API_KEY is not configured."
+    );
+
+    error.code =
+      "OPENAI_API_KEY_MISSING";
+
+    throw error;
+  }
+
+  const budgetSeconds =
+    durationTierSeconds * 0.9;
+
+  const languageDescription =
+    describeLanguage(language);
+
+  const originalScenes =
+    storyboard.scenes.map(
+      (scene) => ({
+        sceneNumber:
+          scene.sceneNumber,
+        narration:
+          scene.narration
+      })
+    );
+
+  const client = new OpenAI({
+    apiKey
+  });
+
+  const response =
+    await client.responses.parse({
+      model,
+      store: false,
+      input: [
+        {
+          role: "system",
+          content:
+            "You shorten narration for a vertical promotional video. " +
+            "Return only corrected caption segments for every scene. " +
+            "Preserve the original meaning, product facts, scene order, CTA intent, brand names, URLs, and target language. " +
+            "Do not add new claims or facts. " +
+            "Do not change scene numbers. " +
+            "Each scene must contain 1-3 caption segments. " +
+            "Each caption segment must be 1-60 characters and contain 1-2 emphasis terms copied exactly from that segment text. " +
+            "Every spoken word must appear in the caption segments in the same order. " +
+            "The joined caption segments become the complete narration for that scene. " +
+            "Shorten the combined narration enough that its natural spoken duration is comfortably at or below the supplied duration budget. " +
+            `Use concise, natural ${languageDescription} marketing language. ` +
+            "Do not mention this correction process."
+        },
+        {
+          role: "user",
+          content:
+            `Duration tier: ${durationTierSeconds} seconds.\n` +
+            `Maximum natural narration budget: ${budgetSeconds} seconds.\n` +
+            `Measured natural narration before correction: ${measuredDuration} seconds.\n` +
+            `Target language: ${languageDescription}.\n\n` +
+            "Shorten these scene narrations while preserving their meaning:\n" +
+            JSON.stringify(
+              originalScenes,
+              null,
+              2
+            )
+        }
+      ],
+      text: {
+        format: zodTextFormat(
+          NarrationCorrectionSchema,
+          "pix2vid_narration_correction"
+        )
+      }
+    });
+
+  if (!response.output_parsed) {
+    const error = new Error(
+      "OpenAI did not return a narration correction."
+    );
+
+    error.code =
+      "NARRATION_CORRECTION_OUTPUT_MISSING";
+
+    throw error;
+  }
+
+  const correctedStoryboard =
+    mergeNarrationCorrection({
+      storyboard,
+      correctedScenes:
+        response.output_parsed.scenes
+    });
+
+  const validation =
+    validateStoryboard(
+      correctedStoryboard,
+      {
+        imageCount:
+          Math.max(
+            1,
+            ...correctedStoryboard.scenes.map(
+              (scene) =>
+                Number(scene.imageIndex) + 1
+            )
+          ),
+        minDurationSeconds:
+          getTargetDurationFloor(
+            durationTierSeconds
+          ),
+        maxDurationSeconds:
+          durationTierSeconds
+      }
+    );
+
+  if (!validation.ok) {
+    const error = new Error(
+      `Corrected narration failed storyboard validation: ${validation.errors.join("; ")}`
+    );
+
+    error.code =
+      "NARRATION_CORRECTION_INVALID";
+
+    error.validationErrors =
+      validation.errors;
+
+    throw error;
+  }
+
+  return {
+    storyboard:
+      validation.storyboard,
+    generation: {
+      provider: "openai",
+      model,
+      responseId:
+        response.id,
+      generatedAt:
+        new Date().toISOString(),
+      usage:
+        response.usage ?? null,
+      reason:
+        "narration_duration_budget",
+      durationTierSeconds,
+      budgetSeconds,
+      measuredBeforeSeconds:
+        measuredDuration
+    }
   };
 }
 
@@ -824,10 +1151,8 @@ export async function generateStoryboard({
         : parsedResult;
 
     const storyboard =
-      normalizeWordCount(
-        normalizeGeneratedCaptionSegments(
-          generatedStoryboard
-        )
+      normalizeGeneratedStoryboard(
+        generatedStoryboard
       );
     const validation =
       validateStoryboard(

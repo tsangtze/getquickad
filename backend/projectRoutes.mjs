@@ -21,7 +21,8 @@ import fs from "node:fs/promises";
 import express from "express";
 import multer from "multer";
 import {
-  generateStoryboard
+  generateStoryboard,
+  correctNarrationToDurationBudget
 } from "./storyboardGenerator.mjs";
 import {
   validateStoryboard
@@ -2426,6 +2427,9 @@ export async function createProjectRouter({
         const approvedStoryboard =
           validation.storyboard;
 
+        let finalStoryboard =
+          approvedStoryboard;
+
         // Manual caption edits may not exceed the narration capacity
         // established by the server-persisted AI original.
         //
@@ -2606,13 +2610,71 @@ export async function createProjectRouter({
 
         generationStage = "narration";
 
-        const narration =
-          await generateNarration({
+        let narration;
+
+        try {
+          narration =
+            await generateNarration({
+              storyboard:
+                finalStoryboard,
+              projectDirectory,
+              durationTierSeconds:
+                selectedMaxDurationSeconds,
+              narratorChoice
+            });
+        } catch (error) {
+          if (
+            error?.code !==
+            "NARRATION_DURATION_BUDGET_EXCEEDED"
+          ) {
+            throw error;
+          }
+
+          const correction =
+            await correctNarrationToDurationBudget({
+              storyboard:
+                finalStoryboard,
+              durationTierSeconds:
+                selectedMaxDurationSeconds,
+              measuredNarrationDurationSeconds:
+                error.measuredDurationSeconds,
+              language:
+                project.targetLanguage ||
+                project.language ||
+                "en"
+            });
+
+          finalStoryboard =
+            correction.storyboard;
+
+          const correctedStoryboardRecord = {
+            ...approvedStoryboardRecord,
             storyboard:
-              approvedStoryboard,
-            projectDirectory,
-            narratorChoice
-          });
+              finalStoryboard,
+            narrationCorrection:
+              correction.generation
+          };
+
+          await fs.writeFile(
+            storyboardPath,
+            JSON.stringify(
+              correctedStoryboardRecord,
+              null,
+              2
+            ),
+            "utf8"
+          );
+
+          narration =
+            await generateNarration({
+              storyboard:
+                finalStoryboard,
+              projectDirectory,
+              durationTierSeconds:
+                selectedMaxDurationSeconds,
+              narratorChoice
+            });
+        }
 
         await fs.writeFile(
           path.join(
@@ -2667,7 +2729,7 @@ export async function createProjectRouter({
             project,
             storyboard:
               narration.adjustedStoryboard ??
-              approvedStoryboard,
+              finalStoryboard,
             projectDirectory,
             narrationMetadata: narration,
             musicChoice,
@@ -2879,6 +2941,40 @@ export async function createProjectRouter({
               sceneNumber > 0
                 ? `Automatic timing adjustment could not fit Scene ${sceneNumber} narration naturally within the selected video duration. Shorten that scene's caption slightly, then confirm the scene again.`
                 : "Automatic timing adjustment could not fit the narration naturally within the selected video duration. Shorten the longest scene caption slightly, then confirm the scene again.",
+            stage:
+              generationStage
+          });
+          return;
+        }
+
+        if (
+          error?.code ===
+          "NARRATION_DURATION_BUDGET_EXCEEDED"
+        ) {
+          response.status(400).json({
+            ok: false,
+            code:
+              "NARRATION_DURATION_BUDGET_EXCEEDED",
+            params: {
+              measuredDurationSeconds:
+                Number(
+                  error.measuredDurationSeconds
+                ),
+              budgetSeconds:
+                Number(
+                  error.budgetSeconds
+                ),
+              durationTierSeconds:
+                Number(
+                  error.durationTierSeconds
+                ),
+              budgetRatio:
+                Number(
+                  error.budgetRatio
+                )
+            },
+            error:
+              "Automatic narration shortening could not fit the narration naturally within the 90% speaking-time budget. Regenerate the video plan or shorten the narration slightly, then try again.",
             stage:
               generationStage
           });
