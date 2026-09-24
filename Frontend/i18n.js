@@ -116,6 +116,10 @@ function applyLocalizedDemoVideo(){
     es: {
       src: '/assets/02-es.mp4',
       poster: '/assets/02-es-poster.jpg'
+    },
+    pt: {
+      src: '/assets/03-pt.mp4',
+      poster: '/assets/03-pt-poster.jpg'
     }
   };
 
