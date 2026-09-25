@@ -76,36 +76,44 @@ assert.match(
   "Rendering must fall back to the corrected working storyboard."
 );
 
+const narrationCalls = [
+  ...routeSource.matchAll(
+    /await\s+generateNarration\(\{([\s\S]*?)\}\);/g
+  )
+];
+
 assert.equal(
-  countMatches(
-    /"NARRATION_DURATION_BUDGET_EXCEEDED"/g
-  ),
-  3,
-  "The route must contain the retry check plus controlled response condition/code."
+  narrationCalls.length,
+  2,
+  "Finalization must contain exactly two narration call sites."
+);
+
+assert.doesNotMatch(
+  narrationCalls[0][1],
+  /allowControlledTimelineExtension/,
+  "The first narration attempt must remain strict and must not receive controlled timeline-extension permission."
 );
 
 assert.match(
-  routeSource,
-  /error\?\.code\s*===\s*"NARRATION_DURATION_BUDGET_EXCEEDED"[\s\S]*?response\.status\(400\)\.json\(\{[\s\S]*?measuredDurationSeconds:[\s\S]*?budgetSeconds:[\s\S]*?durationTierSeconds:[\s\S]*?budgetRatio:[\s\S]*?90% speaking-time budget[\s\S]*?return;/,
-  "A second measured-budget failure must return a controlled 400 with timing metadata."
+  narrationCalls[1][1],
+  /allowControlledTimelineExtension:\s*true/,
+  "Only the corrected second narration attempt may use controlled timeline extension."
 );
 
-const budgetResponseIndex =
-  routeSource.lastIndexOf(
-    '"NARRATION_DURATION_BUDGET_EXCEEDED"'
+for (const narrationCall of narrationCalls) {
+  assert.match(
+    narrationCall[1],
+    /durationTierSeconds:\s*selectedMaxDurationSeconds/,
+    "Both narration attempts must retain the originally selected duration tier."
   );
+}
 
-const genericFailureIndex =
-  routeSource.lastIndexOf(
-    'response.status(502).json({'
-  );
-
-assert.ok(
-  budgetResponseIndex >= 0 &&
-    genericFailureIndex >= 0 &&
-    budgetResponseIndex <
-      genericFailureIndex,
-  "Controlled narration-budget failure must precede the generic 502 response."
+assert.equal(
+  countMatches(
+    /allowControlledTimelineExtension:\s*true/g
+  ),
+  1,
+  "Controlled timeline-extension permission must appear exactly once in finalization."
 );
 
 console.log(
@@ -117,5 +125,9 @@ console.log(
 );
 
 console.log(
-  "PASS: A second over-budget narration attempt remains a controlled 400."
+  "PASS: The first narration attempt stays strict and only the corrected retry may use controlled timeline extension."
+);
+
+console.log(
+  "PASS: Controlled timeline extension preserves the originally selected duration tier."
 );

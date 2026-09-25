@@ -2679,7 +2679,8 @@ export async function createProjectRouter({
               projectDirectory,
               durationTierSeconds:
                 selectedMaxDurationSeconds,
-              narratorChoice
+              narratorChoice,
+              allowControlledTimelineExtension: true
             });
         }
 
