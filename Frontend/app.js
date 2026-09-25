@@ -4426,7 +4426,7 @@ finalVideoButton.addEventListener(
       let recoveredFinalVideo = false;
 
       try {
-        const reconciliationAttempts = 12;
+        const reconciliationAttempts = 120;
         const reconciliationDelayMs = 5000;
 
         for (
@@ -4468,8 +4468,12 @@ finalVideoButton.addEventListener(
             statusResult?.ok !== true ||
             statusResult?.project?.id !==
               currentProjectId ||
-            statusResult?.project?.status !==
+            ![
+              "generating_narration",
               "rendering_video"
+            ].includes(
+              statusResult?.project?.status
+            )
           ) {
             break;
           }
