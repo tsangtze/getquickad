@@ -37,6 +37,7 @@ function countWords(text) {
     .length;
 }
 
+const TARGET_SCENE_AUDIO_TEMPO = 1.15;
 const MAX_SCENE_AUDIO_TEMPO = 1.21;
 const SCENE_AUDIO_TEMPO_EPSILON = 1e-9;
 
@@ -104,7 +105,10 @@ function redistributeSceneDurations({
         plannedDuration,
         spokenDuration,
         minimumDuration:
-          spokenDuration / tempoLimit
+          spokenDuration / tempoLimit,
+        targetDuration:
+          spokenDuration /
+          TARGET_SCENE_AUDIO_TEMPO
       };
     });
 
@@ -134,6 +138,14 @@ function redistributeSceneDurations({
       )
     );
 
+  const targetDeficits =
+    normalized.map((timing) =>
+      Math.max(
+        0,
+        timing.targetDuration -
+          timing.plannedDuration
+      )
+    );
   const donorSlack =
     normalized.map((timing) =>
       Math.max(
@@ -197,7 +209,16 @@ function redistributeSceneDurations({
     };
   }
 
-  if (totalDeficit <= 1e-9) {
+  const totalTargetDeficit =
+    targetDeficits.reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+  if (
+    totalDeficit <= 1e-9 &&
+    totalTargetDeficit <= 1e-9
+  ) {
     let cursor = 0;
 
     return {
@@ -241,6 +262,9 @@ function redistributeSceneDurations({
     };
   }
 
+  // Phase 1:
+  // Rescue only scenes that would exceed
+  // the absolute 1.21x hard ceiling.
   const adjustedDurations =
     normalized.map(
       (timing, index) =>
@@ -248,26 +272,117 @@ function redistributeSceneDurations({
         deficits[index]
     );
 
-  for (
-    let index = 0;
-    index < adjustedDurations.length;
-    index += 1
-  ) {
-    if (donorSlack[index] <= 0) {
-      continue;
+  if (totalDeficit > 1e-9) {
+    for (
+      let index = 0;
+      index < adjustedDurations.length;
+      index += 1
+    ) {
+      if (donorSlack[index] <= 0) {
+        continue;
+      }
+
+      const contribution =
+        totalDeficit *
+        (
+          donorSlack[index] /
+          totalDonorSlack
+        );
+
+      adjustedDurations[index] -=
+        contribution;
     }
-
-    const contribution =
-      totalDeficit *
-      (
-        donorSlack[index] /
-        totalDonorSlack
-      );
-
-    adjustedDurations[index] -=
-      contribution;
   }
 
+  // Phase 2:
+  // Move scenes toward the preferred 1.15x
+  // target, but only borrow duration that
+  // donors can give without themselves
+  // crossing above that same 1.15x target.
+  const bufferedNeeds =
+    normalized.map(
+      (timing, index) =>
+        Math.max(
+          0,
+          timing.targetDuration -
+            adjustedDurations[index]
+        )
+    );
+
+  const bufferedDonorSlack =
+    normalized.map(
+      (timing, index) =>
+        Math.max(
+          0,
+          adjustedDurations[index] -
+            timing.targetDuration
+        )
+    );
+
+  const totalBufferedNeed =
+    bufferedNeeds.reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+  const totalBufferedDonorSlack =
+    bufferedDonorSlack.reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+  const bufferedBorrow =
+    Math.min(
+      totalBufferedNeed,
+      totalBufferedDonorSlack
+    );
+
+  if (bufferedBorrow > 1e-9) {
+    for (
+      let index = 0;
+      index < adjustedDurations.length;
+      index += 1
+    ) {
+      if (bufferedNeeds[index] <= 0) {
+        continue;
+      }
+
+      const gain =
+        bufferedBorrow *
+        (
+          bufferedNeeds[index] /
+          totalBufferedNeed
+        );
+
+      adjustedDurations[index] += gain;
+    }
+
+    for (
+      let index = 0;
+      index < adjustedDurations.length;
+      index += 1
+    ) {
+      if (
+        bufferedDonorSlack[index] <= 0
+      ) {
+        continue;
+      }
+
+      const contribution =
+        bufferedBorrow *
+        (
+          bufferedDonorSlack[index] /
+          totalBufferedDonorSlack
+        );
+
+      adjustedDurations[index] -=
+        contribution;
+    }
+  }
+
+  const totalAppliedDeficit =
+    totalDeficit +
+    bufferedBorrow;
   const assignedTotal =
     adjustedDurations.reduce(
       (sum, value) => sum + value,
@@ -320,7 +435,7 @@ function redistributeSceneDurations({
     totalDurationSeconds:
       totalDuration,
     borrowedDurationSeconds:
-      totalDeficit,
+      totalAppliedDeficit,
     sceneTimings:
       adjustedSceneTimings
   };
