@@ -38,6 +38,7 @@ function countWords(text) {
 }
 
 const MAX_SCENE_AUDIO_TEMPO = 1.21;
+const SCENE_AUDIO_TEMPO_EPSILON = 1e-9;
 
 function redistributeSceneDurations({
   sceneTimings,
@@ -357,7 +358,8 @@ function buildSceneAudioFilter({
 
     if (
       tempo >
-      MAX_SCENE_AUDIO_TEMPO
+      MAX_SCENE_AUDIO_TEMPO +
+        SCENE_AUDIO_TEMPO_EPSILON
     ) {
       const error =
         new Error(

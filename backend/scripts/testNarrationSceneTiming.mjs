@@ -191,6 +191,75 @@ assert.doesNotMatch(
   /atempo=/
 );
 
+{
+  const spokenDurationSeconds = 6.05;
+
+  const exactLimitDuration =
+    spokenDurationSeconds /
+    MAX_SCENE_AUDIO_TEMPO;
+
+  const exactLimitFilter =
+    buildSceneAudioFilter({
+      inputIndex: 5,
+      duration: exactLimitDuration,
+      spokenDurationSeconds,
+      sceneNumber: 5
+    });
+
+  assert.match(
+    exactLimitFilter,
+    /^\[5:a\]atempo=1\.210000,/
+  );
+
+  const floatingPointNoiseTempo =
+    MAX_SCENE_AUDIO_TEMPO +
+    Number.EPSILON;
+
+  assert.ok(
+    floatingPointNoiseTempo >
+      MAX_SCENE_AUDIO_TEMPO,
+    "Regression fixture must be microscopically above the 1.21x boundary."
+  );
+
+  const floatingPointNoiseFilter =
+    buildSceneAudioFilter({
+      inputIndex: 5,
+      duration:
+        spokenDurationSeconds /
+        floatingPointNoiseTempo,
+      spokenDurationSeconds,
+      sceneNumber: 5
+    });
+
+  assert.match(
+    floatingPointNoiseFilter,
+    /^\[5:a\]atempo=1\.210000,/
+  );
+
+  const genuineExcessTempo =
+    MAX_SCENE_AUDIO_TEMPO +
+    0.000001;
+
+  assert.throws(
+    () =>
+      buildSceneAudioFilter({
+        inputIndex: 5,
+        duration:
+          spokenDurationSeconds /
+          genuineExcessTempo,
+        spokenDurationSeconds,
+        sceneNumber: 5
+      }),
+    (error) =>
+      error?.code ===
+        "NARRATION_SCENE_TOO_LONG" &&
+      error?.sceneNumber === 5
+  );
+}
+
+console.log(
+  "PASS: Exact 1.21x tempo and floating-point noise are accepted while genuine excess remains rejected."
+);
 assert.throws(
   () =>
     buildSceneAudioFilter({
