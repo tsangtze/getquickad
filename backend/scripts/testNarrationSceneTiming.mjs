@@ -6,10 +6,13 @@ import {
 
 const {
   buildSceneAudioFilter,
+  extendSceneTimingsForNarration,
+  getMaximumVideoDuration,
   getNarrationDurationBudget,
   evaluateNarrationDurationBudget,
   createNarrationDurationBudgetError,
   NARRATION_DURATION_BUDGET_RATIO,
+  MAX_VIDEO_DURATION_RATIO,
   MAX_SCENE_AUDIO_TEMPO
 } = __narrationGeneratorTestHelpers;
 
@@ -21,6 +24,225 @@ assert.equal(
 assert.equal(
   NARRATION_DURATION_BUDGET_RATIO,
   0.9
+);
+
+assert.equal(
+  MAX_VIDEO_DURATION_RATIO,
+  7 / 6
+);
+
+{
+  const extended =
+    extendSceneTimingsForNarration({
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 7.26
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 6.05
+        },
+        {
+          sceneNumber: 3,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 3
+        }
+      ],
+      extensionSeconds: 2
+    });
+
+  assert.ok(
+    extended[0].sceneDurationSeconds >
+      extended[1].sceneDurationSeconds
+  );
+
+  assert.equal(
+    extended[2].sceneDurationSeconds,
+    5
+  );
+
+  assert.ok(
+    Math.abs(
+      extended.reduce(
+        (sum, timing) =>
+          sum +
+          Number(timing.sceneDurationSeconds),
+        0
+      ) - 17
+    ) < 1e-9
+  );
+}
+
+assert.throws(
+  () =>
+    extendSceneTimingsForNarration({
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 3
+        }
+      ],
+      extensionSeconds: 1
+    }),
+  /at least one hard scene deficit/
+);
+
+console.log(
+  "PASS: Controlled extension adds emergency time only to hard-deficit scenes."
+);
+
+// Controlled timeline extension policy.
+{
+  const {
+    redistributeSceneDurations
+  } = __narrationGeneratorTestHelpers;
+
+  const normalFit =
+    redistributeSceneDurations({
+      totalDurationSeconds: 30,
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 12.1
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 8
+        },
+        {
+          sceneNumber: 3,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 8
+        }
+      ]
+    });
+
+  assert.equal(normalFit.ok, true);
+  assert.equal(normalFit.totalDurationSeconds, 30);
+
+  const impossibleNormal =
+    redistributeSceneDurations({
+      totalDurationSeconds: 30,
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 14.52
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 12.1
+        },
+        {
+          sceneNumber: 3,
+          sceneDurationSeconds: 10,
+          spokenDurationSeconds: 12.1
+        }
+      ]
+    });
+
+  assert.equal(impossibleNormal.ok, false);
+  assert.equal(
+    impossibleNormal.error.code,
+    "NARRATION_TOTAL_TOO_LONG"
+  );
+
+  const requiredExtraSeconds =
+    impossibleNormal.error.requiredExtraSeconds;
+
+  assert.ok(requiredExtraSeconds > 0);
+  assert.ok(
+    Math.abs(requiredExtraSeconds - 2) < 1e-9
+  );
+
+  const originalSceneTimings = [
+    {
+      sceneNumber: 1,
+      sceneDurationSeconds: 10,
+      spokenDurationSeconds: 14.52
+    },
+    {
+      sceneNumber: 2,
+      sceneDurationSeconds: 10,
+      spokenDurationSeconds: 12.1
+    },
+    {
+      sceneNumber: 3,
+      sceneDurationSeconds: 10,
+      spokenDurationSeconds: 12.1
+    }
+  ];
+
+  const extendedSceneTimings =
+    extendSceneTimingsForNarration({
+      sceneTimings: originalSceneTimings,
+      extensionSeconds:
+        requiredExtraSeconds
+    });
+
+  const minimumExtendedTotal =
+    30 + requiredExtraSeconds;
+
+  assert.ok(
+    minimumExtendedTotal <=
+      getMaximumVideoDuration(30)
+  );
+
+  const extendedFit =
+    redistributeSceneDurations({
+      totalDurationSeconds:
+        minimumExtendedTotal,
+      sceneTimings:
+        extendedSceneTimings
+    });
+
+  assert.equal(extendedFit.ok, true);
+  assert.ok(
+    Math.abs(
+      extendedFit.totalDurationSeconds - 32
+    ) < 1e-9
+  );
+
+  assert.equal(
+    30 + 5.000001 >
+      getMaximumVideoDuration(30) + 1e-9,
+    true
+  );
+
+  console.log(
+    "PASS: Controlled extension uses the normal timeline first, then only the exact required emergency time within the tier ceiling."
+  );
+}
+
+assert.equal(
+  getMaximumVideoDuration(30),
+  35
+);
+
+assert.equal(
+  getMaximumVideoDuration(45),
+  52.5
+);
+
+assert.equal(
+  getMaximumVideoDuration(60),
+  70
+);
+
+assert.throws(
+  () => getMaximumVideoDuration(0),
+  /Video duration must be positive/
+);
+
+console.log(
+  "PASS: Emergency video duration ceilings are 35s, 52.5s, and 70s."
 );
 
 assert.equal(
@@ -610,6 +832,11 @@ console.log(
     /let adjustedStoryboard;/
   );
 
+  assert.match(
+    beforeTry,
+    /let effectiveTotalDurationSeconds\s*=\s*Number\(storyboard\.totalDurationSeconds\);/
+  );
+
   const afterTry =
     generatorSource.slice(tryStart);
 
@@ -626,6 +853,11 @@ console.log(
   assert.doesNotMatch(
     afterTry,
     /const adjustedStoryboard\s*=/
+  );
+
+  assert.doesNotMatch(
+    afterTry,
+    /(?:let|const)\s+effectiveTotalDurationSeconds\s*=/
   );
 
   console.log(
