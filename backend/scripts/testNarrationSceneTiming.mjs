@@ -358,6 +358,110 @@ console.log(
     "PASS: Global spare scene time rescues an overlong scene."
   );
 }
+{
+  const {
+    redistributeSceneDurations
+  } = __narrationGeneratorTestHelpers;
+
+  const result =
+    redistributeSceneDurations({
+      totalDurationSeconds: 20,
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 6.9
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 15,
+          spokenDurationSeconds: 10
+        }
+      ]
+    });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.redistributed, true);
+
+  const rescued =
+    result.sceneTimings[0];
+
+  const tempo =
+    rescued.spokenDurationSeconds /
+    rescued.durationSeconds;
+
+  assert.ok(
+    Math.abs(tempo - 1.15) < 1e-9,
+    `Expected buffered tempo near 1.15x; got ${tempo}.`
+  );
+
+  assert.ok(
+    tempo <
+      MAX_SCENE_AUDIO_TEMPO,
+    "Buffered target must stay below the 1.21x hard ceiling."
+  );
+
+  console.log(
+    "PASS: Enough donor slack moves an overloaded scene to the 1.15x buffered target."
+  );
+}
+
+{
+  const {
+    redistributeSceneDurations
+  } = __narrationGeneratorTestHelpers;
+
+  const result =
+    redistributeSceneDurations({
+      totalDurationSeconds: 10,
+      sceneTimings: [
+        {
+          sceneNumber: 1,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 6.2
+        },
+        {
+          sceneNumber: 2,
+          sceneDurationSeconds: 5,
+          spokenDurationSeconds: 5.8
+        }
+      ]
+    });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.redistributed, true);
+
+  const rescued =
+    result.sceneTimings[0];
+
+  const tempo =
+    rescued.spokenDurationSeconds /
+    rescued.durationSeconds;
+
+  assert.ok(
+    tempo > 1.15,
+    `Limited slack should allow tempo above 1.15x; got ${tempo}.`
+  );
+
+  assert.ok(
+    tempo <=
+      MAX_SCENE_AUDIO_TEMPO +
+        1e-9,
+    `Limited slack must remain at or below 1.21x; got ${tempo}.`
+  );
+
+  assert.ok(
+    Math.abs(
+      result.sceneTimings.at(-1).endSeconds -
+        10
+    ) < 1e-9,
+    "Buffered redistribution must preserve total video duration."
+  );
+
+  console.log(
+    "PASS: Limited donor slack uses the available buffer while remaining below 1.21x."
+  );
+}
 
 {
   const {
