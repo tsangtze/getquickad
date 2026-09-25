@@ -136,6 +136,10 @@ function applyLocalizedDemoVideo(){
     ja: {
       src: '/assets/07-ja.mp4',
       poster: '/assets/07-ja-poster.jpg'
+    },
+    ko: {
+      src: '/assets/08-ko.mp4',
+      poster: '/assets/08-ko-poster.jpg'
     }
   };
 
