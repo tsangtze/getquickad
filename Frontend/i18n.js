@@ -144,6 +144,10 @@ function applyLocalizedDemoVideo(){
     zh: {
       src: '/assets/09-cn.mp4',
       poster: '/assets/09-cn-poster.jpg'
+    },
+    'zh-TW': {
+      src: '/assets/10-tw.mp4',
+      poster: '/assets/10-tw-poster.jpg'
     }
   };
 
