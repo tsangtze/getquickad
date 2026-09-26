@@ -386,12 +386,12 @@ function buildCaptionAss({
 
   const captionFontSize =
     normalizedLanguage.startsWith("ar")
-      ? 50
+      ? 60
       : normalizedLanguage.startsWith("zh") ||
           normalizedLanguage.startsWith("ja") ||
           normalizedLanguage.startsWith("ko") ||
           normalizedLanguage.startsWith("hi")
-        ? 46
+        ? 52
         : 40;
 
   const dialogueLines =
