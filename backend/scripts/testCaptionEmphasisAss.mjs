@@ -524,3 +524,49 @@ for (const [
 console.log(
   "PASS: Script-aware caption font sizes are 40 Latin, 70 CJK, 80 Hindi, and 85 Arabic."
 );
+
+const singleLineCjkAss =
+  buildCaptionAss({
+    caption: "上传产品照片，最多十张",
+    emphasisWords: [],
+    durationSeconds: 5,
+    language: "zh"
+  });
+
+assertIncludes(
+  singleLineCjkAss,
+  "Caption,,0,0,150,,",
+  "Single-line CJK captions must use the centered vertical position."
+);
+
+const twoLineCjkAss =
+  buildCaptionAss({
+    caption: "几分钟内就能让您的产品讲出自己的故事",
+    emphasisWords: [],
+    durationSeconds: 5,
+    language: "zh"
+  });
+
+assertIncludes(
+  twoLineCjkAss,
+  "Caption,,0,0,0,,",
+  "Two-line CJK captions must keep the existing vertical position."
+);
+
+const singleLineLatinAss =
+  buildCaptionAss({
+    caption: "Upload your product photos",
+    emphasisWords: [],
+    durationSeconds: 5,
+    language: "en"
+  });
+
+assertIncludes(
+  singleLineLatinAss,
+  "Caption,,0,0,0,,",
+  "Latin captions must keep their existing vertical position."
+);
+
+console.log(
+  "PASS: Single-line CJK moves upward while two-line CJK and Latin captions stay unchanged."
+);

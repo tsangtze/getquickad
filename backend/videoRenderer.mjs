@@ -457,7 +457,17 @@ function buildCaptionAss({
           event.emphasisWords
         );
 
-      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,0,,${assText}`;
+      const isCjk =
+        normalizedLanguage.startsWith("zh") ||
+        normalizedLanguage.startsWith("ja") ||
+        normalizedLanguage.startsWith("ko");
+
+      const eventMarginV =
+        isCjk && !wrappedText.includes("\n")
+          ? 150
+          : 0;
+
+      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,${eventMarginV},,${assText}`;
     });
 
   return [
