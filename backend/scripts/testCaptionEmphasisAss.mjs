@@ -496,7 +496,7 @@ console.log(
   "PASS: Script-aware caption font sizes are 40 Latin, 70 CJK, 80 Hindi, and 85 Arabic."
 );
 
-const fixedCenterAss =
+const centeredLayoutAss =
   buildCaptionAss({
     caption: "Fixed center test",
     emphasisWords: [],
@@ -504,12 +504,30 @@ const fixedCenterAss =
     language: "en"
   });
 
+if (centeredLayoutAss.includes("\\pos(")) {
+  throw new Error(
+    "Caption layout must not force an X/Y position because that bypasses normal horizontal wrapping."
+  );
+}
+
 assertIncludes(
-  fixedCenterAss,
-  "{\\an5\\pos(540,1088)}",
-  "Every caption event must use the fixed visual center at 540,1088."
+  centeredLayoutAss,
+  "WrapStyle: 0",
+  "Caption layout must preserve the original ASS wrapping mode."
+);
+
+assertIncludes(
+  centeredLayoutAss,
+  "42,42,162,1",
+  "Caption style must preserve the original 42px horizontal safe margins."
+);
+
+assertIncludes(
+  centeredLayoutAss,
+  "Caption,,0,0,",
+  "Caption events must continue using event vertical margins."
 );
 
 console.log(
-  "PASS: Caption events use fixed center 540,1088."
+  "PASS: Caption layout preserves original horizontal wrapping with vertical event positioning."
 );

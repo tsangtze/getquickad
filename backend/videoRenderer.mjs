@@ -403,7 +403,37 @@ function buildCaptionAss({
           event.emphasisWords
         );
 
-      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,0,,{\\an5\\pos(540,1088)}${assText}`;
+      // Keep the original ASS horizontal layout so libass continues to
+      // center and wrap captions inside the existing 42px safe margins.
+      //
+      // Alignment 2 anchors the caption block at its bottom edge. Move that
+      // bottom edge according to the rendered line count so the complete
+      // block remains centered around the common visual Y position.
+      const captionLineCount =
+        Math.max(
+          1,
+          String(assText).split(/\\N/).length
+        );
+
+      const captionLineHeight =
+        captionFontSize * 1.2;
+
+      const captionBlockHeight =
+        captionLineCount * captionLineHeight;
+
+      const captionCenterY = 1088;
+
+      const eventMarginV =
+        Math.max(
+          0,
+          Math.round(
+            VIDEO_HEIGHT -
+              captionCenterY -
+              captionBlockHeight / 2
+          )
+        );
+
+      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,${eventMarginV},,${assText}`;
     });
 
   return [
