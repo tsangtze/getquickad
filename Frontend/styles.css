@@ -2500,14 +2500,26 @@ input::placeholder {
 }
 
 .seo-landing-language {
+  position: relative;
   display: inline-flex;
   align-items: center;
+}
+
+.seo-landing-language-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  z-index: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 15px;
+  line-height: 1;
 }
 
 .seo-landing-language-select {
   min-height: 38px;
   max-width: 150px;
-  padding: 7px 30px 7px 10px;
+  padding: 7px 30px 7px 34px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--panel);
@@ -2748,6 +2760,7 @@ input::placeholder {
 
   .seo-landing-page .seo-landing-language {
     grid-area: language !important;
+    position: relative !important;
     display: block !important;
     width: 142px !important;
     height: 36px !important;
@@ -2769,6 +2782,11 @@ input::placeholder {
     border: 0 !important;
   }
 
+  .seo-landing-page .seo-landing-language-icon {
+    left: 8px;
+    font-size: 14px;
+  }
+
   .seo-landing-page .seo-landing-language-select {
     display: block !important;
     box-sizing: border-box !important;
@@ -2777,7 +2795,7 @@ input::placeholder {
     height: 36px !important;
     min-height: 36px !important;
     margin: 0 !important;
-    padding: 6px 28px 6px 9px !important;
+    padding: 6px 28px 6px 30px !important;
     font-size: 12px !important;
     line-height: normal !important;
   }
