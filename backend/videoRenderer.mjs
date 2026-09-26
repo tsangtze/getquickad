@@ -403,37 +403,9 @@ function buildCaptionAss({
           event.emphasisWords
         );
 
-      // Keep the original ASS horizontal layout so libass continues to
-      // center and wrap captions inside the existing 42px safe margins.
-      //
-      // Alignment 2 anchors the caption block at its bottom edge. Move that
-      // bottom edge according to the rendered line count so the complete
-      // block remains centered around the common visual Y position.
-      const captionLineCount =
-        Math.max(
-          1,
-          String(assText).split(/\\N/).length
-        );
-
-      const captionLineHeight =
-        captionFontSize * 1.2;
-
-      const captionBlockHeight =
-        captionLineCount * captionLineHeight;
-
-      const captionCenterY = 1088;
-
-      const eventMarginV =
-        Math.max(
-          0,
-          Math.round(
-            VIDEO_HEIGHT -
-              captionCenterY -
-              captionBlockHeight / 2
-          )
-        );
-
-      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,${eventMarginV},,${assText}`;
+      // Let libass perform normal horizontal wrapping and center the complete
+      // rendered caption block vertically, regardless of its rendered line count.
+      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,0,,${assText}`;
     });
 
   return [
@@ -446,7 +418,7 @@ function buildCaptionAss({
     "",
     "[V4+ Styles]",
     "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-    `Style: Caption,${fontName},${captionFontSize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,2,2,42,42,162,1`,
+    `Style: Caption,${fontName},${captionFontSize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,2,5,42,42,162,1`,
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",

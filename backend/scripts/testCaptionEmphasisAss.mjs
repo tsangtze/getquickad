@@ -513,21 +513,21 @@ if (centeredLayoutAss.includes("\\pos(")) {
 assertIncludes(
   centeredLayoutAss,
   "WrapStyle: 0",
-  "Caption layout must preserve the original ASS wrapping mode."
+  "Caption layout must preserve normal ASS wrapping."
 );
 
 assertIncludes(
   centeredLayoutAss,
-  "42,42,162,1",
-  "Caption style must preserve the original 42px horizontal safe margins."
+  "2,5,42,42,162,1",
+  "Caption style must use middle-center alignment with the original 42px horizontal safe margins."
 );
 
 assertIncludes(
   centeredLayoutAss,
-  "Caption,,0,0,",
-  "Caption events must continue using event vertical margins."
+  "Caption,,0,0,0,,",
+  "Caption events must not override native middle-center placement."
 );
 
 console.log(
-  "PASS: Caption layout preserves original horizontal wrapping with vertical event positioning."
+  "PASS: Caption blocks use native middle-center alignment with original horizontal wrapping."
 );
