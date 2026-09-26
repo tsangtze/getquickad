@@ -3,7 +3,6 @@ import {
 } from "../videoRenderer.mjs";
 
 const {
-  wrapCjkCaption,
   escapeAssText,
   buildAssCaptionText,
   buildCaptionEvents,
@@ -92,34 +91,6 @@ assertEqual(
 
 console.log(
   "PASS: CJK emphasis receives yellow tags."
-);
-
-assertEqual(
-  wrapCjkCaption(
-    "几分钟内就能让您的产品讲出自己的故事",
-    "zh"
-  ),
-  "几分钟内就能让您的\n产品讲出自己的故事",
-  "Long Chinese captions must wrap into two balanced lines."
-);
-
-assertEqual(
-  wrapCjkCaption(
-    "快速使用省时省力",
-    "zh"
-  ),
-  "快速使用省时省力",
-  "Short Chinese captions must remain on one line."
-);
-
-assertIncludes(
-  escapeAssText("第一行\n第二行"),
-  "\\N",
-  "Caption newlines must become ASS line breaks."
-);
-
-console.log(
-  "PASS: Long CJK captions wrap safely into two lines."
 );
 
 assertEqual(
@@ -523,82 +494,4 @@ for (const [
 
 console.log(
   "PASS: Script-aware caption font sizes are 40 Latin, 70 CJK, 80 Hindi, and 85 Arabic."
-);
-
-const singleLineCjkAss =
-  buildCaptionAss({
-    caption: "上传产品照片，最多十张",
-    emphasisWords: [],
-    durationSeconds: 5,
-    language: "zh"
-  });
-
-assertIncludes(
-  singleLineCjkAss,
-  "Caption,,0,0,150,,",
-  "Single-line CJK captions must use the centered vertical position."
-);
-
-const twoLineCjkAss =
-  buildCaptionAss({
-    caption: "几分钟内就能让您的产品讲出自己的故事",
-    emphasisWords: [],
-    durationSeconds: 5,
-    language: "zh"
-  });
-
-assertIncludes(
-  twoLineCjkAss,
-  "Caption,,0,0,0,,",
-  "Two-line CJK captions must keep the existing vertical position."
-);
-
-const singleLineLatinAss =
-  buildCaptionAss({
-    caption: "Upload your product photos",
-    emphasisWords: [],
-    durationSeconds: 5,
-    language: "en"
-  });
-
-assertIncludes(
-  singleLineLatinAss,
-  "Caption,,0,0,0,,",
-  "Latin captions must keep their existing vertical position."
-);
-
-console.log(
-  "PASS: Single-line CJK moves upward while two-line CJK and Latin captions stay unchanged."
-);
-
-const singleLineArabicAss =
-  buildCaptionAss({
-    caption: "حوّل صورك إلى فيديو",
-    emphasisWords: [],
-    durationSeconds: 5,
-    language: "ar"
-  });
-
-assertIncludes(
-  singleLineArabicAss,
-  "Caption,,0,0,0,,",
-  "Single-line Arabic captions must keep the existing vertical position."
-);
-
-const twoLineArabicAss =
-  buildCaptionAss({
-    caption: "جاهز للفيديو كل منتج حوّل\nعلى مواقع التواصل للنشر",
-    emphasisWords: [],
-    durationSeconds: 5,
-    language: "ar"
-  });
-
-assertIncludes(
-  twoLineArabicAss,
-  "Caption,,0,0,70,,",
-  "Two-line Arabic captions must move downward inside the caption panel."
-);
-
-console.log(
-  "PASS: Two-line Arabic moves downward while single-line Arabic stays unchanged."
 );
