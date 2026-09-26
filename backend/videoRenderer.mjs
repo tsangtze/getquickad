@@ -381,6 +381,19 @@ function buildCaptionAss({
   const fontName =
     getAssFontName(language);
 
+  const normalizedLanguage =
+    String(language || "en").toLowerCase();
+
+  const captionFontSize =
+    normalizedLanguage.startsWith("ar")
+      ? 50
+      : normalizedLanguage.startsWith("zh") ||
+          normalizedLanguage.startsWith("ja") ||
+          normalizedLanguage.startsWith("ko") ||
+          normalizedLanguage.startsWith("hi")
+        ? 46
+        : 40;
+
   const dialogueLines =
     events.map((event) => {
       const assText =
@@ -402,7 +415,7 @@ function buildCaptionAss({
     "",
     "[V4+ Styles]",
     "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-    `Style: Caption,${fontName},40,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,2,2,42,42,162,1`,
+    `Style: Caption,${fontName},${captionFontSize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,2,2,42,42,162,1`,
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",

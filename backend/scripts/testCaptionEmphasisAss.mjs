@@ -442,3 +442,56 @@ assertIncludes(
 console.log(
   "PASS: Smart ASS wrapping preserves margins and semantic emphasis."
 );
+
+function captionAssForLanguage(language) {
+  return buildCaptionAss({
+    caption: "Caption size test",
+    emphasisWords: [],
+    durationSeconds: 5,
+    language
+  });
+}
+
+const captionSizeCases = [
+  ["en", 40, "Latin"],
+  ["zh", 46, "Chinese"],
+  ["ja", 46, "Japanese"],
+  ["ko", 46, "Korean"],
+  ["hi", 46, "Hindi"],
+  ["ar", 50, "Arabic"]
+];
+
+for (const [
+  language,
+  expectedSize,
+  label
+] of captionSizeCases) {
+  const ass =
+    captionAssForLanguage(language);
+
+  const captionStyle =
+    ass
+      .split(/\r?\n/)
+      .find((line) =>
+        line.startsWith("Style: Caption,")
+      );
+
+  if (!captionStyle) {
+    throw new Error(
+      `${label} caption style was not generated.`
+    );
+  }
+
+  const fields =
+    captionStyle.split(",");
+
+  assertEqual(
+    Number(fields[2]),
+    expectedSize,
+    `${label} caption font size must be ${expectedSize}.`
+  );
+}
+
+console.log(
+  "PASS: Script-aware caption font sizes are 40 Latin, 46 CJK/Hindi, and 50 Arabic."
+);
