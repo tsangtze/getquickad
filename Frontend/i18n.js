@@ -152,6 +152,10 @@ function applyLocalizedDemoVideo(){
     tr: {
       src: '/assets/11-tr.mp4',
       poster: '/assets/11-tr-poster.jpg'
+    },
+    hi: {
+      src: '/assets/12-in.mp4',
+      poster: '/assets/12-in-poster.jpg'
     }
   };
 
