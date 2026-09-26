@@ -495,3 +495,21 @@ for (const [
 console.log(
   "PASS: Script-aware caption font sizes are 40 Latin, 70 CJK, 80 Hindi, and 85 Arabic."
 );
+
+const fixedCenterAss =
+  buildCaptionAss({
+    caption: "Fixed center test",
+    emphasisWords: [],
+    durationSeconds: 5,
+    language: "en"
+  });
+
+assertIncludes(
+  fixedCenterAss,
+  "{\\an5\\pos(540,1088)}",
+  "Every caption event must use the fixed visual center at 540,1088."
+);
+
+console.log(
+  "PASS: Caption events use fixed center 540,1088."
+);

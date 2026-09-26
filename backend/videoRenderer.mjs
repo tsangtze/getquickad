@@ -403,7 +403,7 @@ function buildCaptionAss({
           event.emphasisWords
         );
 
-      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,0,,${assText}`;
+      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,0,,{\\an5\\pos(540,1088)}${assText}`;
     });
 
   return [
