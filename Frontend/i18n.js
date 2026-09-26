@@ -322,7 +322,7 @@ function updateLabel(){
   const btn=document.getElementById('lang-current');
   if(!btn) return;
   const info=SUPPORTED_LANGS[currentLang]||SUPPORTED_LANGS.en;
-  btn.textContent=`🌐 ${info.name}`;
+  btn.textContent=`${info.flag} ${info.name}`;
 }
 function initLang(){
   const curBtn=document.getElementById('lang-current');
