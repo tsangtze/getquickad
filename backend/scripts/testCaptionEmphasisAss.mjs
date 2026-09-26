@@ -454,11 +454,11 @@ function captionAssForLanguage(language) {
 
 const captionSizeCases = [
   ["en", 40, "Latin"],
-  ["zh", 60, "Chinese"],
-  ["ja", 60, "Japanese"],
-  ["ko", 60, "Korean"],
-  ["hi", 60, "Hindi"],
-  ["ar", 70, "Arabic"]
+  ["zh", 70, "Chinese"],
+  ["ja", 70, "Japanese"],
+  ["ko", 70, "Korean"],
+  ["hi", 80, "Hindi"],
+  ["ar", 85, "Arabic"]
 ];
 
 for (const [
@@ -493,5 +493,5 @@ for (const [
 }
 
 console.log(
-  "PASS: Script-aware caption font sizes are 40 Latin, 60 CJK/Hindi, and 70 Arabic."
+  "PASS: Script-aware caption font sizes are 40 Latin, 70 CJK, 80 Hindi, and 85 Arabic."
 );
