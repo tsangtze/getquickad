@@ -570,3 +570,35 @@ assertIncludes(
 console.log(
   "PASS: Single-line CJK moves upward while two-line CJK and Latin captions stay unchanged."
 );
+
+const singleLineArabicAss =
+  buildCaptionAss({
+    caption: "حوّل صورك إلى فيديو",
+    emphasisWords: [],
+    durationSeconds: 5,
+    language: "ar"
+  });
+
+assertIncludes(
+  singleLineArabicAss,
+  "Caption,,0,0,0,,",
+  "Single-line Arabic captions must keep the existing vertical position."
+);
+
+const twoLineArabicAss =
+  buildCaptionAss({
+    caption: "جاهز للفيديو كل منتج حوّل\nعلى مواقع التواصل للنشر",
+    emphasisWords: [],
+    durationSeconds: 5,
+    language: "ar"
+  });
+
+assertIncludes(
+  twoLineArabicAss,
+  "Caption,,0,0,70,,",
+  "Two-line Arabic captions must move downward inside the caption panel."
+);
+
+console.log(
+  "PASS: Two-line Arabic moves downward while single-line Arabic stays unchanged."
+);

@@ -462,10 +462,18 @@ function buildCaptionAss({
         normalizedLanguage.startsWith("ja") ||
         normalizedLanguage.startsWith("ko");
 
+      const isArabic =
+        normalizedLanguage.startsWith("ar");
+
+      const hasMultipleLines =
+        wrappedText.includes("\n");
+
       const eventMarginV =
-        isCjk && !wrappedText.includes("\n")
+        isCjk && !hasMultipleLines
           ? 150
-          : 0;
+          : isArabic && hasMultipleLines
+            ? 70
+            : 0;
 
       return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,${eventMarginV},,${assText}`;
     });
