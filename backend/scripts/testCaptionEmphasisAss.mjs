@@ -3,6 +3,7 @@ import {
 } from "../videoRenderer.mjs";
 
 const {
+  wrapCjkCaption,
   escapeAssText,
   buildAssCaptionText,
   buildCaptionEvents,
@@ -91,6 +92,34 @@ assertEqual(
 
 console.log(
   "PASS: CJK emphasis receives yellow tags."
+);
+
+assertEqual(
+  wrapCjkCaption(
+    "几分钟内就能让您的产品讲出自己的故事",
+    "zh"
+  ),
+  "几分钟内就能让您的\n产品讲出自己的故事",
+  "Long Chinese captions must wrap into two balanced lines."
+);
+
+assertEqual(
+  wrapCjkCaption(
+    "快速使用省时省力",
+    "zh"
+  ),
+  "快速使用省时省力",
+  "Short Chinese captions must remain on one line."
+);
+
+assertIncludes(
+  escapeAssText("第一行\n第二行"),
+  "\\N",
+  "Caption newlines must become ASS line breaks."
+);
+
+console.log(
+  "PASS: Long CJK captions wrap safely into two lines."
 );
 
 assertEqual(

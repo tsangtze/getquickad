@@ -62,11 +62,59 @@ function wrapText(value, maximumCharacters = 28) {
     .join("\n");
 }
 
+function wrapCjkCaption(
+  caption,
+  language = "en",
+  maximumCharactersPerLine = 14
+) {
+  const normalizedLanguage =
+    String(language || "en").toLowerCase();
+
+  const isCjk =
+    normalizedLanguage.startsWith("zh") ||
+    normalizedLanguage.startsWith("ja") ||
+    normalizedLanguage.startsWith("ko");
+
+  const source =
+    String(caption ?? "").trim();
+
+  if (!isCjk) {
+    return source;
+  }
+
+  const characters = Array.from(source);
+
+  if (
+    characters.length <= maximumCharactersPerLine
+  ) {
+    return source;
+  }
+
+  const firstLineLength =
+    Math.ceil(characters.length / 2);
+
+  if (
+    firstLineLength > maximumCharactersPerLine
+  ) {
+    return source;
+  }
+
+  return [
+    characters
+      .slice(0, firstLineLength)
+      .join(""),
+    characters
+      .slice(firstLineLength)
+      .join("")
+  ].join("\n");
+}
+
 function escapeAssText(value) {
   return String(value ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/{/g, "\\{")
-    .replace(/}/g, "\\}");
+    .replace(/}/g, "\\}")
+    .replace(/\r?\n/g, "\\N");
 }
 
 function buildAssCaptionText(
@@ -397,9 +445,15 @@ function buildCaptionAss({
 
   const dialogueLines =
     events.map((event) => {
+      const wrappedText =
+        wrapCjkCaption(
+          event.text,
+          language
+        );
+
       const assText =
         buildAssCaptionText(
-          event.text,
+          wrappedText,
           event.emphasisWords
         );
 
@@ -416,7 +470,7 @@ function buildCaptionAss({
     "",
     "[V4+ Styles]",
     "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-    `Style: Caption,${fontName},${captionFontSize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,2,2,42,42,162,1`,
+    `Style: Caption,${fontName},${captionFontSize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,2,2,42,42,110,1`,
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
@@ -1386,6 +1440,7 @@ export async function uploadToR2(localPath, key) {
 }
 
 export const __captionEmphasisTestHelpers = {
+  wrapCjkCaption,
   escapeAssText,
   buildAssCaptionText,
   buildCaptionEvents,
