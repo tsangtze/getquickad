@@ -703,7 +703,7 @@ function buildVideoFilter({
       "shadowy=2," +
 
       "drawbox=" +
-      "x=34:y=1000:w=652:h=176:" +
+      "x=34:y=976:w=652:h=200:" +
       `color=${accentColor}:t=fill,` +
 
       "ass=" +
