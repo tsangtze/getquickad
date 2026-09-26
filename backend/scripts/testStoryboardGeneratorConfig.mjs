@@ -45,6 +45,85 @@ console.log(
   "PASS: Storyboard planning prompt preserves 90% narration budgets for 30/45/60-second tiers."
 );
 
+const arabicInstructions =
+  buildSystemInstructions(
+    "ar",
+    30,
+    "manual",
+    1
+  );
+
+if (
+  !arabicInstructions.includes(
+    "Target language: Arabic (ar)"
+  )
+) {
+  throw new Error(
+    "Arabic storyboard prompt must identify Arabic as the target language."
+  );
+}
+
+if (
+  !arabicInstructions.includes(
+    "Write ALL titles, captions, and narration in the target language."
+  )
+) {
+  throw new Error(
+    "Arabic storyboard prompt must require target-language titles, captions, and narration."
+  );
+}
+
+console.log(
+  "PASS: Arabic storyboard prompt resolves ar to Arabic instead of English."
+);
+
+const frontendAppSource =
+  await fs.readFile(
+    new URL(
+      "../../Frontend/app.js",
+      import.meta.url
+    ),
+    "utf8"
+  );
+
+const arabicFrontendBranch =
+  'normalizedLang.startsWith("ar")';
+
+if (
+  !frontendAppSource.includes(
+    arabicFrontendBranch
+  )
+) {
+  throw new Error(
+    "Frontend project language normalization must contain an Arabic branch."
+  );
+}
+
+const arabicBranchIndex =
+  frontendAppSource.indexOf(
+    arabicFrontendBranch
+  );
+
+const englishFallbackIndex =
+  frontendAppSource.indexOf(
+    ': "en";',
+    arabicBranchIndex
+  );
+
+if (
+  arabicBranchIndex < 0 ||
+  englishFallbackIndex < 0 ||
+  arabicBranchIndex >= englishFallbackIndex
+) {
+  throw new Error(
+    "Frontend Arabic normalization must occur before the English fallback."
+  );
+}
+
+console.log(
+  "PASS: Frontend Arabic project language is preserved before the English fallback."
+);
+
 
 const project = {
   description:

@@ -81,6 +81,7 @@ function describeLanguage(language = "en") {
   }
   if (normalized.startsWith("tr")) return "Turkish (tr)";
   if (normalized.startsWith("hi")) return "Hindi (hi)";
+  if (normalized.startsWith("ar")) return "Arabic (ar)";
 
   return "English (en)";
 }
