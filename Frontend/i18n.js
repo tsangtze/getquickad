@@ -110,52 +110,43 @@ function applyLocalizedDemoVideo(){
 
   const demoVideos = {
     en: {
-      src: '/assets/01-en.mp4',
-      poster: '/assets/01-en-poster.jpg'
+      src: '/assets/01-us.mp4'
     },
     es: {
-      src: '/assets/02-es.mp4',
-      poster: '/assets/02-es-poster.jpg'
+      src: '/assets/02-mx.mp4'
     },
     pt: {
-      src: '/assets/03-pt.mp4',
-      poster: '/assets/03-pt-poster.jpg'
+      src: '/assets/03-br.mp4'
     },
     fr: {
-      src: '/assets/04-fr.mp4',
-      poster: '/assets/04-fr-poster.jpg'
+      src: '/assets/04-fr.mp4'
     },
     de: {
-      src: '/assets/05-de.mp4',
-      poster: '/assets/05-de-poster.jpg'
+      src: '/assets/05-de.mp4'
     },
     it: {
-      src: '/assets/06-it.mp4',
-      poster: '/assets/06-it-poster.jpg'
+      src: '/assets/06-it.mp4'
     },
     ja: {
-      src: '/assets/07-ja.mp4',
-      poster: '/assets/07-ja-poster.jpg'
+      src: '/assets/07-ja.mp4'
     },
     ko: {
-      src: '/assets/08-ko.mp4',
-      poster: '/assets/08-ko-poster.jpg'
+      src: '/assets/08-ko.mp4'
     },
     zh: {
-      src: '/assets/09-cn.mp4',
-      poster: '/assets/09-cn-poster.jpg'
+      src: '/assets/09-cn.mp4'
     },
     'zh-TW': {
-      src: '/assets/10-tw.mp4',
-      poster: '/assets/10-tw-poster.jpg'
+      src: '/assets/10-tw.mp4'
     },
     tr: {
-      src: '/assets/11-tr.mp4',
-      poster: '/assets/11-tr-poster.jpg'
+      src: '/assets/11-tr.mp4'
     },
     hi: {
-      src: '/assets/12-in.mp4',
-      poster: '/assets/12-in-poster.jpg'
+      src: '/assets/12-in.mp4'
+    },
+    ar: {
+      src: '/assets/13-sa.mp4'
     }
   };
 
@@ -169,9 +160,6 @@ function applyLocalizedDemoVideo(){
     source.setAttribute('src', demo.src);
   }
 
-  if(video.getAttribute('poster') !== demo.poster){
-    video.setAttribute('poster', demo.poster);
-  }
 
   if(sourceChanged){
     video.load();
