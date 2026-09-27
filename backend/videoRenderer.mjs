@@ -239,6 +239,217 @@ function getCaptionSegmentWeight(text) {
   return Math.max(1, characters.length);
 }
 
+function usesCompactCaptionLayout(language = "en") {
+  const normalizedLanguage =
+    String(language || "en").toLowerCase();
+
+  return (
+    normalizedLanguage.startsWith("zh") ||
+    normalizedLanguage.startsWith("ja")
+  );
+}
+
+function splitCompactCaptionLines(
+  text,
+  maxCharacters = 12
+) {
+  const remainingCharacters =
+    Array.from(String(text ?? "").trim());
+
+  if (remainingCharacters.length === 0) {
+    return [];
+  }
+
+  const punctuationBoundaries =
+    new Set([
+      "。",
+      "！",
+      "？",
+      "!",
+      "?",
+      "；",
+      ";",
+      "：",
+      ":",
+      "，",
+      ",",
+      "、"
+    ]);
+
+  const lines = [];
+  let remaining =
+    remainingCharacters;
+
+  while (remaining.length > maxCharacters) {
+    const windowLength =
+      Math.min(
+        maxCharacters,
+        remaining.length
+      );
+
+    let splitIndex = -1;
+
+    // Prefer the latest punctuation within the hard
+    // character limit. Never extend beyond the limit.
+    for (
+      let index = windowLength;
+      index >= 1;
+      index--
+    ) {
+      if (
+        punctuationBoundaries.has(
+          remaining[index - 1]
+        )
+      ) {
+        splitIndex = index;
+        break;
+      }
+    }
+
+    if (splitIndex <= 0) {
+      splitIndex = windowLength;
+    }
+
+    const line =
+      remaining
+        .slice(0, splitIndex)
+        .join("")
+        .trim();
+
+    if (line) {
+      lines.push(line);
+    }
+
+    remaining =
+      remaining.slice(splitIndex);
+
+    while (
+      remaining.length > 0 &&
+      remaining[0] === " "
+    ) {
+      remaining =
+        remaining.slice(1);
+    }
+  }
+
+  const finalLine =
+    remaining
+      .join("")
+      .trim();
+
+  if (finalLine) {
+    lines.push(finalLine);
+  }
+
+  return lines;
+}
+
+function splitCompactVisualEvents(events) {
+  return events.flatMap((event) => {
+    const lines =
+      splitCompactCaptionLines(
+        event.text,
+        12
+      );
+
+    if (lines.length === 0) {
+      return [event];
+    }
+
+    const visualChunks = [];
+
+    for (
+      let index = 0;
+      index < lines.length;
+      index += 2
+    ) {
+      visualChunks.push(
+        lines
+          .slice(index, index + 2)
+          .join("\n")
+      );
+    }
+
+    if (visualChunks.length === 1) {
+      return [
+        {
+          ...event,
+          text: visualChunks[0]
+        }
+      ];
+    }
+
+    const weights =
+      visualChunks.map(
+        (text) =>
+          getCaptionSegmentWeight(text)
+      );
+
+    const totalWeight =
+      weights.reduce(
+        (sum, weight) => sum + weight,
+        0
+      );
+
+    const eventDuration =
+      Math.max(
+        0.01,
+        event.endSeconds -
+          event.startSeconds
+      );
+
+    let elapsedWeight = 0;
+    let previousEnd =
+      event.startSeconds;
+
+    return visualChunks.map(
+      (text, chunkIndex) => {
+        const isLast =
+          chunkIndex ===
+          visualChunks.length - 1;
+
+        const startSeconds =
+          previousEnd;
+
+        let endSeconds;
+
+        if (isLast) {
+          endSeconds =
+            event.endSeconds;
+        } else {
+          elapsedWeight +=
+            weights[chunkIndex];
+
+          endSeconds =
+            event.startSeconds +
+            eventDuration *
+              (
+                elapsedWeight /
+                totalWeight
+              );
+
+          endSeconds =
+            Math.max(
+              startSeconds + 0.01,
+              Math.min(
+                endSeconds,
+                event.endSeconds
+              )
+            );
+        }
+
+        previousEnd = endSeconds;
+
+        return {
+          ...event,
+          startSeconds,
+          endSeconds,
+          text
+        };
+      }
+    );
+  });
+}
 function buildCaptionEvents({
   caption,
   emphasisWords = [],
@@ -369,7 +580,7 @@ function buildCaptionAss({
   spokenDurationSeconds,
   language = "en"
 }) {
-  const events =
+  const semanticEvents =
     buildCaptionEvents({
       caption,
       emphasisWords,
@@ -377,6 +588,16 @@ function buildCaptionAss({
       durationSeconds,
       spokenDurationSeconds
     });
+
+  const useCompactCaptionLayout =
+    usesCompactCaptionLayout(language);
+
+  const events =
+    useCompactCaptionLayout
+      ? splitCompactVisualEvents(
+          semanticEvents
+        )
+      : semanticEvents;
 
   const fontName =
     getAssFontName(language);
@@ -403,6 +624,11 @@ function buildCaptionAss({
           event.emphasisWords
         );
 
+      const displayAssText =
+        useCompactCaptionLayout
+          ? assText.replace(/\n/g, "\\N")
+          : assText;
+
       // Keep the original ASS horizontal layout so libass continues to
       // center and wrap captions inside the existing 42px safe margins.
       //
@@ -412,7 +638,7 @@ function buildCaptionAss({
       const captionLineCount =
         Math.max(
           1,
-          String(assText).split(/\\N/).length
+          String(displayAssText).split(/\\N/).length
         );
 
       const captionLineHeight =
@@ -433,7 +659,7 @@ function buildCaptionAss({
           )
         );
 
-      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,${eventMarginV},,${assText}`;
+      return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,${eventMarginV},,${displayAssText}`;
     });
 
   return [
@@ -1419,5 +1645,7 @@ export const __captionEmphasisTestHelpers = {
   escapeAssText,
   buildAssCaptionText,
   buildCaptionEvents,
-  buildCaptionAss
+  buildCaptionAss,
+  splitCompactCaptionLines,
+  splitCompactVisualEvents
 };
