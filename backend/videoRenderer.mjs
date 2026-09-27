@@ -406,33 +406,10 @@ function buildCaptionAss({
       // Keep the original ASS horizontal layout so libass continues to
       // center and wrap captions inside the existing 42px safe margins.
       //
-      // Alignment 2 anchors the caption block at its bottom edge. Move that
-      // bottom edge according to the rendered line count so the complete
-      // block remains centered around the common visual Y position.
-      const captionLineCount =
-        Math.max(
-          1,
-          String(assText).split(/\\N/).length
-        );
-
-      const captionLineHeight =
-        captionFontSize * 1.2;
-
-      const captionBlockHeight =
-        captionLineCount * captionLineHeight;
-
-      const captionCenterY = 1088;
-
-      const eventMarginV =
-        Math.max(
-          0,
-          Math.round(
-            VIDEO_HEIGHT -
-              captionCenterY -
-              captionBlockHeight / 2
-          )
-        );
-
+      // Alignment 2 uses one stable bottom anchor for every language.
+      // Let libass preserve its known-good horizontal wrapping and allow
+      // additional rendered lines to grow upward naturally.
+      const eventMarginV = 124;
       return `Dialogue: 0,${formatAssTime(event.startSeconds)},${formatAssTime(event.endSeconds)},Caption,,0,0,${eventMarginV},,${assText}`;
     });
 
