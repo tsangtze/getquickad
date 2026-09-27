@@ -631,3 +631,172 @@ console.log(
     "PASS: Overlong generated caption segments redistribute safely."
   );
 }
+
+{
+  const {
+    __storyboardGeneratorTestHelpers
+  } = await import(
+    "../storyboardGenerator.mjs"
+  );
+
+  const {
+    normalizeGeneratedCaptionSegments
+  } =
+    __storyboardGeneratorTestHelpers;
+
+  const traditionalChinese =
+    "上傳產品照片，最多十張，準備素材更簡單，讓AI自動完成配音字幕轉場和背景音樂。";
+
+  const normalized =
+    normalizeGeneratedCaptionSegments({
+      version: "1.0",
+      scenes: [
+        {
+          sceneNumber: 1,
+          narration:
+            traditionalChinese,
+          caption:
+            traditionalChinese,
+          emphasisWords: [
+            "產品照片"
+          ],
+          captionSegments: [
+            {
+              text:
+                traditionalChinese,
+              emphasisWords: [
+                "產品照片"
+              ]
+            }
+          ]
+        }
+      ]
+    });
+
+  const scene =
+    normalized.scenes[0];
+
+  if (
+    scene.captionSegments.length !== 2
+  ) {
+    throw new Error(
+      "Long CJK caption did not become two sequential segments."
+    );
+  }
+
+  for (
+    const segment of
+    scene.captionSegments
+  ) {
+    if (
+      Array.from(segment.text).length > 30
+    ) {
+      throw new Error(
+        "CJK sequential caption exceeded 30-character display target."
+      );
+    }
+  }
+
+  const reconstructed =
+    scene.captionSegments
+      .map((segment) => segment.text)
+      .join("")
+      .replace(/\s+/gu, "");
+
+  if (
+    reconstructed !==
+    traditionalChinese
+      .replace(/\s+/gu, "")
+  ) {
+    throw new Error(
+      "CJK sequential redistribution changed caption text."
+    );
+  }
+
+  console.log(
+    "PASS: Long CJK captions split into short sequential display segments."
+  );
+}
+
+{
+  const {
+    __storyboardGeneratorTestHelpers
+  } = await import(
+    "../storyboardGenerator.mjs"
+  );
+
+  const {
+    normalizeGeneratedCaptionSegments
+  } =
+    __storyboardGeneratorTestHelpers;
+
+  const longCjk =
+    "上傳產品照片後系統會自動分析素材並建立影片內容，接著產生自然的語音配音與清楚的字幕效果，同時加入流暢的轉場和適合產品風格的背景音樂，讓您可以快速完成專業的產品宣傳影片並分享給更多客戶。";
+
+  const normalized =
+    normalizeGeneratedCaptionSegments({
+      version: "1.0",
+      scenes: [
+        {
+          sceneNumber: 1,
+          narration: longCjk,
+          caption: longCjk,
+          emphasisWords: [
+            "產品照片"
+          ],
+          captionSegments: [
+            {
+              text: longCjk,
+              emphasisWords: [
+                "產品照片"
+              ]
+            }
+          ]
+        }
+      ]
+    });
+
+  const scene =
+    normalized.scenes[0];
+
+  if (
+    scene.captionSegments.length < 1 ||
+    scene.captionSegments.length > 3
+  ) {
+    throw new Error(
+      "Long CJK fallback exceeded the 1-3 segment schema limit."
+    );
+  }
+
+  for (
+    const segment of
+    scene.captionSegments
+  ) {
+    if (
+      Array.from(segment.text).length > 60
+    ) {
+      throw new Error(
+        "Long CJK fallback exceeded the 60-character hard limit."
+      );
+    }
+  }
+
+  const reconstructed =
+    scene.captionSegments
+      .map((segment) => segment.text)
+      .join("")
+      .replace(/\s+/gu, "");
+
+  if (
+    reconstructed !==
+    longCjk.replace(/\s+/gu, "")
+  ) {
+    throw new Error(
+      "Long CJK fallback changed caption wording."
+    );
+  }
+
+  console.log(
+    "PASS: Long CJK fallback preserves the 1-3 segment and 60-character hard limits."
+  );
+}

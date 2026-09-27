@@ -525,10 +525,26 @@ function normalizeGeneratedCaptionSegments(storyboard) {
               : []
         }));
 
+      const containsCjkCaptionText =
+        captionSegments.some((segment) =>
+          /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(
+            segment.text
+          )
+        );
+
+      // Keep 60 characters as the hard technical safeguard, but
+      // proactively split CJK captions into shorter sequential
+      // display segments before they become visually overcrowded.
+      const displayTargetCharacters =
+        containsCjkCaptionText
+          ? 30
+          : 60;
+
       const needsRedistribution =
         captionSegments.some(
           (segment) =>
-            Array.from(segment.text).length > 60
+            Array.from(segment.text).length >
+            displayTargetCharacters
         );
 
       if (needsRedistribution) {
@@ -539,11 +555,26 @@ function normalizeGeneratedCaptionSegments(storyboard) {
             .trim()
             .replace(/\s+/gu, " ");
 
-        const redistributedTexts =
+        let redistributedTexts =
           splitCaptionText(
             completeText,
-            60
+            displayTargetCharacters
           );
+
+        // A shorter CJK display target is preferred, but the
+        // storyboard schema allows at most three caption segments.
+        // If the preferred split would exceed that limit, fall back
+        // to the existing 60-character hard safeguard.
+        if (
+          redistributedTexts.length > 3 &&
+          displayTargetCharacters < 60
+        ) {
+          redistributedTexts =
+            splitCaptionText(
+              completeText,
+              60
+            );
+        }
 
         if (
           redistributedTexts.length >= 1 &&
