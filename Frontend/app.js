@@ -4411,13 +4411,18 @@ finalVideoButton.addEventListener(
           return;
         }
 
-        throw new Error(
+        const apiError = new Error(
           localizedApiError(result) ||
           uiText(
             "api.final_video_generation_failed",
             "The final video could not be created. Please try again."
           )
         );
+
+        apiError.trackingId =
+          String(result?.trackingId || "").trim();
+
+        throw apiError;
       }
 
       showFinalVideoReady(result);
@@ -4504,12 +4509,20 @@ finalVideoButton.addEventListener(
           "approved"
         );
 
-        planStatus.textContent =
+        const failureMessage =
           String(error?.message || "").trim() ||
           uiText(
             "api.final_video_generation_failed",
             "The final video could not be created. Please try again."
           );
+
+        const trackingId =
+          String(error?.trackingId || "").trim();
+
+        planStatus.textContent =
+          trackingId
+            ? `${failureMessage} Tracking ID: ${trackingId}`
+            : failureMessage;
       }
     }
 
@@ -4766,6 +4779,9 @@ form.addEventListener("submit", async (event) => {
       apiError.code =
         String(result?.code || "");
 
+      apiError.trackingId =
+        String(result?.trackingId || "").trim();
+
       throw apiError;
     }
 
@@ -4894,7 +4910,16 @@ form.addEventListener("submit", async (event) => {
       });
     }, 3000);
   } catch (error) {
-    formMessage.textContent = String(error?.message || uiText("api.project_input_invalid", "Please check your project details and try again."));
+    const failureMessage =
+      String(error?.message || uiText("api.project_input_invalid", "Please check your project details and try again."));
+
+    const trackingId =
+      String(error?.trackingId || "").trim();
+
+    formMessage.textContent =
+      trackingId
+        ? `${failureMessage} Tracking ID: ${trackingId}`
+        : failureMessage;
 
     if (error?.code === "FREE_VIDEO_PLAN_LIMIT_REACHED") { const upgradeLink = document.createElement("a"); upgradeLink.href = "/billing.html"; upgradeLink.className = "form-message-upgrade"; upgradeLink.textContent = uiText("quota.upgrade_plan", "Upgrade Plan"); formMessage.append(" ", upgradeLink); }
 

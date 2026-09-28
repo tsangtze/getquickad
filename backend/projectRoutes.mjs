@@ -1100,8 +1100,13 @@ export async function createProjectRouter({
               result.storyboard
           });
         } catch (generationError) {
+          const trackingId =
+            crypto.randomBytes(6)
+              .toString("hex")
+              .toUpperCase();
+
           console.error(
-            "Storyboard generation failed:",
+            `[Tracking ID: ${trackingId}] Storyboard generation failed:`,
             generationError
           );
 
@@ -1115,7 +1120,8 @@ export async function createProjectRouter({
               generationError.code ||
               "STORYBOARD_GENERATION_FAILED",
             failedAt:
-              new Date().toISOString()
+              new Date().toISOString(),
+            trackingId
           };
 
           await fs.writeFile(
@@ -1150,7 +1156,8 @@ export async function createProjectRouter({
                   project.id,
                 status:
                   project.status
-              }
+              },
+              trackingId
             });
         }      } catch (error) {
         await removeFiles(uploadedFiles);
@@ -2890,10 +2897,31 @@ export async function createProjectRouter({
             `/api/projects/${projectId}/video`
         });
       } catch (error) {
-        console.error(
-          "Final video generation failed:",
-          error
-        );
+        const isCorrectableNarrationFailure =
+          [
+            "NARRATION_TOTAL_TOO_LONG",
+            "NARRATION_DURATION_BUDGET_EXCEEDED",
+            "NARRATION_SCENE_TOO_LONG"
+          ].includes(error?.code);
+
+        const trackingId =
+          isCorrectableNarrationFailure
+            ? ""
+            : crypto.randomBytes(6)
+                .toString("hex")
+                .toUpperCase();
+
+        if (trackingId) {
+          console.error(
+            `[Tracking ID: ${trackingId}] Final video generation failed:`,
+            error
+          );
+        } else {
+          console.error(
+            "Final video generation rejected:",
+            error
+          );
+        }
 
         if (project) {
           project.status =
@@ -2910,7 +2938,10 @@ export async function createProjectRouter({
               error.code ||
               "FINAL_VIDEO_GENERATION_FAILED",
             failedAt:
-              new Date().toISOString()
+              new Date().toISOString(),
+            ...(trackingId
+              ? { trackingId }
+              : {})
           };
 
           await fs.writeFile(
@@ -3035,7 +3066,8 @@ export async function createProjectRouter({
               ? "The narration was created but the final video could not be rendered. The temporary media may be missing. Please try generating again."
                 : "The approved video plan could not be saved.",
           stage:
-            generationStage
+            generationStage,
+          trackingId
         });
       }
       })

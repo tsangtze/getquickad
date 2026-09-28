@@ -37,14 +37,14 @@ assert.match(
 
 assert.match(
   source,
-  /const reconciliationAttempts\s*=\s*12;\s*const reconciliationDelayMs\s*=\s*5000;/s,
+  /const reconciliationAttempts\s*=\s*120;\s*const reconciliationDelayMs\s*=\s*5000;/s,
   "Finalization recovery must use bounded polling."
 );
 
 assert.match(
   source,
-  /statusResult\?\.project\?\.status !==\s*"rendering_video"/s,
-  "Finalization recovery must continue polling only while rendering is still in progress."
+  /"generating_narration",\s*"rendering_video"\s*\]\.includes\(\s*statusResult\?\.project\?\.status\s*\)/s,
+  "Finalization recovery must continue polling while narration generation or video rendering is active."
 );
 
 assert.match(
