@@ -1,6 +1,25 @@
 apply plugin: 'com.android.application'
 
+def pix2vidSigningPropertiesFile = file("${System.getProperty('user.home')}/Pix2Vid-Keys/pix2vid-signing.properties")
+
+def pix2vidSigningProperties = new Properties()
+
+if (!pix2vidSigningPropertiesFile.exists()) {
+    throw new GradleException("Pix2Vid signing properties file not found: ${pix2vidSigningPropertiesFile}")
+}
+
+pix2vidSigningProperties.load(new FileInputStream(pix2vidSigningPropertiesFile))
+
 android {
+    signingConfigs {
+        release {
+            storeFile file(pix2vidSigningProperties['storeFile'])
+            storePassword pix2vidSigningProperties['storePassword']
+            keyAlias pix2vidSigningProperties['keyAlias']
+            keyPassword pix2vidSigningProperties['keyPassword']
+        }
+    }
+
     namespace "net.pix2vid.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -18,6 +37,7 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
