@@ -1,6 +1,5 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import Stripe from "stripe";
 
 import { requireUser } from "./authRoutes.mjs";
 import {
@@ -9,6 +8,7 @@ import {
 import { authConfiguration } from "./authService.mjs";
 import { isTrustedApplicationRequest } from "./requestContext.mjs";
 import { getStripeBillingState } from "./usageLimits.mjs";
+import { createStripeClient } from "./stripeService.mjs";
 
 function cleanEnvironmentValue(value) {
   return String(value ?? "").trim();
@@ -16,11 +16,6 @@ function cleanEnvironmentValue(value) {
 
 function stripeConfiguration() {
   return {
-    secretKey:
-      cleanEnvironmentValue(
-        process.env.STRIPE_SECRET_KEY
-      ),
-
     starterPriceId:
       cleanEnvironmentValue(
         process.env.STRIPE_STARTER_PRICE_ID
@@ -31,21 +26,6 @@ function stripeConfiguration() {
         process.env.STRIPE_PRO_PRICE_ID
       )
   };
-}
-
-function createStripeClient() {
-  const configuration =
-    stripeConfiguration();
-
-  if (!configuration.secretKey) {
-    const error =
-      new Error("Stripe billing is not configured.");
-
-    error.code = "STRIPE_NOT_CONFIGURED";
-    throw error;
-  }
-
-  return new Stripe(configuration.secretKey);
 }
 
 function priceForPlan(planId) {
