@@ -1,5 +1,3 @@
-import Stripe from "stripe";
-
 import {
   stripeSubscriptionPeriodEnd,
   stripeSubscriptionPeriodStart
@@ -10,6 +8,7 @@ import {
   getStripeBillingState,
   updateStripeSubscription
 } from "./usageLimits.mjs";
+import { createStripeClient } from "./stripeService.mjs";
 
 function cleanEnvironmentValue(value) {
   return String(value ?? "").trim();
@@ -17,11 +16,6 @@ function cleanEnvironmentValue(value) {
 
 function stripeConfiguration() {
   return {
-    secretKey:
-      cleanEnvironmentValue(
-        process.env.STRIPE_SECRET_KEY
-      ),
-
     starterPriceId:
       cleanEnvironmentValue(
         process.env.STRIPE_STARTER_PRICE_ID
@@ -219,30 +213,37 @@ export async function reconcilePaidEntitlement(
   let retrieve = retrieveSubscription;
 
   if (!retrieve) {
-    const configuration =
-      stripeConfiguration();
+    let stripe;
 
-    if (!configuration.secretKey) {
+    try {
+      stripe =
+        createStripeClient();
+    } catch (error) {
       if (
-        requireFreshVerification &&
-        usage.planId !== PLAN_IDS.FREE
+        error?.code === "STRIPE_NOT_CONFIGURED"
       ) {
-        const error =
-          new Error(
-            "Paid subscription verification is temporarily unavailable."
-          );
+        if (
+          requireFreshVerification &&
+          usage.planId !== PLAN_IDS.FREE
+        ) {
+          const verificationError =
+            new Error(
+              "Paid subscription verification is temporarily unavailable."
+            );
 
-        error.code =
-          "STRIPE_ENTITLEMENT_UNAVAILABLE";
+          verificationError.code =
+            "STRIPE_ENTITLEMENT_UNAVAILABLE";
 
-        throw error;
+          verificationError.cause = error;
+
+          throw verificationError;
+        }
+
+        return usage;
       }
 
-      return usage;
+      throw error;
     }
-
-    const stripe =
-      new Stripe(configuration.secretKey);
 
     retrieve =
       (id) =>
