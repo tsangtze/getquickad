@@ -208,6 +208,7 @@ export function createBillingRouter({
           await stripe.checkout.sessions.create({
             mode: "subscription",
             locale: stripeLocale,
+            allow_promotion_codes: true,
 
             line_items: [
               {
