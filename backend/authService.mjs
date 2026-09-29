@@ -51,6 +51,45 @@ export function isAuthConfigured() {
   }
 }
 
+export function createAuthAdminClient() {
+  const configuration =
+    authConfiguration();
+
+  const serviceRoleKey =
+    cleanEnvironmentValue(
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+  if (
+    !configuration.supabaseUrl ||
+    !serviceRoleKey
+  ) {
+    const error =
+      new Error(
+        "Supabase administrative authentication is not configured."
+      );
+
+    error.code =
+      "AUTH_ADMIN_NOT_CONFIGURED";
+
+    throw error;
+  }
+
+  return createClient(
+    configuration.supabaseUrl,
+    serviceRoleKey,
+    {
+      realtime: {
+        transport: WebSocket
+      },
+      auth: {
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        persistSession: false
+      }
+    }
+  );
+}
 export function createAuthClient() {
   if (!isAuthConfigured()) {
     const error =
