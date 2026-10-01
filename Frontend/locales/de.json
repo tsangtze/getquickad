@@ -481,6 +481,7 @@
   "scene.original_length_limit_reached": "Länge des KI-Originals erreicht",
   "scene.edited": "Bearbeitet",
   "api.narration_scene_too_long": "Die Erzählung in Szene {number} ist für ihre Dauer zu lang. Kürzen Sie den Untertitel dieser Szene etwas und bestätigen Sie die Szene erneut.",
+  "account.settings": "Kontoeinstellungen",
 "account.delete": "Konto löschen",
   "account.delete_note": "Wenn Sie Ihr Konto dauerhaft löschen, werden Ihr Pix2Vid-Konto, Ihre Projekte und Videos entfernt. Ein aktives Pix2Vid-Abonnement wird gekündigt.",
   "account.delete_confirm": "Pix2Vid-Konto dauerhaft löschen? Ihre Projekte und Videos werden gelöscht und ein aktives Pix2Vid-Abonnement wird gekündigt. Dies kann nicht rückgängig gemacht werden.",

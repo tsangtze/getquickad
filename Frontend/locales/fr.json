@@ -481,6 +481,7 @@
   "scene.original_length_limit_reached": "Longueur de l'original IA atteinte",
   "scene.edited": "Modifié",
   "api.narration_scene_too_long": "La narration de la scène {number} est trop longue pour sa durée. Raccourcissez légèrement la légende de cette scène, puis confirmez-la à nouveau.",
+  "account.settings": "Paramètres du compte",
 "account.delete": "Supprimer le compte",
   "account.delete_note": "La suppression définitive de votre compte supprime votre compte Pix2Vid, vos projets et vos vidéos. Tout abonnement Pix2Vid actif sera également annulé.",
   "account.delete_confirm": "Supprimer définitivement votre compte Pix2Vid ? Vos projets et vidéos seront supprimés et tout abonnement Pix2Vid actif sera annulé. Cette action est irréversible.",

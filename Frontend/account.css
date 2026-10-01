@@ -108,26 +108,40 @@
   gap: 12px;
 }
 
-.qa-account-danger-zone {
+.qa-account-settings {
   margin-top: 10px;
   padding-top: 16px;
   border-top: 1px solid #e3e7ef;
 }
 
-.qa-account-danger-note {
-  margin: 0 0 10px;
-  color: #7f1d1d;
-  font-size: 0.875rem;
-  line-height: 1.5;
+.qa-account-settings-title {
+  margin: 0 0 4px;
+  color: #667085;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .qa-account-dialog .qa-account-delete {
   width: 100%;
-  border-color: #c33d4b;
-  color: #a52232;
-  background: #fff;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #667085;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: none;
 }
 
 .qa-account-dialog .qa-account-delete:hover:not(:disabled) {
-  background: #fff1f2;
+  background: transparent;
+  color: #344054;
+}
+
+.qa-account-delete-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
 }

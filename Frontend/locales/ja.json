@@ -466,6 +466,7 @@
   "scene.original_length_limit_reached": "AIオリジナルの長さに達しました",
   "scene.edited": "編集済み",
   "api.narration_scene_too_long": "シーン{number}のナレーションがシーンの長さに対して長すぎます。字幕を少し短くして、もう一度シーンを確認してください。",
+  "account.settings": "アカウント設定",
 "account.delete": "アカウントを削除",
   "account.delete_note": "アカウントを完全に削除すると、Pix2Vidアカウント、プロジェクト、動画が削除されます。有効なPix2Vidサブスクリプションもキャンセルされます。",
   "account.delete_confirm": "Pix2Vidアカウントを完全に削除しますか？プロジェクトと動画が削除され、有効なPix2Vidサブスクリプションもキャンセルされます。この操作は元に戻せません。",

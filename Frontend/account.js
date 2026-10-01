@@ -109,9 +109,12 @@
     <div class="qa-account-signed-in" hidden>
       <p class="qa-account-identity"></p>
       <button type="button" class="qa-account-logout" data-i18n="account.sign_out">Sign out</button>
-      <div class="qa-account-danger-zone">
-        <p class="qa-account-danger-note" data-i18n="account.delete_note">Deleting your account permanently removes your Pix2Vid account, projects, and videos. Any active Pix2Vid subscription will be canceled.</p>
-        <button type="button" class="qa-account-delete" data-i18n="account.delete">Delete account</button>
+      <div class="qa-account-settings">
+        <p class="qa-account-settings-title" data-i18n="account.settings">Account settings</p>
+        <button type="button" class="qa-account-delete">
+          <span data-i18n="account.delete">Delete account</span>
+          <span class="qa-account-delete-arrow" aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
   `;
