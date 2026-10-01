@@ -480,5 +480,15 @@
   "scene.ai_captions": "KI-Untertitel",
   "scene.original_length_limit_reached": "Länge des KI-Originals erreicht",
   "scene.edited": "Bearbeitet",
-  "api.narration_scene_too_long": "Die Erzählung in Szene {number} ist für ihre Dauer zu lang. Kürzen Sie den Untertitel dieser Szene etwas und bestätigen Sie die Szene erneut."
+  "api.narration_scene_too_long": "Die Erzählung in Szene {number} ist für ihre Dauer zu lang. Kürzen Sie den Untertitel dieser Szene etwas und bestätigen Sie die Szene erneut.",
+"account.delete": "Konto löschen",
+  "account.delete_note": "Wenn Sie Ihr Konto dauerhaft löschen, werden Ihr Pix2Vid-Konto, Ihre Projekte und Videos entfernt. Ein aktives Pix2Vid-Abonnement wird gekündigt.",
+  "account.delete_confirm": "Pix2Vid-Konto dauerhaft löschen? Ihre Projekte und Videos werden gelöscht und ein aktives Pix2Vid-Abonnement wird gekündigt. Dies kann nicht rückgängig gemacht werden.",
+  "account.delete_type": "Geben Sie DELETE ein, um Ihr Pix2Vid-Konto dauerhaft zu löschen.",
+  "account.delete_type_mismatch": "Kontolöschung abgebrochen. Geben Sie zur Bestätigung der dauerhaften Löschung genau DELETE ein.",
+  "account.deleting": "Ihr Konto wird dauerhaft gelöscht...",
+  "account.deleted": "Ihr Pix2Vid-Konto wurde dauerhaft gelöscht.",
+  "account.delete_busy": "Ihr Konto ist beschäftigt. Warten Sie, bis die aktuelle Verarbeitung abgeschlossen ist, und versuchen Sie es erneut.",
+  "account.delete_failed": "Die Kontolöschung ist fehlgeschlagen. Die Löschung Ihres Kontos wurde nicht bestätigt. Bitte versuchen Sie es erneut.",
+  "account.delete_unconfirmed": "Die Kontolöschung konnte nicht bestätigt werden. Öffnen Sie Konto erneut, bevor Sie es noch einmal versuchen."
 }

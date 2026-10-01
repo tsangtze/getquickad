@@ -466,5 +466,15 @@
   "scene.ai_captions": "Yapay zekâ altyazıları",
   "scene.original_length_limit_reached": "Yapay zekâ orijinalinin uzunluğuna ulaşıldı",
   "scene.edited": "Düzenlendi",
-  "api.narration_scene_too_long": "{number}. sahnenin anlatımı süresi için fazla uzun. Bu sahnenin altyazısını biraz kısaltıp sahneyi yeniden onaylayın."
+  "api.narration_scene_too_long": "{number}. sahnenin anlatımı süresi için fazla uzun. Bu sahnenin altyazısını biraz kısaltıp sahneyi yeniden onaylayın.",
+"account.delete": "Hesabı sil",
+  "account.delete_note": "Hesabınızı kalıcı olarak silmek Pix2Vid hesabınızı, projelerinizi ve videolarınızı kaldırır. Etkin Pix2Vid aboneliğiniz de iptal edilir.",
+  "account.delete_confirm": "Pix2Vid hesabınız kalıcı olarak silinsin mi? Projeleriniz ve videolarınız silinecek ve etkin Pix2Vid aboneliğiniz iptal edilecektir. Bu işlem geri alınamaz.",
+  "account.delete_type": "Pix2Vid hesabınızı kalıcı olarak silmek için DELETE yazın.",
+  "account.delete_type_mismatch": "Hesap silme işlemi iptal edildi. Kalıcı silme işlemini onaylamak için tam olarak DELETE yazın.",
+  "account.deleting": "Hesabınız kalıcı olarak siliniyor...",
+  "account.deleted": "Pix2Vid hesabınız kalıcı olarak silindi.",
+  "account.delete_busy": "Hesabınız şu anda meşgul. Mevcut işlemin tamamlanmasını bekleyip tekrar deneyin.",
+  "account.delete_failed": "Hesap silinemedi. Hesabınızın silindiği doğrulanmadı. Lütfen tekrar deneyin.",
+  "account.delete_unconfirmed": "Hesabın silindiği doğrulanamadı. Tekrar denemeden önce Hesap bölümünü yeniden açın."
 }

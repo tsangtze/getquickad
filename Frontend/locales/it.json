@@ -480,5 +480,15 @@
   "scene.ai_captions": "Sottotitoli IA",
   "scene.original_length_limit_reached": "Raggiunta la lunghezza dell'originale IA",
   "scene.edited": "Modificato",
-  "api.narration_scene_too_long": "La narrazione della scena {number} è troppo lunga per la sua durata. Accorcia leggermente la didascalia della scena e confermala di nuovo."
+  "api.narration_scene_too_long": "La narrazione della scena {number} è troppo lunga per la sua durata. Accorcia leggermente la didascalia della scena e confermala di nuovo.",
+"account.delete": "Elimina account",
+  "account.delete_note": "L'eliminazione permanente dell'account rimuove il tuo account Pix2Vid, i progetti e i video. Qualsiasi abbonamento Pix2Vid attivo verrà annullato.",
+  "account.delete_confirm": "Eliminare definitivamente il tuo account Pix2Vid? I tuoi progetti e video verranno eliminati e qualsiasi abbonamento Pix2Vid attivo verrà annullato. Questa operazione non può essere annullata.",
+  "account.delete_type": "Digita DELETE per eliminare definitivamente il tuo account Pix2Vid.",
+  "account.delete_type_mismatch": "Eliminazione dell'account annullata. Digita esattamente DELETE per confermare l'eliminazione permanente.",
+  "account.deleting": "Eliminazione permanente dell'account...",
+  "account.deleted": "Il tuo account Pix2Vid è stato eliminato definitivamente.",
+  "account.delete_busy": "Il tuo account è occupato. Attendi il completamento dell'elaborazione corrente, quindi riprova.",
+  "account.delete_failed": "Eliminazione dell'account non riuscita. Non è stato confermato che il tuo account sia stato eliminato. Riprova.",
+  "account.delete_unconfirmed": "Non è stato possibile confermare l'eliminazione dell'account. Riapri Account prima di riprovare."
 }

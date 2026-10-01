@@ -465,5 +465,15 @@
   "scene.ai_captions": "AI字幕",
   "scene.original_length_limit_reached": "AIオリジナルの長さに達しました",
   "scene.edited": "編集済み",
-  "api.narration_scene_too_long": "シーン{number}のナレーションがシーンの長さに対して長すぎます。字幕を少し短くして、もう一度シーンを確認してください。"
+  "api.narration_scene_too_long": "シーン{number}のナレーションがシーンの長さに対して長すぎます。字幕を少し短くして、もう一度シーンを確認してください。",
+"account.delete": "アカウントを削除",
+  "account.delete_note": "アカウントを完全に削除すると、Pix2Vidアカウント、プロジェクト、動画が削除されます。有効なPix2Vidサブスクリプションもキャンセルされます。",
+  "account.delete_confirm": "Pix2Vidアカウントを完全に削除しますか？プロジェクトと動画が削除され、有効なPix2Vidサブスクリプションもキャンセルされます。この操作は元に戻せません。",
+  "account.delete_type": "Pix2Vidアカウントを完全に削除するには DELETE と入力してください。",
+  "account.delete_type_mismatch": "アカウントの削除をキャンセルしました。完全な削除を確認するには DELETE と正確に入力してください。",
+  "account.deleting": "アカウントを完全に削除しています...",
+  "account.deleted": "Pix2Vidアカウントは完全に削除されました。",
+  "account.delete_busy": "アカウントは現在処理中です。現在の処理が完了してから、もう一度お試しください。",
+  "account.delete_failed": "アカウントを削除できませんでした。アカウントが削除されたことは確認されていません。もう一度お試しください。",
+  "account.delete_unconfirmed": "アカウントの削除を確認できませんでした。もう一度試す前にアカウント画面を開き直してください。"
 }

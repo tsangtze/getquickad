@@ -109,6 +109,10 @@
     <div class="qa-account-signed-in" hidden>
       <p class="qa-account-identity"></p>
       <button type="button" class="qa-account-logout" data-i18n="account.sign_out">Sign out</button>
+      <div class="qa-account-danger-zone">
+        <p class="qa-account-danger-note" data-i18n="account.delete_note">Deleting your account permanently removes your Pix2Vid account, projects, and videos. Any active Pix2Vid subscription will be canceled.</p>
+        <button type="button" class="qa-account-delete" data-i18n="account.delete">Delete account</button>
+      </div>
     </div>
   `;
 
@@ -123,6 +127,7 @@
   const signedInPanel = dialog.querySelector(".qa-account-signed-in");
   const identity = dialog.querySelector(".qa-account-identity");
   const logoutButton = dialog.querySelector(".qa-account-logout");
+  const deleteAccountButton = dialog.querySelector(".qa-account-delete");
   let busy = false;
   let signupMode = false;
   const modeButton = dialog.querySelector(".qa-account-mode");
@@ -335,6 +340,55 @@
     } catch {
       status.textContent =
         accountText("account.sign_out_unconfirmed", "Sign-out could not be confirmed. Close and reopen Account to check.");
+    } finally {
+      setBusy(false);
+    }
+  });
+  deleteAccountButton.addEventListener("click", async () => {
+    if (busy) return;
+
+    const confirmed = window.confirm(
+      accountText("account.delete_confirm", "Delete your Pix2Vid account permanently? Your projects and videos will be deleted, and any active Pix2Vid subscription will be canceled. This cannot be undone.")
+    );
+
+    if (!confirmed) return;
+
+    const typedConfirmation = window.prompt(
+      accountText("account.delete_type", "Type DELETE to permanently delete your Pix2Vid account.")
+    );
+
+    if (typedConfirmation !== "DELETE") {
+      status.textContent =
+        accountText("account.delete_type_mismatch", "Account deletion canceled. Type DELETE exactly to confirm permanent deletion.");
+      return;
+    }
+
+    setBusy(true);
+    status.textContent =
+      accountText("account.deleting", "Permanently deleting your account...");
+
+    try {
+      const { response, data } =
+        await request("delete-account", {});
+
+      if (response.ok && data.ok && data.deleted) {
+        window.quickAdNotifyAccountChange?.();
+        showUser(null);
+        status.textContent =
+          accountText("account.deleted", "Your Pix2Vid account has been permanently deleted.");
+      } else if (
+        response.status === 409 &&
+        data.code === "ACCOUNT_DELETE_BUSY"
+      ) {
+        status.textContent =
+          accountText("account.delete_busy", "Your account is busy. Wait for current processing to finish, then try again.");
+      } else {
+        status.textContent =
+          accountText("account.delete_failed", "Account deletion failed. Your account has not been confirmed as deleted. Please try again.");
+      }
+    } catch {
+      status.textContent =
+        accountText("account.delete_unconfirmed", "Account deletion could not be confirmed. Reopen Account before trying again.");
     } finally {
       setBusy(false);
     }

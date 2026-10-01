@@ -103,3 +103,31 @@
   text-decoration: none;
   font-weight: 600;
 }
+.qa-account-signed-in {
+  display: grid;
+  gap: 12px;
+}
+
+.qa-account-danger-zone {
+  margin-top: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #e3e7ef;
+}
+
+.qa-account-danger-note {
+  margin: 0 0 10px;
+  color: #7f1d1d;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.qa-account-dialog .qa-account-delete {
+  width: 100%;
+  border-color: #c33d4b;
+  color: #a52232;
+  background: #fff;
+}
+
+.qa-account-dialog .qa-account-delete:hover:not(:disabled) {
+  background: #fff1f2;
+}

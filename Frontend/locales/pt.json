@@ -471,5 +471,15 @@
   "scene.ai_captions": "Legendas da IA",
   "scene.original_length_limit_reached": "O tamanho do original da IA foi atingido",
   "scene.edited": "Editado",
-  "api.narration_scene_too_long": "A narração da cena {number} é longa demais para sua duração. Encurte um pouco a legenda dessa cena e confirme-a novamente."
+  "api.narration_scene_too_long": "A narração da cena {number} é longa demais para sua duração. Encurte um pouco a legenda dessa cena e confirme-a novamente.",
+"account.delete": "Excluir conta",
+  "account.delete_note": "Excluir permanentemente sua conta removerá sua conta Pix2Vid, seus projetos e vídeos. Qualquer assinatura Pix2Vid ativa também será cancelada.",
+  "account.delete_confirm": "Excluir permanentemente sua conta Pix2Vid? Seus projetos e vídeos serão excluídos e qualquer assinatura Pix2Vid ativa será cancelada. Esta ação não pode ser desfeita.",
+  "account.delete_type": "Digite DELETE para excluir permanentemente sua conta Pix2Vid.",
+  "account.delete_type_mismatch": "Exclusão da conta cancelada. Digite exatamente DELETE para confirmar a exclusão permanente.",
+  "account.deleting": "Excluindo permanentemente sua conta...",
+  "account.deleted": "Sua conta Pix2Vid foi excluída permanentemente.",
+  "account.delete_busy": "Sua conta está ocupada. Aguarde o processamento atual terminar e tente novamente.",
+  "account.delete_failed": "Falha ao excluir a conta. Não foi confirmado que sua conta foi excluída. Tente novamente.",
+  "account.delete_unconfirmed": "Não foi possível confirmar a exclusão da conta. Reabra Conta antes de tentar novamente."
 }

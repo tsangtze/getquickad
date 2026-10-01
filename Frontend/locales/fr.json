@@ -480,5 +480,15 @@
   "scene.ai_captions": "Sous-titres IA",
   "scene.original_length_limit_reached": "Longueur de l'original IA atteinte",
   "scene.edited": "Modifié",
-  "api.narration_scene_too_long": "La narration de la scène {number} est trop longue pour sa durée. Raccourcissez légèrement la légende de cette scène, puis confirmez-la à nouveau."
+  "api.narration_scene_too_long": "La narration de la scène {number} est trop longue pour sa durée. Raccourcissez légèrement la légende de cette scène, puis confirmez-la à nouveau.",
+"account.delete": "Supprimer le compte",
+  "account.delete_note": "La suppression définitive de votre compte supprime votre compte Pix2Vid, vos projets et vos vidéos. Tout abonnement Pix2Vid actif sera également annulé.",
+  "account.delete_confirm": "Supprimer définitivement votre compte Pix2Vid ? Vos projets et vidéos seront supprimés et tout abonnement Pix2Vid actif sera annulé. Cette action est irréversible.",
+  "account.delete_type": "Saisissez DELETE pour supprimer définitivement votre compte Pix2Vid.",
+  "account.delete_type_mismatch": "Suppression du compte annulée. Saisissez exactement DELETE pour confirmer la suppression définitive.",
+  "account.deleting": "Suppression définitive de votre compte...",
+  "account.deleted": "Votre compte Pix2Vid a été définitivement supprimé.",
+  "account.delete_busy": "Votre compte est occupé. Attendez la fin du traitement en cours, puis réessayez.",
+  "account.delete_failed": "La suppression du compte a échoué. La suppression de votre compte n'a pas été confirmée. Réessayez.",
+  "account.delete_unconfirmed": "La suppression du compte n'a pas pu être confirmée. Rouvrez Compte avant de réessayer."
 }
