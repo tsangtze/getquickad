@@ -1,3 +1,7 @@
+import {
+  beginUserAccountOperation,
+  endUserAccountOperation
+} from "./accountOperationGuard.mjs";
 import { prepareMusic, validateMusicVolume } from "./musicCatalog.mjs";
 import {
   getPlan,
@@ -563,9 +567,18 @@ export async function createProjectRouter({
     }
 
     activeProjectCreates.add(userId);
+    beginUserAccountOperation(
+      userId,
+      "project-create"
+    );
+
     try {
       return await handler(request, response, next);
     } finally {
+      endUserAccountOperation(
+        userId,
+        "project-create"
+      );
       activeProjectCreates.delete(userId);
     }
   };
@@ -589,6 +602,10 @@ export async function createProjectRouter({
       }
 
       activeUserFinalizations.add(userId);
+      beginUserAccountOperation(
+        userId,
+        "video-finalize"
+      );
 
       try {
         return await handler(
@@ -597,6 +614,10 @@ export async function createProjectRouter({
           next
         );
       } finally {
+        endUserAccountOperation(
+          userId,
+          "video-finalize"
+        );
         activeUserFinalizations.delete(userId);
       }
     };
