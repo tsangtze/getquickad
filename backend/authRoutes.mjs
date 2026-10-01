@@ -7,6 +7,7 @@ import {
   createAuthClient
 } from "./authService.mjs";
 import { isTrustedApplicationRequest } from "./requestContext.mjs";
+import { deleteUserAccount } from "./accountDeletionService.mjs";
 
 const accessCookieName = "quickad_access";
 const refreshCookieName = "quickad_refresh";
@@ -278,6 +279,71 @@ export const __persistentAuthTestHelpers = {
   clearLogin
 };
 
+export function createDeleteAccountHandler({
+  projectRoot,
+  deleteAccount =
+    deleteUserAccount
+}) {
+  if (
+    typeof projectRoot !== "string" ||
+    !projectRoot.trim()
+  ) {
+    throw new Error(
+      "A project root is required for account deletion."
+    );
+  }
+
+  return async function deleteAccountHandler(
+    request,
+    response
+  ) {
+    try {
+      const result =
+        await deleteAccount(
+          projectRoot,
+          request.authUser?.id
+        );
+
+      clearLogin(response);
+
+      return response.json({
+        ok: true,
+        deleted: true,
+        deletedProjects:
+          result.deletedProjects,
+        subscriptionCanceled:
+          result.subscriptionCanceled,
+        subscriptionMissing:
+          result.subscriptionMissing
+      });
+    } catch (error) {
+      if (
+        error?.code ===
+        "ACCOUNT_DELETE_BUSY"
+      ) {
+        return response.status(409).json({
+          ok: false,
+          code: "ACCOUNT_DELETE_BUSY",
+          error:
+            "Your account is busy. Please wait for current processing to finish and try again."
+        });
+      }
+
+      console.error(
+        "Account deletion failed:",
+        error
+      );
+
+      return response.status(503).json({
+        ok: false,
+        code:
+          "ACCOUNT_DELETE_UNAVAILABLE",
+        error:
+          "Account deletion is temporarily unavailable. Please try again."
+      });
+    }
+  };
+}
 export function createAuthRouter() {
   const router = express.Router();
 
