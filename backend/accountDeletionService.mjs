@@ -11,6 +11,7 @@ import {
 } from "./accountOperationGuard.mjs";
 
 import {
+  createAuthAdminClient,
   deleteAuthUserForAccountDeletion
 } from "./authService.mjs";
 
@@ -146,6 +147,8 @@ export async function deleteUserAccount(
       beginUserAccountDeletion,
     endDeletion =
       endUserAccountDeletion,
+    createAuthAdmin =
+      createAuthAdminClient,
     readBillingState =
       getStripeBillingState,
     cancelSubscription =
@@ -193,6 +196,9 @@ export async function deleteUserAccount(
   }
 
   try {
+    const authAdmin =
+      createAuthAdmin();
+
     const billingState =
       await readBillingState(
         projectRoot,
@@ -223,7 +229,12 @@ export async function deleteUserAccount(
     );
 
     await deleteAuthUser(
-      normalizedUserId
+      normalizedUserId,
+      {
+        deleteUser:
+          (id) =>
+            authAdmin.auth.admin.deleteUser(id)
+      }
     );
 
     return {
