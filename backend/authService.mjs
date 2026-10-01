@@ -90,6 +90,48 @@ export function createAuthAdminClient() {
     }
   );
 }
+
+export async function deleteAuthUserForAccountDeletion(
+  userId,
+  {
+    deleteUser = null
+  } = {}
+) {
+  const normalizedUserId =
+    String(userId ?? "").trim();
+
+  if (!normalizedUserId) {
+    throw new Error(
+      "A user ID is required for authentication account deletion."
+    );
+  }
+
+  let removeUser =
+    deleteUser;
+
+  if (!removeUser) {
+    const admin =
+      createAuthAdminClient();
+
+    removeUser =
+      (id) =>
+        admin.auth.admin.deleteUser(id);
+  }
+
+  const result =
+    await removeUser(
+      normalizedUserId
+    );
+
+  if (result?.error) {
+    throw result.error;
+  }
+
+  return {
+    deleted: true
+  };
+}
+
 export function createAuthClient() {
   if (!isAuthConfigured()) {
     const error =
