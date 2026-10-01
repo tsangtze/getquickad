@@ -5,6 +5,25 @@ import {
   deleteProjectR2Objects
 } from "./cleanup.mjs";
 
+import {
+  beginUserAccountDeletion,
+  endUserAccountDeletion
+} from "./accountOperationGuard.mjs";
+
+import {
+  deleteAuthUserForAccountDeletion
+} from "./authService.mjs";
+
+import {
+  cancelStripeSubscriptionForAccountDeletion
+} from "./stripeService.mjs";
+
+import {
+  deleteUserUsageForAccountDeletion,
+  getStripeBillingState,
+  markUserAccountDeleted
+} from "./usageLimits.mjs";
+
 const PROJECT_ID_PATTERN =
   /^[0-9a-f-]{36}$/i;
 
@@ -117,4 +136,115 @@ export async function deleteUserProjectsForAccountDeletion(
   return {
     deletedProjects
   };
+}
+
+export async function deleteUserAccount(
+  projectRoot,
+  userId,
+  {
+    beginDeletion =
+      beginUserAccountDeletion,
+    endDeletion =
+      endUserAccountDeletion,
+    readBillingState =
+      getStripeBillingState,
+    cancelSubscription =
+      cancelStripeSubscriptionForAccountDeletion,
+    markDeleted =
+      markUserAccountDeleted,
+    deleteProjects =
+      deleteUserProjectsForAccountDeletion,
+    deleteUsage =
+      deleteUserUsageForAccountDeletion,
+    deleteAuthUser =
+      deleteAuthUserForAccountDeletion
+  } = {}
+) {
+  const normalizedUserId =
+    String(userId ?? "").trim();
+
+  if (!normalizedUserId) {
+    const error =
+      new Error(
+        "A user ID is required for account deletion."
+      );
+
+    error.code =
+      "ACCOUNT_DELETE_USER_REQUIRED";
+
+    throw error;
+  }
+
+  const claimed =
+    beginDeletion(
+      normalizedUserId
+    );
+
+  if (!claimed) {
+    const error =
+      new Error(
+        "The account is busy. Please wait until current processing finishes."
+      );
+
+    error.code =
+      "ACCOUNT_DELETE_BUSY";
+
+    throw error;
+  }
+
+  try {
+    const billingState =
+      await readBillingState(
+        projectRoot,
+        normalizedUserId
+      );
+
+    const stripeResult =
+      await cancelSubscription(
+        billingState
+          ?.stripeSubscriptionId ??
+          null
+      );
+
+    await markDeleted(
+      projectRoot,
+      normalizedUserId
+    );
+
+    const projectResult =
+      await deleteProjects(
+        projectRoot,
+        normalizedUserId
+      );
+
+    await deleteUsage(
+      projectRoot,
+      normalizedUserId
+    );
+
+    await deleteAuthUser(
+      normalizedUserId
+    );
+
+    return {
+      deleted: true,
+      deletedProjects:
+        Number(
+          projectResult
+            ?.deletedProjects
+        ) || 0,
+      subscriptionCanceled:
+        Boolean(
+          stripeResult?.canceled
+        ),
+      subscriptionMissing:
+        Boolean(
+          stripeResult?.missing
+        )
+    };
+  } finally {
+    endDeletion(
+      normalizedUserId
+    );
+  }
 }
