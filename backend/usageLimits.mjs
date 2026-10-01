@@ -133,6 +133,99 @@ export function getVideoCreditCost(durationSeconds) {
   return CREDIT_COSTS.UP_TO_60_SECONDS;
 }
 
+function deletedUserFile(
+  projectRoot,
+  userId
+) {
+  return path.join(
+    usersDir(projectRoot),
+    `${userId}.deleted`
+  );
+}
+
+export async function isUserAccountDeleted(
+  projectRoot,
+  userId
+) {
+  try {
+    await fs.access(
+      deletedUserFile(
+        projectRoot,
+        userId
+      )
+    );
+
+    return true;
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
+export async function markUserAccountDeleted(
+  projectRoot,
+  userId
+) {
+  return withUserUsageMutationLock(
+    projectRoot,
+    userId,
+    async () => {
+      await fs.mkdir(
+        usersDir(projectRoot),
+        {
+          recursive: true
+        }
+      );
+
+      await fs.writeFile(
+        deletedUserFile(
+          projectRoot,
+          userId
+        ),
+        JSON.stringify(
+          {
+            deletedAt:
+              new Date().toISOString()
+          },
+          null,
+          2
+        ),
+        "utf8"
+      );
+
+      return {
+        marked: true
+      };
+    }
+  );
+}
+export async function deleteUserUsageForAccountDeletion(
+  projectRoot,
+  userId
+) {
+  return withUserUsageMutationLock(
+    projectRoot,
+    userId,
+    async () => {
+      await fs.rm(
+        userFile(
+          projectRoot,
+          userId
+        ),
+        {
+          force: true
+        }
+      );
+
+      return {
+        deleted: true
+      };
+    }
+  );
+}
 export async function getUserUsage(
   projectRoot,
   userId
@@ -247,6 +340,22 @@ export async function updateStripeSubscription(
     projectRoot,
     userId,
     async () => {
+      if (
+        await isUserAccountDeleted(
+          projectRoot,
+          userId
+        )
+      ) {
+        const error =
+          new Error(
+            "Account has been deleted."
+          );
+
+        error.code =
+          "ACCOUNT_DELETED";
+
+        throw error;
+      }
   const normalizedPlanId =
     normalizePlanId(planId);
 

@@ -134,7 +134,10 @@ async function applySubscription(
       ? stripePlan
       : PLAN_IDS.FREE;
 
-  await updateStripeSubscription(
+  try {
+
+
+    await updateStripeSubscription(
     projectRoot,
     userId,
     {
@@ -170,6 +173,34 @@ async function applySubscription(
         new Date().toISOString()
     }
   );
+
+
+  } catch (error) {
+
+
+    if (error?.code === "ACCOUNT_DELETED") {
+
+
+      return {
+
+
+        applied: false,
+
+
+        ignoredDeletedAccount: true
+
+
+      };
+
+
+    }
+
+
+
+    throw error;
+
+
+  }
 
   console.log(
     "Stripe subscription synchronized:",
