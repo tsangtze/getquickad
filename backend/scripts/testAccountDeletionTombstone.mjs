@@ -74,7 +74,7 @@ try {
         path.join(
           root,
           "users",
-          `${userId}.deleted`
+          `${userId}.json.deleted`
         ),
         "utf8"
       )

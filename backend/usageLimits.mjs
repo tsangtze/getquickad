@@ -137,9 +137,11 @@ function deletedUserFile(
   projectRoot,
   userId
 ) {
-  return path.join(
-    usersDir(projectRoot),
-    `${userId}.deleted`
+  return (
+    userFile(
+      projectRoot,
+      userId
+    ) + ".deleted"
   );
 }
 
