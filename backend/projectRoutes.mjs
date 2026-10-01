@@ -540,17 +540,71 @@ export async function createProjectRouter({
 
   // Held until the asynchronous operation finishes, even if the client disconnects.
   const activeProjects = new Set();
-  const withProjectLock = (handler) => async (request, response, next) => {
-    const id = request.params.projectId.toLowerCase();
-    if (activeProjects.has(id)) {
-      return response.status(409).json({ok: false, code: "PROJECT_BUSY", error: "This project is busy. Please wait until processing finishes."});
-    }
-    activeProjects.add(id);
-    try { return await handler(request, response, next); }
-    finally { activeProjects.delete(id); }
-  };
+  const withProjectLock =
+    (handler) =>
+    async (request, response, next) => {
+      const id =
+        request.params.projectId.toLowerCase();
 
+      const userId =
+        String(request.authUser?.id ?? "");
 
+      if (activeProjects.has(id)) {
+        await removeFiles(
+          allUploadedFiles(request)
+        );
+
+        return response.status(409).json({
+          ok: false,
+          code: "PROJECT_BUSY",
+          error:
+            "This project is busy. Please wait until processing finishes."
+        });
+      }
+
+      try {
+        beginUserAccountOperation(
+          userId,
+          "project-mutation"
+        );
+      } catch (error) {
+        if (
+          error?.code ===
+          "ACCOUNT_DELETION_IN_PROGRESS"
+        ) {
+          await removeFiles(
+            allUploadedFiles(request)
+          );
+
+          return response.status(409).json({
+            ok: false,
+            code:
+              "ACCOUNT_DELETION_IN_PROGRESS",
+            error:
+              "Account deletion is in progress."
+          });
+        }
+
+        throw error;
+      }
+
+      activeProjects.add(id);
+
+      try {
+        return await handler(
+          request,
+          response,
+          next
+        );
+      } finally {
+        activeProjects.delete(id);
+
+        endUserAccountOperation(
+          userId,
+          "project-mutation"
+        );
+      }
+    };
 
   // Serialize project creation per user to prevent overlapping uploads.
   const activeProjectCreates = new Set();
