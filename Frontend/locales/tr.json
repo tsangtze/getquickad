@@ -468,6 +468,7 @@
   "scene.edited": "Düzenlendi",
   "api.narration_scene_too_long": "{number}. sahnenin anlatımı süresi için fazla uzun. Bu sahnenin altyazısını biraz kısaltıp sahneyi yeniden onaylayın.",
   "account.settings": "Hesap ayarları",
+  "account.subscription": "Abonelik",
 "account.delete": "Hesabı sil",
   "account.delete_note": "Hesabınızı kalıcı olarak silmek Pix2Vid hesabınızı, projelerinizi ve videolarınızı kaldırır. Etkin Pix2Vid aboneliğiniz de iptal edilir.",
   "account.delete_confirm": "Pix2Vid hesabınız kalıcı olarak silinsin mi? Projeleriniz ve videolarınız silinecek ve etkin Pix2Vid aboneliğiniz iptal edilecektir. Bu işlem geri alınamaz.",

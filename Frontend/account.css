@@ -114,15 +114,12 @@
   border-top: 1px solid #e3e7ef;
 }
 
-.qa-account-settings-title {
-  margin: 0 0 4px;
-  color: #667085;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
+.qa-account-dialog .qa-account-settings-open,
+.qa-account-dialog .qa-account-settings-back,
+.qa-account-dialog .qa-account-subscription,
 .qa-account-dialog .qa-account-delete {
   width: 100%;
+  min-height: 40px;
   padding: 8px 0;
   border: 0;
   background: transparent;
@@ -131,16 +128,39 @@
   align-items: center;
   justify-content: space-between;
   text-align: left;
+  text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
   box-shadow: none;
 }
 
+.qa-account-dialog .qa-account-settings-open:hover:not(:disabled),
+.qa-account-dialog .qa-account-settings-back:hover:not(:disabled),
+.qa-account-dialog .qa-account-subscription:hover,
 .qa-account-dialog .qa-account-delete:hover:not(:disabled) {
   background: transparent;
   color: #344054;
+  text-decoration: none;
 }
 
+.qa-account-settings-view {
+  margin-top: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #e3e7ef;
+}
+
+.qa-account-dialog .qa-account-settings-back {
+  justify-content: flex-start;
+  gap: 7px;
+  margin-bottom: 6px;
+  color: #344054;
+  font-weight: 700;
+}
+
+.qa-account-settings-back-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+}
 .qa-account-delete-arrow {
   font-size: 1.1rem;
   line-height: 1;

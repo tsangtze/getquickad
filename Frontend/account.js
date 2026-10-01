@@ -110,7 +110,20 @@
       <p class="qa-account-identity"></p>
       <button type="button" class="qa-account-logout" data-i18n="account.sign_out">Sign out</button>
       <div class="qa-account-settings">
-        <p class="qa-account-settings-title" data-i18n="account.settings">Account settings</p>
+        <button type="button" class="qa-account-settings-open">
+          <span data-i18n="account.settings">Account settings</span>
+          <span class="qa-account-delete-arrow" aria-hidden="true">›</span>
+        </button>
+      </div>
+      <div class="qa-account-settings-view" hidden>
+        <button type="button" class="qa-account-settings-back">
+          <span class="qa-account-settings-back-arrow" aria-hidden="true">‹</span>
+          <span data-i18n="account.settings">Account settings</span>
+        </button>
+        <a class="qa-account-subscription" href="/billing.html">
+          <span data-i18n="account.subscription">Subscription</span>
+          <span class="qa-account-delete-arrow" aria-hidden="true">›</span>
+        </a>
         <button type="button" class="qa-account-delete">
           <span data-i18n="account.delete">Delete account</span>
           <span class="qa-account-delete-arrow" aria-hidden="true">›</span>
@@ -130,6 +143,10 @@
   const signedInPanel = dialog.querySelector(".qa-account-signed-in");
   const identity = dialog.querySelector(".qa-account-identity");
   const logoutButton = dialog.querySelector(".qa-account-logout");
+  const accountSettings = dialog.querySelector(".qa-account-settings");
+  const accountSettingsOpen = dialog.querySelector(".qa-account-settings-open");
+  const accountSettingsView = dialog.querySelector(".qa-account-settings-view");
+  const accountSettingsBack = dialog.querySelector(".qa-account-settings-back");
   const deleteAccountButton = dialog.querySelector(".qa-account-delete");
   let busy = false;
   let signupMode = false;
@@ -181,6 +198,24 @@
       ? accountText("account.create_status", "Create your Pix2Vid account.")
       : accountText("account.sign_in_status", "Sign in to Pix2Vid.");
     emailInput.focus();
+  });
+
+  accountSettingsOpen.addEventListener("click", () => {
+    if (busy) return;
+    accountSettings.hidden = true;
+    logoutButton.hidden = true;
+    identity.hidden = true;
+    accountSettingsView.hidden = false;
+    accountSettingsBack.focus();
+  });
+
+  accountSettingsBack.addEventListener("click", () => {
+    if (busy) return;
+    accountSettingsView.hidden = true;
+    identity.hidden = false;
+    logoutButton.hidden = false;
+    accountSettings.hidden = false;
+    accountSettingsOpen.focus();
   });
 
   button.setAttribute("aria-haspopup", "dialog");

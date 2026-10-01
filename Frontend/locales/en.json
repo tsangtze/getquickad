@@ -467,6 +467,7 @@
   "scene.edited": "Edited",
   "api.narration_scene_too_long": "Scene {number} narration is too long for its duration. Shorten that scene's caption slightly, then confirm the scene again.",
   "account.settings": "Account settings",
+  "account.subscription": "Subscription",
   "account.delete": "Delete account",
   "account.delete_note": "Deleting your account permanently removes your Pix2Vid account, projects, and videos. Any active Pix2Vid subscription will be canceled.",
   "account.delete_confirm": "Delete your Pix2Vid account permanently? Your projects and videos will be deleted, and any active Pix2Vid subscription will be canceled. This cannot be undone.",
