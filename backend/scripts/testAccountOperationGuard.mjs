@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 
 import {
+  beginUserAccountDeletion,
   beginUserAccountOperation,
+  endUserAccountDeletion,
   endUserAccountOperation,
   getActiveUserAccountOperations,
-  hasActiveUserAccountOperation
+  hasActiveUserAccountOperation,
+  isUserAccountDeletionInProgress
 } from "../accountOperationGuard.mjs";
 
 const userId =
@@ -12,6 +15,11 @@ const userId =
 
 assert.equal(
   hasActiveUserAccountOperation(userId),
+  false
+);
+
+assert.equal(
+  isUserAccountDeletionInProgress(userId),
   false
 );
 
@@ -30,9 +38,19 @@ assert.equal(
   true
 );
 
-assert.deepEqual(
-  getActiveUserAccountOperations(userId),
-  ["project-create"]
+assert.equal(
+  beginUserAccountDeletion(userId),
+  false
+);
+
+assert.equal(
+  isUserAccountDeletionInProgress(userId),
+  false
+);
+
+beginUserAccountOperation(
+  userId,
+  "video-finalize"
 );
 
 beginUserAccountOperation(
@@ -46,11 +64,6 @@ assert.deepEqual(
     "project-create",
     "video-finalize"
   ]
-);
-
-beginUserAccountOperation(
-  userId,
-  "video-finalize"
 );
 
 endUserAccountOperation(
@@ -69,6 +82,59 @@ assert.deepEqual(
 endUserAccountOperation(
   userId,
   "video-finalize"
+);
+
+endUserAccountOperation(
+  userId,
+  "project-create"
+);
+
+assert.equal(
+  hasActiveUserAccountOperation(userId),
+  false
+);
+
+assert.equal(
+  beginUserAccountDeletion(userId),
+  true
+);
+
+assert.equal(
+  isUserAccountDeletionInProgress(userId),
+  true
+);
+
+assert.equal(
+  beginUserAccountDeletion(userId),
+  false
+);
+
+assert.throws(
+  () =>
+    beginUserAccountOperation(
+      userId,
+      "project-create"
+    ),
+  (error) =>
+    error?.code ===
+    "ACCOUNT_DELETION_IN_PROGRESS"
+);
+
+assert.deepEqual(
+  getActiveUserAccountOperations(userId),
+  []
+);
+
+endUserAccountDeletion(userId);
+
+assert.equal(
+  isUserAccountDeletionInProgress(userId),
+  false
+);
+
+beginUserAccountOperation(
+  userId,
+  "project-create"
 );
 
 assert.deepEqual(
@@ -86,14 +152,13 @@ assert.equal(
   false
 );
 
-assert.deepEqual(
-  getActiveUserAccountOperations(userId),
-  []
-);
-
 endUserAccountOperation(
   userId,
   "not-active"
+);
+
+endUserAccountDeletion(
+  "not-active-user"
 );
 
 assert.throws(
@@ -112,6 +177,28 @@ assert.throws(
       ""
     ),
   /required/
+);
+
+assert.throws(
+  () =>
+    beginUserAccountDeletion(""),
+  /required/
+);
+
+console.log(
+  "PASS: Active operations block account deletion"
+);
+
+console.log(
+  "PASS: Account deletion blocks new operations"
+);
+
+console.log(
+  "PASS: Duplicate operations remain reference counted"
+);
+
+console.log(
+  "PASS: Ending deletion re-enables account operations"
 );
 
 console.log(

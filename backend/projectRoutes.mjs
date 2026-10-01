@@ -566,11 +566,33 @@ export async function createProjectRouter({
       });
     }
 
+    try {
+      beginUserAccountOperation(
+        userId,
+        "project-create"
+      );
+    } catch (error) {
+      if (
+        error?.code ===
+        "ACCOUNT_DELETION_IN_PROGRESS"
+      ) {
+        await removeFiles(
+          allUploadedFiles(request)
+        );
+
+        return response.status(409).json({
+          ok: false,
+          code:
+            "ACCOUNT_DELETION_IN_PROGRESS",
+          error:
+            "Account deletion is in progress."
+        });
+      }
+
+      throw error;
+    }
+
     activeProjectCreates.add(userId);
-    beginUserAccountOperation(
-      userId,
-      "project-create"
-    );
 
     try {
       return await handler(request, response, next);
@@ -582,7 +604,8 @@ export async function createProjectRouter({
       activeProjectCreates.delete(userId);
     }
   };
-  // Serialize final video generation per user so recovery-cap checks
+
+// Serialize final video generation per user so recovery-cap checks
   // cannot race across different projects owned by the same user.
   const activeUserFinalizations = new Set();
 
@@ -601,11 +624,29 @@ export async function createProjectRouter({
         });
       }
 
+      try {
+        beginUserAccountOperation(
+          userId,
+          "video-finalize"
+        );
+      } catch (error) {
+        if (
+          error?.code ===
+          "ACCOUNT_DELETION_IN_PROGRESS"
+        ) {
+          return response.status(409).json({
+            ok: false,
+            code:
+              "ACCOUNT_DELETION_IN_PROGRESS",
+            error:
+              "Account deletion is in progress."
+          });
+        }
+
+        throw error;
+      }
+
       activeUserFinalizations.add(userId);
-      beginUserAccountOperation(
-        userId,
-        "video-finalize"
-      );
 
       try {
         return await handler(
@@ -622,7 +663,7 @@ export async function createProjectRouter({
       }
     };
 
-  // Authentication runs before any upload or project handler.
+// Authentication runs before any upload or project handler.
   router.use(cookieParser());
   router.use((_request, response, next) => {
     response.set("Cache-Control", "private, no-store");

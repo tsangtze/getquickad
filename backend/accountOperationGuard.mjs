@@ -1,4 +1,5 @@
-const activeUserOperations = new Map();
+const userAccountStates =
+  new Map();
 
 function normalizeUserId(userId) {
   return String(userId ?? "").trim();
@@ -8,7 +9,33 @@ function normalizeOperation(operation) {
   return String(operation ?? "").trim();
 }
 
-function getOperations(userId) {
+function requireUserId(userId) {
+  const normalizedUserId =
+    normalizeUserId(userId);
+
+  if (!normalizedUserId) {
+    throw new Error(
+      "User ID is required."
+    );
+  }
+
+  return normalizedUserId;
+}
+
+function requireOperation(operation) {
+  const normalizedOperation =
+    normalizeOperation(operation);
+
+  if (!normalizedOperation) {
+    throw new Error(
+      "Operation is required."
+    );
+  }
+
+  return normalizedOperation;
+}
+
+function getState(userId) {
   const normalizedUserId =
     normalizeUserId(userId);
 
@@ -17,53 +44,88 @@ function getOperations(userId) {
   }
 
   return (
-    activeUserOperations.get(
+    userAccountStates.get(
       normalizedUserId
     ) ?? null
   );
+}
+
+function getOrCreateState(userId) {
+  const normalizedUserId =
+    requireUserId(userId);
+
+  let state =
+    userAccountStates.get(
+      normalizedUserId
+    );
+
+  if (!state) {
+    state = {
+      deleting: false,
+      operations: new Map()
+    };
+
+    userAccountStates.set(
+      normalizedUserId,
+      state
+    );
+  }
+
+  return {
+    normalizedUserId,
+    state
+  };
+}
+
+function removeStateIfIdle(
+  normalizedUserId,
+  state
+) {
+  if (
+    !state.deleting &&
+    state.operations.size === 0
+  ) {
+    userAccountStates.delete(
+      normalizedUserId
+    );
+  }
 }
 
 export function beginUserAccountOperation(
   userId,
   operation
 ) {
-  const normalizedUserId =
-    normalizeUserId(userId);
-
   const normalizedOperation =
-    normalizeOperation(operation);
+    requireOperation(operation);
 
-  if (
-    !normalizedUserId ||
-    !normalizedOperation
-  ) {
-    throw new Error(
-      "User ID and operation are required."
-    );
+  const {
+    normalizedUserId,
+    state
+  } =
+    getOrCreateState(userId);
+
+  if (state.deleting) {
+    const error =
+      new Error(
+        "Account deletion is in progress."
+      );
+
+    error.code =
+      "ACCOUNT_DELETION_IN_PROGRESS";
+
+    throw error;
   }
 
-  let operations =
-    activeUserOperations.get(
-      normalizedUserId
-    );
-
-  if (!operations) {
-    operations = new Map();
-
-    activeUserOperations.set(
-      normalizedUserId,
-      operations
-    );
-  }
-
-  operations.set(
+  state.operations.set(
     normalizedOperation,
     (
-      operations.get(
+      state.operations.get(
         normalizedOperation
       ) ?? 0
     ) + 1
   );
+
+  return true;
 }
 
 export function endUserAccountOperation(
@@ -83,57 +145,111 @@ export function endUserAccountOperation(
     return;
   }
 
-  const operations =
-    activeUserOperations.get(
+  const state =
+    userAccountStates.get(
       normalizedUserId
     );
 
-  if (!operations) {
+  if (!state) {
     return;
   }
 
   const count =
-    operations.get(
+    state.operations.get(
       normalizedOperation
     ) ?? 0;
 
   if (count <= 1) {
-    operations.delete(
+    state.operations.delete(
       normalizedOperation
     );
   } else {
-    operations.set(
+    state.operations.set(
       normalizedOperation,
       count - 1
     );
   }
 
-  if (operations.size === 0) {
-    activeUserOperations.delete(
+  removeStateIfIdle(
+    normalizedUserId,
+    state
+  );
+}
+
+export function beginUserAccountDeletion(
+  userId
+) {
+  const {
+    state
+  } =
+    getOrCreateState(userId);
+
+  if (
+    state.deleting ||
+    state.operations.size > 0
+  ) {
+    return false;
+  }
+
+  state.deleting = true;
+
+  return true;
+}
+
+export function endUserAccountDeletion(
+  userId
+) {
+  const normalizedUserId =
+    normalizeUserId(userId);
+
+  if (!normalizedUserId) {
+    return;
+  }
+
+  const state =
+    userAccountStates.get(
       normalizedUserId
     );
+
+  if (!state) {
+    return;
   }
+
+  state.deleting = false;
+
+  removeStateIfIdle(
+    normalizedUserId,
+    state
+  );
+}
+
+export function isUserAccountDeletionInProgress(
+  userId
+) {
+  return Boolean(
+    getState(userId)?.deleting
+  );
 }
 
 export function getActiveUserAccountOperations(
   userId
 ) {
-  const operations =
-    getOperations(userId);
+  const state =
+    getState(userId);
 
-  return operations
-    ? [...operations.keys()]
+  return state
+    ? [...state.operations.keys()]
     : [];
 }
 
 export function hasActiveUserAccountOperation(
   userId
 ) {
-  const operations =
-    getOperations(userId);
+  const state =
+    getState(userId);
 
   return Boolean(
-    operations &&
-    operations.size > 0
+    state &&
+    state.operations.size > 0
   );
 }
