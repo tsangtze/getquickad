@@ -344,7 +344,11 @@ export function createDeleteAccountHandler({
     }
   };
 }
-export function createAuthRouter() {
+export function createAuthRouter({
+  projectRoot,
+  requireUserMiddleware = requireUser,
+  deleteAccount = deleteUserAccount
+} = {}) {
   const router = express.Router();
 
   router.use(cookieParser());
@@ -685,5 +689,18 @@ export function createAuthRouter() {
     response.json({ ok: true });
   });
 
+  if (
+    typeof projectRoot === "string" &&
+    projectRoot.trim()
+  ) {
+    router.post(
+      "/delete-account",
+      requireUserMiddleware,
+      createDeleteAccountHandler({
+        projectRoot,
+        deleteAccount
+      })
+    );
+  }
   return router;
 }

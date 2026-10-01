@@ -106,7 +106,7 @@ app.get(
   }
 );
 
-app.use("/api/auth", createAuthRouter());
+app.use("/api/auth", createAuthRouter({ projectRoot }));
 app.use(
   "/api/billing",
   createBillingRouter({
