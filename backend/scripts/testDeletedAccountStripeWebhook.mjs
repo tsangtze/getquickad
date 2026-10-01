@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import express from "express";
 import Stripe from "stripe";
 
@@ -182,7 +183,7 @@ try {
     path.join(
       root,
       "users",
-      `${userId}.json.deleted`
+      `${createHash("sha256").update(userId).digest("hex")}.json.deleted`
     )
   );
 

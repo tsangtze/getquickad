@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createHash } from "node:crypto";
 
 // Production default is 2; Render may override this for controlled testing.
 export const FREE_FINAL_VIDEOS =
@@ -137,11 +138,14 @@ function deletedUserFile(
   projectRoot,
   userId
 ) {
-  return (
-    userFile(
-      projectRoot,
-      userId
-    ) + ".deleted"
+  const deletionKey =
+    createHash("sha256")
+      .update(String(userId))
+      .digest("hex");
+
+  return path.join(
+    usersDir(projectRoot),
+    deletionKey + ".json.deleted"
   );
 }
 
