@@ -168,7 +168,7 @@ function createUploadMiddleware(tempDirectory) {
     limits: {
       files: MAX_IMAGE_COUNT + 2,
       fileSize: MAX_FILE_SIZE,
-      fields: 10
+      fields: 32
     },
     fileFilter: (_request, file, callback) => {
       if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
