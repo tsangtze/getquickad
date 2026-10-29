@@ -3430,3 +3430,68 @@ input::placeholder {
     flex: 1;
   }
 }
+
+/* PIX2VID FOUR FORMAT BUTTONS — STEP 4692 */
+
+.format-selector[role="radiogroup"] {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.format-choice {
+  position: relative;
+  display: block;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.format-choice input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.format-choice span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 9px 8px;
+  border: 1px solid #d9d9e5;
+  border-radius: 10px;
+  background: #fff;
+  color: #202035;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.format-choice input[type="radio"]:checked + span {
+  background: #5b50f5;
+  border-color: #5b50f5;
+  color: #fff;
+}
+
+.format-choice input[type="radio"]:focus-visible + span {
+  outline: 3px solid #a8a1ff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .format-selector[role="radiogroup"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .format-choice span {
+    min-height: 42px;
+    font-size: 13px;
+    padding: 8px 5px;
+  }
+}
