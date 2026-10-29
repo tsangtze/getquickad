@@ -4277,6 +4277,31 @@ async function renderVideoPlanReview(
 
   renderPlanBrandingReview(project);
 
+  const planFormatReview =
+    document.querySelector("#plan-format-review");
+  const planFormatValue =
+    document.querySelector("#plan-format-value");
+
+  if (planFormatReview && planFormatValue) {
+    const formatLabels = {
+      "9:16": "Vertical (9:16)",
+      "4:5": "Portrait (4:5)",
+      "1:1": "Square (1:1)",
+      "16:9": "Landscape (16:9)"
+    };
+
+    const savedAspectRatio =
+      project?.output?.aspectRatio;
+
+    const formatLabel =
+      Object.hasOwn(formatLabels, savedAspectRatio)
+        ? formatLabels[savedAspectRatio]
+        : "";
+
+    planFormatValue.textContent = formatLabel;
+    planFormatReview.hidden = !formatLabel;
+  }
+
   currentStoryboard.scenes.forEach(
     (scene) => {
       scene.approved = false;
