@@ -97,7 +97,8 @@ function buildSystemInstructions(
   language = "en",
   maxDurationSeconds = 30,
   durationMode = "manual",
-  imageCount = 1
+  imageCount = 1,
+  aspectRatio = "9:16"
 ) {
   const requiredSceneCount =
     imageCount <= 4
@@ -110,7 +111,7 @@ function buildSystemInstructions(
     );
 
   return `
-You create concise vertical promotional-video storyboards in the requested language.
+You create concise promotional-video storyboards in the requested language.
 
 LANGUAGE RULE - CRITICAL:
 - Target language: ${languageDescription}
@@ -118,7 +119,7 @@ LANGUAGE RULE - CRITICAL:
 - Use natural marketing language for the target locale.
 - Do not translate product names, brand names, URLs, or file names unless the customer supplied them translated.
 
-Return one complete storyboard for a 9:16 social-media advertisement that follows the applicable duration-tier rules below and never exceeds ${maxDurationSeconds} seconds.
+Return one complete storyboard for a ${aspectRatio} social-media advertisement that follows the applicable duration-tier rules below and never exceeds ${maxDurationSeconds} seconds.
 
 Rules:
 - Treat every new project as a fresh creative generation.
@@ -1060,7 +1061,8 @@ export async function generateStoryboard({
           project.language || project.targetLanguage || "en",
           maxDurationSeconds,
           durationMode,
-          imageCount
+          imageCount,
+        project.output?.aspectRatio || "9:16"
         ) +
         "\n\n" +
         buildAutoDurationInstructions({
@@ -1071,7 +1073,8 @@ export async function generateStoryboard({
           project.language || project.targetLanguage || "en",
           maxDurationSeconds,
           durationMode,
-          imageCount
+          imageCount,
+        project.output?.aspectRatio || "9:16"
         );
 
   const projectInstructions =
@@ -1203,10 +1206,17 @@ export async function generateStoryboard({
         ? parsedResult.storyboard
         : parsedResult;
 
-    const storyboard =
-      normalizeGeneratedStoryboard(
+    const storyboard = {
+      ...normalizeGeneratedStoryboard(
         generatedStoryboard
-      );
+      ),
+      aspectRatio:
+        ["9:16", "4:5", "1:1", "16:9"].includes(
+          project.output?.aspectRatio
+        )
+          ? project.output.aspectRatio
+          : "9:16"
+    };
     const validation =
       validateStoryboard(
         storyboard,

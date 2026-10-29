@@ -97,6 +97,22 @@
       </div>
     </section>
     <form id="video-form" class="creation-form" novalidate>
+      <section class="form-card" aria-labelledby="video-format-heading">
+        <div class="step-number">★</div>
+        <div class="step-content">
+          <h2 id="video-format-heading">Choose Video Format</h2>
+          <p>Select the shape of your finished video.</p>
+          <div class="format-selector">
+            <label for="video-aspect-ratio">Video Format</label>
+            <select id="video-aspect-ratio" name="aspectRatio" class="form-control">
+              <option value="9:16" selected>9:16 — Vertical (TikTok, Reels, Shorts)</option>
+              <option value="4:5">4:5 — Portrait (Social Feed)</option>
+              <option value="1:1">1:1 — Square (Social Posts)</option>
+              <option value="16:9">16:9 — Landscape (YouTube, Websites)</option>
+            </select>
+          </div>
+        </div>
+      </section>
       <section class="form-card" aria-labelledby="upload-heading">
         <div class="step-number">1</div>
 

@@ -1,4 +1,8 @@
 import { randomUUID } from "node:crypto";
+import {
+  resolveProjectVideoFormat,
+  resolveVideoLayout
+} from "./videoAspectRatio.mjs";
 import fs from "node:fs/promises";
 import fsSync from "node:fs";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
@@ -578,8 +582,14 @@ function buildCaptionAss({
   captionSegments,
   durationSeconds,
   spokenDurationSeconds,
-  language = "en"
+  language = "en",
+  aspectRatio = "9:16"
 }) {
+  const videoFormat = resolveProjectVideoFormat({
+    output: { aspectRatio }
+  });
+  const videoLayout = resolveVideoLayout(aspectRatio);
+
   const semanticEvents =
     buildCaptionEvents({
       caption,
@@ -647,13 +657,13 @@ function buildCaptionAss({
       const captionBlockHeight =
         captionLineCount * captionLineHeight;
 
-      const captionCenterY = 1088;
+      const captionCenterY = videoLayout.caption.centerY;
 
       const eventMarginV =
         Math.max(
           0,
           Math.round(
-            VIDEO_HEIGHT -
+            videoFormat.height -
               captionCenterY -
               captionBlockHeight / 2
           )
@@ -665,8 +675,8 @@ function buildCaptionAss({
   return [
     "[Script Info]",
     "ScriptType: v4.00+",
-    `PlayResX: ${VIDEO_WIDTH}`,
-    `PlayResY: ${VIDEO_HEIGHT}`,
+    `PlayResX: ${videoFormat.width}`,
+    `PlayResY: ${videoFormat.height}`,
     "WrapStyle: 0",
     "ScaledBorderAndShadow: yes",
     "",
@@ -823,8 +833,14 @@ function buildVideoFilter({
   captionAssPath,
   rolePath,
   brandPath,
-  showCtaWebsite
+  showCtaWebsite,
+  aspectRatio = "9:16"
 }) {
+  const videoFormat = resolveProjectVideoFormat({
+    output: { aspectRatio }
+  });
+  const videoLayout = resolveVideoLayout(aspectRatio);
+
   const duration =
     scene.endSeconds -
     scene.startSeconds;
@@ -872,9 +888,9 @@ function buildVideoFilter({
       `[cardSource${inputIndex}]`,
 
     `[backgroundSource${inputIndex}]` +
-      `scale=${VIDEO_WIDTH}:${VIDEO_HEIGHT}:` +
+      `scale=${videoFormat.width}:${videoFormat.height}:` +
       "force_original_aspect_ratio=increase," +
-      `crop=${VIDEO_WIDTH}:${VIDEO_HEIGHT},` +
+      `crop=${videoFormat.width}:${videoFormat.height},` +
       "boxblur=24:12," +
       "eq=brightness=-0.42:saturation=0.72," +
       "setsar=1" +
@@ -882,15 +898,15 @@ function buildVideoFilter({
 
     `[background${inputIndex}]` +
       "drawbox=" +
-      "x=28:y=225:w=664:h=750:" +
+            `x=${videoLayout.productCard.panelX}:y=${videoLayout.productCard.panelY}:w=${videoLayout.productCard.panelWidth}:h=${videoLayout.productCard.panelHeight}:` +
       "color=0x07101F@0.78:t=fill," +
       "drawbox=" +
-      "x=28:y=225:w=664:h=750:" +
+            `x=${videoLayout.productCard.panelX}:y=${videoLayout.productCard.panelY}:w=${videoLayout.productCard.panelWidth}:h=${videoLayout.productCard.panelHeight}:` +
       "color=white@0.20:t=2" +
       `[panel${inputIndex}]`,
 
     `[cardSource${inputIndex}]` +
-      "scale=640:700:" +
+          `scale=${videoLayout.productCard.width}:${videoLayout.productCard.height}:` +
       "force_original_aspect_ratio=decrease," +
       "setsar=1" +
       `[card${inputIndex}]`,
@@ -899,12 +915,12 @@ function buildVideoFilter({
       `[card${inputIndex}]` +
       "overlay=" +
       "x=(W-w)/2:" +
-      "y=250+(700-h)/2" +
+            `y=${videoLayout.productCard.imageY}+(${videoLayout.productCard.height}-h)/2` +
       `[composite${inputIndex}]`,
 
     `[composite${inputIndex}]` +
       "drawbox=" +
-      `x=40:y=44:w=640:h=62:` +
+            `x=${videoLayout.header.x}:y=${videoLayout.header.y}:w=${videoLayout.header.width}:h=${videoLayout.header.height}:` +
       `color=${accentColor}:t=fill,` +
 
       "drawtext=" +
@@ -923,13 +939,13 @@ function buildVideoFilter({
       "fontcolor=white:" +
       "fontsize=34:" +
       "x=(w-text_w)/2:" +
-      "y=126:" +
+            `y=${videoLayout.header.titleY}:` +
       "shadowcolor=black@0.65:" +
       "shadowx=2:" +
       "shadowy=2," +
 
       "drawbox=" +
-      "x=34:y=976:w=652:h=200:" +
+            `x=${videoLayout.caption.backgroundX}:y=${videoLayout.caption.backgroundY}:w=${videoLayout.caption.backgroundWidth}:h=${videoLayout.caption.backgroundHeight}:` +
       `color=${accentColor}:t=fill,` +
 
       "ass=" +
@@ -947,7 +963,7 @@ function buildVideoFilter({
               "fontcolor=white@0.96:" +
               "fontsize=28:" +
               "x=(w-text_w)/2:" +
-              "y=1124:" +
+                            `y=${videoLayout.ctaWebsiteY}:` +
               "shadowcolor=black@0.75:" +
               "shadowx=2:" +
               "shadowy=2,"
@@ -962,7 +978,7 @@ function buildVideoFilter({
       "fontcolor=white@0.92:" +
       "fontsize=24:" +
       "x=(w-text_w)/2:" +
-      "y=1217:" +
+            `y=${videoLayout.brandY}:` +
       "shadowcolor=black@0.70:" +
       "shadowx=2:" +
       "shadowy=2," +
@@ -1021,7 +1037,8 @@ async function renderSceneClip({
   captionAssPath,
   rolePath,
   brandPath,
-  showCtaWebsite
+  showCtaWebsite,
+  aspectRatio = "9:16"
 }) {
   const sceneDuration =
     scene.endSeconds -
@@ -1037,7 +1054,8 @@ async function renderSceneClip({
       captionAssPath,
       rolePath,
       brandPath,
-      showCtaWebsite
+      showCtaWebsite,
+      aspectRatio
     });
 
   const commandArguments = [
@@ -1064,6 +1082,15 @@ async function renderSceneClip({
   let videoLabel =
     "[scene0]";
 
+  const logoLayout =
+    aspectRatio === "16:9"
+      ? { size: 72, y: 135 }
+      : aspectRatio === "1:1"
+        ? { size: 88, y: 205 }
+        : aspectRatio === "4:5"
+          ? { size: 90, y: 205 }
+          : { size: 96, y: 245 };
+
   if (logoPath) {
     commandArguments.push(
       "-loop",
@@ -1078,7 +1105,7 @@ async function renderSceneClip({
 
     sceneFilters.push(
       "[1:v]" +
-        "scale=96:96:" +
+                `scale=${logoLayout.size}:${logoLayout.size}:` +
         "force_original_aspect_ratio=decrease," +
         "format=rgba" +
         "[logoOverlay]"
@@ -1088,7 +1115,7 @@ async function renderSceneClip({
       "[scene0][logoOverlay]" +
         "overlay=" +
         "x=W-w-46:" +
-        "y=245:" +
+                `y=${logoLayout.y}:` +
         "format=auto" +
         "[sceneFinal]"
     );
@@ -1157,6 +1184,8 @@ export async function renderVideo({
     storyboard,
     projectDirectory
   });
+
+  const videoFormat = resolveProjectVideoFormat(project);
 
 
   const narrationPath = path.join(
@@ -1387,7 +1416,8 @@ export async function renderVideo({
             language:
               project.language ||
               project.targetLanguage ||
-              "en"
+              "en",
+            aspectRatio: videoFormat.aspectRatio
           })
         );
 
@@ -1425,7 +1455,8 @@ export async function renderVideo({
         rolePath,
         brandPath,
         showCtaWebsite:
-          Boolean(project.website)
+          Boolean(project.website),
+        aspectRatio: videoFormat.aspectRatio
       });
 
       sceneClipPaths.push(
@@ -1578,11 +1609,11 @@ export async function renderVideo({
       format:
         "mp4",
       width:
-        VIDEO_WIDTH,
+        videoFormat.width,
       height:
-        VIDEO_HEIGHT,
+        videoFormat.height,
       aspectRatio:
-        "9:16",
+        videoFormat.aspectRatio,
       frameRate:
         VIDEO_FRAME_RATE,
       durationSeconds:

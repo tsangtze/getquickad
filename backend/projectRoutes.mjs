@@ -1089,7 +1089,7 @@ export async function createProjectRouter({
           targetLanguage:
             (request.body.targetLanguage || request.body.language || "en").toString().slice(0,10),
           output: {
-            aspectRatio: "9:16",
+            aspectRatio: ["9:16", "4:5", "1:1", "16:9"].includes(String(request.body.aspectRatio || "9:16")) ? String(request.body.aspectRatio || "9:16") : "9:16",
             durationMode,
             durationSeconds:
               durationMode === "auto"

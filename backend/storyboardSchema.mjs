@@ -59,7 +59,7 @@ export const StoryboardSchema = z
     version: z.literal("1.0"),
     title: z.string(),
     style: z.enum(VIDEO_STYLES),
-    aspectRatio: z.literal("9:16"),
+    aspectRatio: z.enum(["9:16", "4:5", "1:1", "16:9"]),
     totalDurationSeconds: z.number().int(),
     narrationWordCount: z.number().int(),
     musicDirection: z.string(),
